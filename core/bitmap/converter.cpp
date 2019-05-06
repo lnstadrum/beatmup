@@ -194,5 +194,5 @@ void BitmapConverter::convert(AbstractBitmap& input, AbstractBitmap& output) {
 				
 	}
 	else
-		input.getEnvironment().performTask(0, me);
+		input.getEnvironment().performTask(me);
 }

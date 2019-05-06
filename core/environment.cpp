@@ -496,23 +496,23 @@ Environment::~Environment() {
 	delete recycleBin;
 }
 
-float Environment::performTask(const PoolIndex pool, AbstractTask& task) {
+float Environment::performTask(AbstractTask& task, const PoolIndex pool) {
 	return impl->performTask(pool, task);
 }
 
-void Environment::repeatTask(const PoolIndex pool, AbstractTask& task, bool abortCurrent) {
+void Environment::repeatTask(AbstractTask& task, bool abortCurrent, const PoolIndex pool) {
 	return impl->repeatTask(pool, task, abortCurrent);
 }
 
-void Environment::startTask(const PoolIndex pool, AbstractTask& task) {
+void Environment::startTask(AbstractTask& task, const PoolIndex pool) {
 	impl->startTask(pool, task);
 }
 
-void Environment::startPersistentTask(const PoolIndex pool, AbstractTask& task) {
+void Environment::startPersistentTask(AbstractTask& task, const PoolIndex pool) {
 	impl->startPersistentTask(pool, task);
 }
 
-void Environment::waitForTask(const PoolIndex pool, bool abort) {
+void Environment::waitForTask(bool abort, const PoolIndex pool) {
 	return impl->waitForTask(pool, abort);
 }
 
@@ -524,7 +524,7 @@ const ThreadIndex Environment::maxAllowedWorkerCount(const PoolIndex pool) const
 	return impl->maxAllowedWorkerCount(pool);
 }
 
-void Environment::limitWorkerCount(const PoolIndex pool, ThreadIndex maxValue) {
+void Environment::limitWorkerCount(ThreadIndex maxValue, const PoolIndex pool) {
 	impl->limitWorkerCount(pool, maxValue);
 }
 

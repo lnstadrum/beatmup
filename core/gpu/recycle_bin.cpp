@@ -60,6 +60,6 @@ void RecycleBin::put(RecycleBin::Item* item) {
 void RecycleBin::emptyBin() {
 	lock();
 	if (items.size() > 0)
-		env.performTask(0, *recycler);
+		env.performTask(*recycler);
 	unlock();
 }

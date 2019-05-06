@@ -52,7 +52,7 @@ BitmapPtr BitmapTools::makeCopy(AbstractBitmap& source, PixelFormat newPixelForm
 	BitmapPtr dest = new Beatmup::InternalBitmap(env, newPixelFormat, source.getWidth(), source.getHeight());
 	BitmapConverter converter;
 	converter.setBitmaps(&source, dest);
-	env.performTask(0, converter);
+	env.performTask(converter);
 	return dest;
 }
 
