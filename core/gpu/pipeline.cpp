@@ -58,7 +58,11 @@ private:
 		displayResolution,					//!< width and height of a display obtained when switching
 		outputResolution;					//!< actual output resolution (display or bitmap)
 
-#ifdef BEATMUP_PLATFORM_ANDROID
+#ifdef BEATMUP_PLATFORM_WINDOWS
+	HWND hwnd;
+	HGLRC hglrc;
+
+#elif BEATMUP_PLATFORM_ANDROID
 	EGLDisplay eglDisplay;
 	EGLSurface
 		eglSurface,				//!< currently used surface
@@ -128,7 +132,7 @@ public:
 		pfd.cColorBits = 32;
 		pfd.cDepthBits = 16;
 		pfd.iLayerType = PFD_MAIN_PLANE;
-		HWND hwnd = CreateWindowEx(WS_EX_TOOLWINDOW, L"STATIC", L"glctx",
+		hwnd = CreateWindowEx(WS_EX_TOOLWINDOW, "STATIC", "glctx",
 			WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
 			0, 0, 1, 1, 0, 0, GetModuleHandle(NULL), 0);
 		if (!hwnd)
@@ -138,7 +142,8 @@ public:
 		HDC hdc = GetDC(hwnd);
 		int pixelFormat = ChoosePixelFormat(hdc, &pfd);
 		SetPixelFormat(hdc, pixelFormat, &pfd);
-		wglMakeCurrent(hdc, wglCreateContext(hdc));
+		hglrc = wglCreateContext(hdc);
+		wglMakeCurrent(hdc, hglrc);
 		if (!wglGetCurrentContext())
 			throw GL::GLException("Unable to initialize GL context");
 
@@ -333,7 +338,10 @@ public:
 		glDeleteFramebuffers(1, &hFrameBuffer);
 		glDeleteBuffers(1, &hVertexAttribBuffer);
 
-#ifdef BEATMUP_PLATFORM_ANDROID
+#ifdef BEATMUP_PLATFORM_WINDOWS
+		wglDeleteContext(hglrc);
+		DestroyWindow(hwnd);
+#elif BEATMUP_PLATFORM_ANDROID
 		if (eglSurface != EGL_NO_SURFACE && eglSurface != eglDefaultSurface)
 			eglDestroySurface(eglDisplay, eglSurface);
 		eglDestroySurface(eglDisplay, eglDefaultSurface);

@@ -1,0 +1,112 @@
+cmake_minimum_required(VERSION 3.2.1)
+
+# main stuff
+set(ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}/..")
+set(SOURCES_DIR "${CMAKE_CURRENT_LIST_DIR}")
+
+# build workspace
+set(BUILD_DIR "${ROOT_DIR}/build")
+
+# glew root folder
+set(GLEW_DIR "${ROOT_DIR}/glew-cmake")
+
+if (WIN32)
+	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DBEATMUP_PLATFORM_WINDOWS")
+endif (WIN32)
+
+    
+set(BEATMUP_SOURCES
+    ${SOURCES_DIR}/environment.cpp
+    ${SOURCES_DIR}/exception.cpp
+    ${SOURCES_DIR}/geometry.cpp
+    ${SOURCES_DIR}/parallelism.cpp
+    ${SOURCES_DIR}/bitmap/abstract_bitmap.cpp
+    ${SOURCES_DIR}/bitmap/bitmap_access.cpp
+    ${SOURCES_DIR}/bitmap/converter.cpp
+    ${SOURCES_DIR}/bitmap/crop.cpp
+    ${SOURCES_DIR}/bitmap/internal_bitmap.cpp
+    ${SOURCES_DIR}/bitmap/resampler.cpp
+    ${SOURCES_DIR}/bitmap/operator.cpp
+    ${SOURCES_DIR}/bitmap/tools.cpp
+    ${SOURCES_DIR}/bitmap/tools.cpp
+    ${SOURCES_DIR}/color/color_spaces.cpp
+    ${SOURCES_DIR}/color/matrix.cpp
+    ${SOURCES_DIR}/contours/contours.cpp
+    ${SOURCES_DIR}/filters/tuning.cpp
+    ${SOURCES_DIR}/filters/local/color_matrix.cpp
+    ${SOURCES_DIR}/filters/local/pixelwise_filter.cpp
+    ${SOURCES_DIR}/filters/local/sepia.cpp
+    ${SOURCES_DIR}/fragments/fragment.cpp
+    ${SOURCES_DIR}/fragments/sequence.cpp
+    ${SOURCES_DIR}/gpu/display_switch.cpp
+    ${SOURCES_DIR}/gpu/gpu_task.cpp
+    ${SOURCES_DIR}/gpu/pipeline.cpp
+    ${SOURCES_DIR}/gpu/program.cpp
+    ${SOURCES_DIR}/gpu/recycle_bin.cpp
+    ${SOURCES_DIR}/gpu/shaders.cpp
+    ${SOURCES_DIR}/gpu/swapper.cpp
+    ${SOURCES_DIR}/gpu/texture_handler.cpp
+    ${SOURCES_DIR}/gpu/variables_bundle.cpp
+    ${SOURCES_DIR}/masking/flood_fill.cpp
+    ${SOURCES_DIR}/masking/region_filling.cpp
+    ${SOURCES_DIR}/pipelining/custom_pipeline.cpp
+    ${SOURCES_DIR}/pipelining/multitask.cpp
+    ${SOURCES_DIR}/scene/layer_shader.cpp
+    ${SOURCES_DIR}/scene/renderer.cpp
+    ${SOURCES_DIR}/scene/scene.cpp
+    ${SOURCES_DIR}/scene/shader_applicator.cpp
+    ${SOURCES_DIR}/utils/chunkfile.cpp
+    ${SOURCES_DIR}/utils/image_resolution.cpp
+    ${SOURCES_DIR}/utils/profiler.cpp
+    ${SOURCES_DIR}/utils/progress_tracking.cpp
+    ${SOURCES_DIR}/utils/string_builder.cpp
+)
+
+if (PROFILE_NNETS)
+    set(BEATMUP_SOURCES ${BEATMUP_SOURCES}
+        ${SOURCES_DIR}/gpu/compute_program.cpp
+        ${SOURCES_DIR}/gpu/storage_buffer.cpp
+        ${SOURCES_DIR}/gpu/tensor.cpp
+        ${SOURCES_DIR}/nnets/gpu_bench.cpp
+        ${SOURCES_DIR}/nnets/inference.cpp
+        ${SOURCES_DIR}/nnets/model.cpp
+        ${SOURCES_DIR}/nnets/storage.cpp
+        ${SOURCES_DIR}/nnets/ops/operation.cpp
+        ${SOURCES_DIR}/nnets/ops/convs_2d.cpp
+        ${SOURCES_DIR}/nnets/ops/pooling.cpp
+    )
+endif()
+
+if (PROFILE_AUDIO)
+    set(BEATMUP_SOURCES ${BEATMUP_SOURCES}
+        ${SOURCES_DIR}/audio/audio_signal.cpp
+        ${SOURCES_DIR}/audio/audio_signal_fragment.cpp
+        ${SOURCES_DIR}/audio/audio_signal_plot.cpp
+        ${SOURCES_DIR}/audio/sample_arithmetic.cpp
+        ${SOURCES_DIR}/audio/source.cpp
+        ${SOURCES_DIR}/audio/wav_utilities.cpp
+        ${SOURCES_DIR}/audio/playback/abstract_playback.cpp
+        ${SOURCES_DIR}/audio/playback/realtime_playback.cpp
+    )
+endif()
+
+if (PROFILE_PLATFORM_SPECIFIC_BITMAP)
+    if (WIN32)
+		set(BEATMUP_SOURCES ${BEATMUP_SOURCES}
+			${SOURCES_DIR}/bitmap/platform_specific/gdi_bitmap.cpp
+		)
+	endif()
+endif()
+
+include_directories(${SOURCES_DIR})
+
+find_package(OpenGL REQUIRED)
+
+if (WIN32)
+	add_subdirectory(${GLEW_DIR} "${BUILD_DIR}/glew-build")
+	link_directories("${BUILD_DIR}/lib")
+	include_directories("${GLEW_DIR}/include")
+	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DBEATMUP_CHANNEL_ORDER_BGRA")
+endif()
+
+set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DGLEW_STATIC")

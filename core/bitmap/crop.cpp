@@ -112,6 +112,6 @@ AbstractBitmap* Crop::run(AbstractBitmap& bitmap, IntRectangle clipRect) {
 	clip.setInput(&bitmap);
 	clip.setOutput(out);
 	clip.setCropRect(clipRect);
-	bitmap.getEnvironment().performTask(0, clip);
+	bitmap.getEnvironment().performTask(clip);
 	return out;
 }

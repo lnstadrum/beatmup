@@ -26,6 +26,6 @@ void Swapper::grabPixels(AbstractBitmap& bitmap) {
 	if (!bitmap.isUpToDate(ProcessingTarget::CPU) && bitmap.isUpToDate(ProcessingTarget::GPU)) {
 		Swapper me;
 		me.setBitmap(bitmap);
-		bitmap.getEnvironment().performTask(0, me);
+		bitmap.getEnvironment().performTask(me);
 	}
 }

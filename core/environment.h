@@ -26,6 +26,8 @@ namespace Beatmup {
 		Impl* impl;
 		GL::RecycleBin* recycleBin;					//!< stores GPU garbage: resources managed by GPU and might be freed in the managing thread only
 	public:
+		static const PoolIndex DEFAULT_POOL = 0;
+
 		/**
 			An event listener (bunch of callbacks)
 		*/
@@ -69,55 +71,62 @@ namespace Beatmup {
 		~Environment();
 
 		/**
-			Performs a given task
-		 	\param pool				the thread pool to run the task in
+			Performs a given task.
+			\param task				The task
+		 	\param pool				A thread pool to run the task in
 			\returns task execution time
 		*/
-		float performTask(const PoolIndex pool, AbstractTask& task);
+		float performTask(AbstractTask& task, const PoolIndex pool = DEFAULT_POOL);
 
 		/**
-			Start new task or unblocking demand for repetition
-		 	\param pool				the thread pool to run the task in
-			\param task				the task
-			\param abortCurrent		if `true` and the same task is currently running, the abort signal is sent
+			Start new task or unblocking demand for repetition.
+			\param task				The task
+			\param abortCurrent		if `true` and the same task is currently running, the abort signal is sent.
+		 	\param pool				A thread pool to run the task in
 		*/
-		void repeatTask(const PoolIndex pool, AbstractTask& task, bool abortCurrent);
+		void repeatTask(AbstractTask& task, bool abortCurrent, const PoolIndex pool = DEFAULT_POOL);
 
 		/**
 		 	Starts a new task.
-		 	\param pool				the thread pool to run the task in
-		 	\param task				the task
+		 	\param task				The task
+		 	\param pool				A thread pool to run the task in
 		 */
-		void startTask(const PoolIndex pool, AbstractTask& task);
+		void startTask(AbstractTask& task, const PoolIndex pool = DEFAULT_POOL);
 
 		/**
 		 	Starts a new persistent task.
 			Persistent task is repeated until it decides itself to quit.
-		 	\param pool				the thread pool to run the task in
-		 	\param task				the task
+		 	\param task				The task
+		 	\param pool				A thread pool to run the task in
 		 */
-		void startPersistentTask(const PoolIndex pool, AbstractTask& task);
+		void startPersistentTask(AbstractTask& task, const PoolIndex pool = DEFAULT_POOL);
 
 		/**
-			Wait until the current task in a given thread pool finishes, if any
-		 	\param pool			the target thread pool
-			\param abort		if `true`, abort signal is sent to the task
+			Wait until the current task in a given thread pool finishes, if any.
+			\param abort		If `true`, abort signal is sent to the task.
+		 	\param pool			The thread pool
 		*/
-		void waitForTask(const PoolIndex pool, bool abort);
-
-		bool busy(const PoolIndex pool) const;
+		void waitForTask(bool abort, const PoolIndex pool = DEFAULT_POOL);
 
 		/**
-			\returns maximum number of working thread per task
+			Queries whether a given thread pool is busy with a task.
+			\param pool			The thread pool to query
+			\return `true` if the thread pool is running a task, `false` otherwise
 		*/
-		const ThreadIndex maxAllowedWorkerCount(const PoolIndex pool) const;
+		bool busy(const PoolIndex pool = DEFAULT_POOL) const;
 
 		/**
-			Limits maximum number of threads (workers) when performing a task
-			\param maxValue		number limiting the worker count
-			\returns new maximum limit
+			\returns maximum number of working threads per task in a given pool.
 		*/
-		void limitWorkerCount(const PoolIndex pool, ThreadIndex maxValue);
+		const ThreadIndex maxAllowedWorkerCount(const PoolIndex pool = DEFAULT_POOL) const;
+
+		/**
+			Limits maximum number of threads (workers) when performing tasks in a given pool
+			\param maxValue		Number limiting the worker count
+			\param pool			The thread pool
+			\returns new maximum limit.
+		*/
+		void limitWorkerCount(ThreadIndex maxValue, const PoolIndex pool = DEFAULT_POOL);
 
 		/**
 			Allocates some memory

@@ -29,6 +29,6 @@ DisplaySwitch::DisplaySwitch() : gpuIsOk(false), switchingData(NULL) {}
 bool DisplaySwitch::run(Environment& env, void* switchingData) {
 	DisplaySwitch task;
 	task.switchingData = switchingData;
-	env.performTask(0, task);
+	env.performTask(task);
 	return task.gpuIsOk;
 }
