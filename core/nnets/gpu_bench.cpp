@@ -134,5 +134,5 @@ bool GPUBenchmark::processOnGPU(GraphicPipeline& gpu, TaskThread& thread) {
 
 
 void GPUBenchmark::run() {
-	env.performTask(0, *this);
+	env.performTask(*this);
 }

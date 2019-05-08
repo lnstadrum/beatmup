@@ -11,7 +11,7 @@ int main(int argc, char* argv[]) {
 	Beatmup::SceneRenderer renderer;
 	renderer.setScene(scene);
 	renderer.setOutputPixelsFetching(true);
-	renderer.setOutputMapping(Beatmup::SceneRenderer::OutputMapping::STRETCH);
+	renderer.setOutputMapping(Beatmup::SceneRenderer::OutputMapping::FIT_WIDTH_TO_TOP);
 
 	// radial image distortion
 	Beatmup::LayerShader distortShader(env);
