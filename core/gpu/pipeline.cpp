@@ -104,13 +104,6 @@ private:
 	}
 
 
-	inline void assignBitmapSizeInVertexBuffer(float width, float height) {
-		vertexAttribBuffer[1].x = vertexAttribBuffer[3].x = width;
-		vertexAttribBuffer[2].y = vertexAttribBuffer[3].y = height;
-		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertexAttribBuffer), vertexAttribBuffer);
-	}
-	
-
 	inline void doRender() {
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 #ifdef BEATMUP_DEBUG
@@ -481,11 +474,12 @@ public:
 		GLuint handle = useTexture(bitmap);
 		glBindTexture(GL_TEXTURE_2D, handle);
 		if (!bitmap.isUpToDate(ProcessingTarget::GPU)) {
-			static const GLint formats[] = { 
+			static const GLint formats[] = {
+				0,
 #ifdef BEATMUP_OPENGLVERSION_GLES20
-				GL_LUMINANCE,	// SingleByte
+				GL_LUMINANCE,
 #else
-				GL_RED,			// SingleByte
+				GL_RED,
 #endif
 				GL_RG, GL_RGB, GL_RGBA
 			};
@@ -609,7 +603,6 @@ public:
 
 
 	void blend(GL::TextureHandler& image, const pixfloat4& modulation, const AffineMapping& mapping) {
-		assignBitmapSizeInVertexBuffer(1.0f, (float)image.getHeight() / image.getWidth());
 		GL::Program* program;
 		resetTextureBinding();
 		unsigned int unit;
@@ -631,8 +624,11 @@ public:
 			return;
 		}
 
+		AffineMapping arMapping(mapping);
+		arMapping.matrix.scale(1.0f, (float)image.getHeight() / image.getWidth());
+
 		program->enable(front);
-		program->setMatrix3("modelview", mapping);
+		program->setMatrix3("modelview", arMapping);
 		program->setVector4("modulationColor", modulation.r, modulation.g, modulation.b, modulation.a);
 		program->setInteger("flipVertically", !onScreen);
 		program->setInteger("image", (int)unit);
@@ -671,14 +667,12 @@ public:
 			return;
 		}
 
+		AffineMapping arMapping(imageMapping);
+		arMapping.matrix.scale(1.0f, (float)image.getHeight() / image.getWidth());
+
 		program->enable(front);
-
-		AffineMapping scaledImgMapping = imageMapping;
-		scaledImgMapping.matrix.scale(1.0f, (float)image.getHeight() / image.getWidth());
-
-		assignBitmapSizeInVertexBuffer(1.0f, 1.0f);
 		program->setMatrix3("modelview", baseMapping);
-		program->setMatrix3("invImgMapping", scaledImgMapping.getInverse() * maskMapping);
+		program->setMatrix3("invImgMapping", arMapping.getInverse() * maskMapping);
 		program->setMatrix3("maskMapping", maskMapping);
 		program->setVector4("modulationColor", modulation.r, modulation.g, modulation.b, modulation.a);
 		program->setVector4("bgColor", bgColor.r, bgColor.g, bgColor.b, bgColor.a);
@@ -750,14 +744,12 @@ public:
 			return;
 		}
 
+		AffineMapping arMapping(imageMapping);
+		arMapping.matrix.scale(1.0f, (float)image.getHeight() / image.getWidth());
+
 		program->enable(front);
-
-		AffineMapping scaledImgMapping = imageMapping;
-		scaledImgMapping.matrix.scale(1.0f, (float)image.getHeight() / image.getWidth());
-
-		assignBitmapSizeInVertexBuffer(1.0f, 1.0f);
 		program->setMatrix3("modelview", baseMapping);
-		program->setMatrix3("invImgMapping", scaledImgMapping.getInverse() * maskMapping);
+		program->setMatrix3("invImgMapping", arMapping.getInverse() * maskMapping);
 		program->setMatrix3("maskMapping", maskMapping);
 		program->setVector4("bgColor", bgColor.r, bgColor.g, bgColor.b, bgColor.a);
 		program->setVector4("modulationColor", modulation.r, modulation.g, modulation.b, modulation.a);
@@ -809,15 +801,13 @@ public:
 		if (program.getVertexShader() != &getBlendingVertexShader())
 			throw GL::GLException("Program vertex shader does not match default blending vertex shader");
 #endif
-		glVertexAttribPointer(program.getAttribLocation("inVertex"), 2, GL_FLOAT, GL_FALSE, sizeof(VertexAttribBufferElement), NULL);
-		if (image)
-			glVertexAttribPointer(program.getAttribLocation("inTexCoord"), 2, GL_FLOAT, GL_FALSE, sizeof(VertexAttribBufferElement), (void*)(2 * sizeof(GLfloat)));
-		GL::GLException::check("attribute binding");
-		assignBitmapSizeInVertexBuffer(1.0f, 1.0f);
+
+		AffineMapping arMapping(mapping);
+		arMapping.matrix.scale(1.0f, (float)image->getHeight() / image->getWidth());
 
 		program.enable(front);
 		program.setInteger("image", (int)unit);
-		program.setMatrix3("modelview", mapping);
+		program.setMatrix3("modelview", arMapping);
 		program.setInteger("flipVertically", !onScreen, true);
 
 		doRender();
@@ -832,10 +822,14 @@ public:
 	void paveBackground(AbstractBitmap& image) {
 		blending->enable(front);
 
-		// setting texture coords, bitmap size and updating buffer data in GPU		
-		vertexAttribBuffer[1].s = vertexAttribBuffer[3].s = (float) outputResolution.width / image.getWidth();
-		vertexAttribBuffer[2].t = vertexAttribBuffer[3].t = (float) outputResolution.height / image.getHeight();
-		assignBitmapSizeInVertexBuffer(1.0f, 1.0f);
+		// setting texture coords, bitmap size and updating buffer data in GPU
+		vertexAttribBuffer[1].s = vertexAttribBuffer[3].s = (float)outputResolution.width / image.getWidth();
+		vertexAttribBuffer[2].t = vertexAttribBuffer[3].t = (float)outputResolution.height / image.getHeight();
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexAttribBuffer), vertexAttribBuffer, GL_DYNAMIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(blending->getAttribLocation("inVertex"), 2, GL_FLOAT, GL_FALSE, sizeof(VertexAttribBufferElement), NULL);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(blending->getAttribLocation("inTexCoord"), 2, GL_FLOAT, GL_FALSE, sizeof(VertexAttribBufferElement), (void*)(2 * sizeof(GLfloat)));
 		
 		// setting modelview matrix
 		GLfloat m[9] = { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
@@ -851,6 +845,9 @@ public:
 		// reset texture coords
 		vertexAttribBuffer[1].s = vertexAttribBuffer[3].s =
 		vertexAttribBuffer[2].t = vertexAttribBuffer[3].t = 1.0f;
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(blending->getAttribLocation("inTexCoord"), 2, GL_FLOAT, GL_FALSE, sizeof(VertexAttribBufferElement), (void*)(2 * sizeof(GLfloat)));
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexAttribBuffer), vertexAttribBuffer, GL_DYNAMIC_DRAW);
 	}
 
 	int getLimit(GraphicPipeline::Limit limit) const {

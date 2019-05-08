@@ -100,13 +100,10 @@ endif()
 
 include_directories(${SOURCES_DIR})
 
-find_package(OpenGL REQUIRED)
-
 if (WIN32)
+	find_package(OpenGL REQUIRED)
 	add_subdirectory(${GLEW_DIR} "${BUILD_DIR}/glew-build")
 	link_directories("${BUILD_DIR}/lib")
 	include_directories("${GLEW_DIR}/include")
-	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DBEATMUP_CHANNEL_ORDER_BGRA")
+	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DGLEW_STATIC -DBEATMUP_CHANNEL_ORDER_BGRA")
 endif()
-
-set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DGLEW_STATIC")
