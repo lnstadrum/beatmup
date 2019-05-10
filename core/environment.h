@@ -33,6 +33,8 @@ namespace Beatmup {
 		*/
 		class EventListener {
 		public:
+			~EventListener() {}
+
 			/**
 				Called when a new worker thread is created
 			*/

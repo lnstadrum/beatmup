@@ -317,7 +317,7 @@ Scene::BitmapLayer::BitmapLayer():
 {}
 
 Scene::BitmapLayer::BitmapLayer(Type type):
-	Layer(type), source(ImageSource::BITMAP), bitmap(NULL), bitmapMapping(), modulation(1.0f, 1.0f, 1.0f, 1.0f)
+	Layer(type), source(ImageSource::BITMAP), invAr(0), bitmap(NULL), bitmapMapping(), modulation(1.0f, 1.0f, 1.0f, 1.0f)
 {}
 
 
@@ -325,7 +325,7 @@ bool Scene::BitmapLayer::testPoint(float x, float y) const {
 	// no bitmap - no deal (if the source is set to bitmap)
 	if (!bitmap && source == ImageSource::BITMAP)
 		return false;
-	return (mapping * bitmapMapping).isPointInside(Point(x, y));
+	return (mapping * bitmapMapping).isPointInside(x, y, 1, invAr);
 }
 
 
@@ -346,13 +346,13 @@ bool Scene::MaskedBitmapLayer::testPoint(float x, float y) const {
 	if (mask) {
 		if (!mask->isUpToDate(CPU))
 			BEATMUP_ERROR("CPU version of the mask is out of date.");
-		Point p = (mapping * maskMapping).getInverse(Point(x, y));
+		const Point p = (mapping * maskMapping).getInverse(x, y);
 		int	
-			X = floorf_fast(mask->getWidth() * p.x),
-			Y = floorf_fast(mask->getHeight() * p.y);
-		if (0 <= X && X < mask->getWidth() && 0 <= Y && Y < mask->getHeight()) {			
+			w = floorf_fast(mask->getWidth() * p.x),
+			h = floorf_fast(mask->getHeight() * p.y);
+		if (0 <= w && w < mask->getWidth() && 0 <= h && h < mask->getHeight()) {
 			mask->lockPixels(ProcessingTarget::CPU);
-			bool result = mask->getPixelInt(X, Y) > 0;
+			bool result = mask->getPixelInt(w, h) > 0;
 			mask->unlockPixels();
 			return result;
 		}
@@ -372,7 +372,7 @@ bool Scene::ShapedBitmapLayer::testPoint(float x, float y) const {
 	// no bitmap - no deal (if the source is set to bitmap)
 	if (!bitmap && source == ImageSource::BITMAP)
 		return false;
-	return (mapping * maskMapping).isPointInside(Point(x, y));	
+	return (mapping * maskMapping).isPointInside(x, y) && BitmapLayer::testPoint(x, y);
 }
 
 

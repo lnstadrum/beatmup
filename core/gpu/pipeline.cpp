@@ -372,9 +372,8 @@ public:
 				throw GL::GLException("EGL: switching display", eglGetError());
 
 			// setting viewport
-			displayResolution.width = ANativeWindow_getWidth((ANativeWindow*)data);
-			displayResolution.height = ANativeWindow_getHeight((ANativeWindow*)data);
-			glViewport(0, 0, displayResolution.width, displayResolution.height);
+			displayResolution.set(ANativeWindow_getWidth((ANativeWindow*)data), ANativeWindow_getHeight((ANativeWindow*)data));
+			glViewport(0, 0, displayResolution.getWidth(), displayResolution.getHeight());
 			onScreen = true;
 		}
 		else {
@@ -521,7 +520,7 @@ public:
 
 	void resetOutput() {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glViewport(0, 0, displayResolution.width, displayResolution.height);
+		glViewport(0, 0, displayResolution.getWidth(), displayResolution.getHeight());
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		onScreen = true;
@@ -759,7 +758,7 @@ public:
 		if (referenceSize > 0) {
 			// computing border profile in pixels
 			Matrix2 mat = baseMapping.matrix * maskMapping.matrix;
-			mat.prescale(1.0f, (float)outputResolution.height / outputResolution.width);
+			mat.prescale(1.0f, outputResolution.getInvAspectRatio());
 			borderProfile.x = referenceSize * mat.getScalingX();
 			borderProfile.y = referenceSize * mat.getScalingY();
 		}
@@ -823,8 +822,8 @@ public:
 		blending->enable(front);
 
 		// setting texture coords, bitmap size and updating buffer data in GPU
-		vertexAttribBuffer[1].s = vertexAttribBuffer[3].s = (float)outputResolution.width / image.getWidth();
-		vertexAttribBuffer[2].t = vertexAttribBuffer[3].t = (float)outputResolution.height / image.getHeight();
+		vertexAttribBuffer[1].s = vertexAttribBuffer[3].s = (float)outputResolution.getWidth() / image.getWidth();
+		vertexAttribBuffer[2].t = vertexAttribBuffer[3].t = (float)outputResolution.getHeight() / image.getHeight();
 		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexAttribBuffer), vertexAttribBuffer, GL_DYNAMIC_DRAW);
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(blending->getAttribLocation("inVertex"), 2, GL_FLOAT, GL_FALSE, sizeof(VertexAttribBufferElement), NULL);
