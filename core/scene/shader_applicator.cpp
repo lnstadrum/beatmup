@@ -6,7 +6,7 @@ using namespace Beatmup;
 
 bool ShaderApplicator::processOnGPU(GraphicPipeline &gpu, TaskThread &thread) {
 	gpu.setOutput(*output);
-	mapping.matrix.setElements(1.0f, 0, 0, input->getImageResolution().getAspectRatio());
+	mapping.matrix.setElements(1.0f, 0, 0, input->getAspectRatio());
 	shader->blend(gpu, input, mapping);
 	return true;
 }

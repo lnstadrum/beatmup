@@ -66,6 +66,16 @@ namespace Beatmup {
 			virtual const int getDepth() const = 0;
 
 			/**
+				Aspect ratio of the texture.
+			*/
+			float getAspectRatio() const { return (float)getWidth() / getHeight(); }
+			
+			/**
+				Inverse of the aspect ratio of the texture.
+			*/
+			float getInvAspectRatio() const { return (float)getHeight() / getWidth(); }
+
+			/**
 				Returns the texture format specifying how the shader must interpret the data
 			*/
 			virtual const TextureFormat getTextureFormat() const = 0;

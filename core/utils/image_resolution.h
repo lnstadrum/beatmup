@@ -8,9 +8,9 @@
 
 namespace Beatmup {
 	class ImageResolution {
-	public:
+	private:
 		unsigned int width, height;			//!< width and height in pixels
-		
+	public:
 		ImageResolution();
 		ImageResolution(unsigned int width, unsigned int height);
 		
@@ -22,5 +22,10 @@ namespace Beatmup {
 		float getInvAspectRatio() const;
 		bool fat() const;
 		IntRectangle clientRect() const;
+
+		unsigned int getWidth() const { return width; }
+		unsigned int getHeight() const { return height; }
+
+		void set(unsigned int width, unsigned int height);
 	};
 }

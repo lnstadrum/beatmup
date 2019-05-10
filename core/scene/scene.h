@@ -11,7 +11,9 @@
 #include "layer_shader.h"
 #include <string>
 
+
 namespace Beatmup {
+	class SceneRenderer;
 
 	/**
 		A scene (ordered set of layers)
@@ -36,7 +38,7 @@ namespace Beatmup {
 		class Layer : public Object {
 			Layer(const Layer&) = delete;		//!< disabling copying constructor
 		public:
-			enum Type {
+			enum class Type {
 				SceneLayer = 0,			//!< layer containing a scene
 				BitmapLayer,			//!< layer displaying a bitmap
 				MaskedBitmapLayer,		//!< layer displaying a bitmap with mask
@@ -95,13 +97,15 @@ namespace Beatmup {
 			Layer containing a bitmap cropped by a mask
 		*/
 		class BitmapLayer : public Layer {
-			friend class Impl;
+			friend class Scene::Impl;
+			friend class SceneRenderer;
 		private:
 			BitmapLayer();
 		protected:
 			BitmapLayer(Type type);
+			float invAr;					//!< inversed aspect ratio of what is rendered (set by SceneRenderer)
 		public:
-			enum ImageSource {
+			enum class ImageSource {
 				BITMAP
 #ifdef BEATMUP_PLATFORM_ANDROID
 				, CAMERA
@@ -150,7 +154,7 @@ namespace Beatmup {
 		private:
 			ShapedBitmapLayer();
 		public:
-			enum Shape {
+			enum class Shape {
 				SQUARE
 			};
 

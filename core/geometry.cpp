@@ -42,6 +42,11 @@ Point AffineMapping::getInverse(const Point& point) const {
 }
 
 
+Point AffineMapping::getInverse(float x, float y) const {
+	return matrix.getInverse(x - position.x, y - position.y);
+}
+
+
 void AffineMapping::setCenterPosition(const Point& newPos) {
 	position = newPos - matrix(0.5f, 0.5f);
 }
@@ -67,5 +72,15 @@ void AffineMapping::rotateDegrees(float angle, const Point& fixedPoint) {
 
 
 bool AffineMapping::isPointInside(const Point& point) const {
-	return matrix.getInverse().isPointInsideAxes(point.x - position.x, point.y - position.y);
+	return isPointInside(point.x, point.y);
+}
+
+
+bool AffineMapping::isPointInside(float x, float y) const {
+	return matrix.getInverse().isPointInsideAxes(x - position.x, y - position.y);
+}
+
+
+bool AffineMapping::isPointInside(float x, float y, float width, float height) const {
+	return matrix.getInverse().isPointInsideAxes(x - position.x, y - position.y, width, height);
 }

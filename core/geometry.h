@@ -29,32 +29,32 @@ namespace Beatmup {
 	public:
 		numeric x, y;
 
-		inline bool operator==(const CustomPoint<numeric>& P) const {
-			return x == P.x && y == P.y;
+		inline bool operator==(const CustomPoint<numeric>& _) const {
+			return x == _.x && y == _.y;
 		}
 
-		inline CustomPoint<numeric> operator+(const CustomPoint<numeric>& P) const {
-			return CustomPoint<numeric>(x + P.x, y + P.y);
+		inline CustomPoint<numeric> operator+(const CustomPoint<numeric>& _) const {
+			return CustomPoint<numeric>(x + _.x, y + _.y);
 		}
 
-		inline CustomPoint<numeric> operator-(const CustomPoint<numeric>& P) const {
-			return CustomPoint<numeric>(x - P.x, y - P.y);
+		inline CustomPoint<numeric> operator-(const CustomPoint<numeric>& _) const {
+			return CustomPoint<numeric>(x - _.x, y - _.y);
 		}
 
-		inline CustomPoint<numeric> operator+(numeric P) const {
-			return CustomPoint<numeric>(x + P, y + P);
+		inline CustomPoint<numeric> operator+(numeric _) const {
+			return CustomPoint<numeric>(x + _, y + _);
 		}
 
-		inline CustomPoint<numeric> operator-(numeric P) const {
-			return CustomPoint<numeric>(x - P, y - P);
+		inline CustomPoint<numeric> operator-(numeric _) const {
+			return CustomPoint<numeric>(x - _, y - _);
 		}
 
-		inline CustomPoint<numeric> operator*(numeric X) const {
-			return CustomPoint<numeric>(x * X, y * X);
+		inline CustomPoint<numeric> operator*(numeric _) const {
+			return CustomPoint<numeric>(x * _, y * _);
 		}
 
-		inline CustomPoint<numeric> operator/(numeric X) const {
-			return CustomPoint<numeric>(x / X, y / X);
+		inline CustomPoint<numeric> operator/(numeric _) const {
+			return CustomPoint<numeric>(x / _, y / _);
 		}
 
 		inline void translate(numeric X, numeric Y) {
@@ -64,7 +64,7 @@ namespace Beatmup {
 
 		inline CustomPoint<numeric>() { x = y = 0; }
 
-		inline CustomPoint<numeric>(numeric X, numeric Y) : x(X), y(Y) {}
+		inline CustomPoint<numeric>(numeric x, numeric y) : x(x), y(y) {}
 
 		inline numeric hypot2() const {
 			return x*x + y*y;
@@ -442,20 +442,16 @@ namespace Beatmup {
 		/**
 			Checks whether a given point is inside the unit square in the affine axes
 		*/
-		inline bool isPointInsideAxes(numeric x, numeric y) const {
+		inline bool isPointInsideAxes(numeric x, numeric y, numeric w, numeric h) const {
 			numeric p = a11*x + a12*y;
-			if (p < 0 || 1 < p)
+			if (p < 0 || w < p)
 				return false;
 			p = a21*x + a22*y;
-			return (0 <= p  &&  p <= 1);
+			return (0 <= p  &&  p <= h);
 		}
 
-		inline bool isPointInsideAxes(numeric x, numeric y, numeric X, numeric Y) const {
-			numeric p = a11*x + a12*y;
-			if (p < 0 || X < p)
-				return false;
-			p = a21*x + a22*y;
-			return (0 <= p  &&  p <= Y);
+		inline bool isPointInsideAxes(numeric x, numeric y) const {
+			return isPointInsideAxes(x, y, 1, 1);
 		}
 
 
@@ -566,7 +562,8 @@ namespace Beatmup {
 		/**
 			Computes inversed point
 		*/
-		Point getInverse(const Point& newPos) const;
+		Point getInverse(const Point& pos) const;
+		Point getInverse(float x, float y) const;
 
 		/**
 			Set center position of the axes box
@@ -592,5 +589,7 @@ namespace Beatmup {
 			Tests whether a point in TARGET domain is inside axes span
 		*/
 		bool isPointInside(const Point& point) const;
+		bool isPointInside(float x, float y) const;
+		bool isPointInside(float x, float y, float width, float height) const;
 	};
 }
