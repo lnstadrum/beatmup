@@ -304,7 +304,7 @@ bool Scene::ShapedBitmapLayer::testPoint(float x, float y) const {
 	// no bitmap - no deal (if the source is set to bitmap)
 	if (!bitmap && source == ImageSource::BITMAP)
 		return false;
-	return (mapping * maskMapping).isPointInside(x, y) && BitmapLayer::testPoint(x, y);
+	return (mapping * maskMapping).isPointInside(x, y, 1, invAr) && BitmapLayer::testPoint(x, y);
 }
 
 

@@ -624,7 +624,7 @@ public:
 		}
 
 		AffineMapping arMapping(mapping);
-		arMapping.matrix.scale(1.0f, (float)image.getHeight() / image.getWidth());
+		arMapping.matrix.scale(1.0f, image.getInvAspectRatio());
 
 		program->enable(front);
 		program->setMatrix3("modelview", arMapping);
@@ -667,7 +667,7 @@ public:
 		}
 
 		AffineMapping arMapping(imageMapping);
-		arMapping.matrix.scale(1.0f, (float)image.getHeight() / image.getWidth());
+		arMapping.matrix.scale(1.0f, image.getInvAspectRatio());
 
 		program->enable(front);
 		program->setMatrix3("modelview", baseMapping);
@@ -743,26 +743,24 @@ public:
 			return;
 		}
 
-		AffineMapping arMapping(imageMapping);
-		arMapping.matrix.scale(1.0f, (float)image.getHeight() / image.getWidth());
+		AffineMapping arImgMapping(imageMapping), arMaskMapping(maskMapping);
+		arImgMapping.matrix.scale(1.0f, image.getInvAspectRatio());
+		arMaskMapping.matrix.scale(1.0f, image.getInvAspectRatio());
 
 		program->enable(front);
 		program->setMatrix3("modelview", baseMapping);
-		program->setMatrix3("invImgMapping", arMapping.getInverse() * maskMapping);
-		program->setMatrix3("maskMapping", maskMapping);
+		program->setMatrix3("invImgMapping", arImgMapping.getInverse() * arMaskMapping);
+		program->setMatrix3("maskMapping", arMaskMapping);
 		program->setVector4("bgColor", bgColor.r, bgColor.g, bgColor.b, bgColor.a);
 		program->setVector4("modulationColor", modulation.r, modulation.g, modulation.b, modulation.a);
 		program->setInteger("flipVertically", !onScreen);
 
-		Point borderProfile(1, 1);
-		if (referenceSize > 0) {
-			// computing border profile in pixels
-			Matrix2 mat = baseMapping.matrix * maskMapping.matrix;
-			mat.prescale(1.0f, outputResolution.getInvAspectRatio());
-			borderProfile.x = referenceSize * mat.getScalingX();
-			borderProfile.y = referenceSize * mat.getScalingY();
-		}
-
+		// computing border profile in pixels
+		Matrix2 mat = baseMapping.matrix * arMaskMapping.matrix;
+		mat.prescale(1.0f, outputResolution.getInvAspectRatio());
+		const float scale = referenceSize > 0 ? referenceSize : 1;
+		const Point borderProfile(scale * mat.getScalingX(), scale * mat.getScalingY());
+		
 		//seting up shader variables
 		program->setInteger("image", (int)unit);
 		glUniform2f(program->getUniformLocation("borderProfile"), borderProfile.x, borderProfile.y);
@@ -802,7 +800,7 @@ public:
 #endif
 
 		AffineMapping arMapping(mapping);
-		arMapping.matrix.scale(1.0f, (float)image->getHeight() / image->getWidth());
+		arMapping.matrix.scale(1.0f, image->getInvAspectRatio());
 
 		program.enable(front);
 		program.setInteger("image", (int)unit);
