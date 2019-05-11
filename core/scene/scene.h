@@ -138,11 +138,14 @@ namespace Beatmup {
 			friend class Scene;
 			friend class SceneRenderer;
 		public:
+			/**
+				Specifies for a given scene layer where the image it displays comes from
+			*/
 			enum class ImageSource {
 #ifdef BEATMUP_PLATFORM_ANDROID
-				CAMERA,
+				CAMERA,		//!< Image comes from a device camera carefully configured by the user. The frame is shared amongst other layers using the camera image source and is obtained by the scene renderer internally.
 #endif
-				BITMAP
+				BITMAP		//!< Image is a bitmap. Every bitmap layer has its own pointer to a bitmap to display which is set up by the user.
 			};
 
 		protected:

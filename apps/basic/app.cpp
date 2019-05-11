@@ -11,7 +11,7 @@ int main(int argc, char* argv[]) {
 	Beatmup::SceneRenderer renderer;
 	renderer.setScene(scene);
 	renderer.setOutputPixelsFetching(true);
-	renderer.setOutputMapping(Beatmup::SceneRenderer::OutputMapping::FIT_WIDTH_TO_TOP);
+	renderer.setOutputMapping(Beatmup::SceneRenderer::OutputMapping::FIT_WIDTH);
 
 	// radial image distortion
 	Beatmup::LayerShader distortShader(env);
@@ -46,23 +46,7 @@ int main(int argc, char* argv[]) {
 			);
 		}
 	));
-
-	// horizontal blurring filter
-	Beatmup::LayerShader blurringFilter(env);
-	blurringFilter.setSourceCode(STRINGIFY(
-		#beatmup_input_image image;
-		varying vec2 texCoord;
-		vec4 blur(vec2 pos) {
-			vec3 sum = vec3(0, 0, 0);
-			for (int x = -10; x < 10; x++)
-				sum += texture2D(image, pos + vec2(0.001 * float(x), 0)).rgb;
-			return vec4(sum / 21.0, 1);
-		}
-		void main() {
-			gl_FragColor = blur(texCoord);
-		}
-	));
-
+	
 	// recoloring filter
 	Beatmup::LayerShader recolorShader(env);
 	recolorShader.setSourceCode(STRINGIFY(
@@ -74,17 +58,19 @@ int main(int argc, char* argv[]) {
 	));
 
 	Beatmup::Bitmap fecamp(env, L"images/fecamp.jpg");
-	Beatmup::Bitmap output(env, 4000, 3000, Beatmup::PixelFormat::TripleByte);
+	Beatmup::Bitmap output(env, 4000, 4000, Beatmup::PixelFormat::TripleByte);
 	renderer.setOutput(output);
 
 	// constructing a simple scene
 	{
-		Beatmup::Scene::ShadedBitmapLayer& l = scene.newShadedBitmapLayer();
-		l.getMapping().scale(0.44f);
+		Beatmup::Scene::ShapedBitmapLayer& l = scene.newShapedBitmapLayer();
+		l.getMapping().scale(0.48f);
 		l.getMapping().rotateDegrees(1, Beatmup::Point(0.5, 0.5));
 		l.getMapping().setCenterPosition(Beatmup::Point(0.25, 0.75));
 		l.setBitmap(&fecamp);
-		l.setLayerShader(&blurringFilter);
+		l.setCornerRadius(0.05f);
+		l.setSlopeWidth(0.01f);
+		l.setInPixels(false);
 	}
 	
 	{
