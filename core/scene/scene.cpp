@@ -16,39 +16,39 @@ string Scene::SceneIntegrityError::getSceneLog(const Scene& scene, const string 
 	const int N = scene.getLayerCount();
 	for (int i = 0; i < N; i++) {
 		Layer& layer = scene.getLayer(i);
-		log += prefix + "\t" + layer.name + " [";
+		log += prefix + "\t" + layer.getName() + " [";
 		switch (layer.getType()) {
 			case Layer::Type::BitmapLayer: {
 				log += "bitmap";
 				BitmapLayer& casted = layer.castTo<BitmapLayer&>();
-				if (!casted.bitmap)
+				if (!casted.getBitmap())
 					log += ", no bitmap";
 				else
-					log += ", " + casted.bitmap->toString();
+					log += ", " + casted.getBitmap()->toString();
 			}
 			break;
 
 			case Layer::Type::MaskedBitmapLayer: {
 				log += "masked bitmap";
 				MaskedBitmapLayer& casted = layer.castTo<MaskedBitmapLayer&>();
-				if (!casted.bitmap)
+				if (!casted.getBitmap())
 					log += ", no bitmap";
 				else
-					log += ", bitmap " + casted.bitmap->toString();
-				if (!casted.mask)
+					log += ", bitmap " + casted.getBitmap()->toString();
+				if (!casted.getMask())
 					log += ", no mask";
 				else
-					log += ", mask " + casted.mask->toString();
+					log += ", mask " + casted.getMask()->toString();
 			}
 			break;
 
 			case Layer::Type::ShapedBitmapLayer:{
 				log += "bitmap";
 				BitmapLayer& casted = layer.castTo<BitmapLayer&>();
-				if (!casted.bitmap)
+				if (!casted.getBitmap())
 					log += ", no content";
 				else
-					log += ", " + casted.bitmap->toString();
+					log += ", " + casted.getBitmap()->toString();
 			}
 			break;
 
@@ -60,7 +60,7 @@ string Scene::SceneIntegrityError::getSceneLog(const Scene& scene, const string 
 				log += "scene";
 				break;
 		}
-		if (layer.phantom)
+		if (layer.isPhantom())
 			log += ", phantom";
 		log += "]\n";
 		if (layer.getType() == Layer::Type::SceneLayer) {
@@ -76,216 +76,145 @@ Scene::SceneIntegrityError::SceneIntegrityError(const std::string reason, const 
 	Exception( (std::string(reason) + "\n" + getSceneLog(scene, "")).c_str() )
 {}
 
+	
 
-/**
-	Scene implementation (pimpl)
-*/
-class Scene::Impl {
-private:
-	vector<Layer*> layers;		//!< scene layers	
-public:
-	Impl() {}
-
-
-	~Impl() {
-		for (auto it : layers)
-			delete it;
-	}
-
-
-	string generateUniqueLayerName(const char* prefix = "") const {
-		int n = 1;
-		string candidate;
-		while (getLayer(candidate = prefix + (" #" + to_string(n))))
-			n++;
-		return candidate;
-	}
-
-
-	template<class Type> Type& newBitmapLayer(const string& name) {
-		Type* l = new Type();
-		l->name = name;
-		layers.push_back(l);
-		return *l;
-	}
-
-
-	SceneLayer& addScene(const Scene& scene) {
-		SceneLayer* l = new SceneLayer(scene);
-		layers.push_back(l);
-		return *l;
-	}
-
-
-	inline Layer* getLayer(const string name) const {
-		for (auto l : layers)
-			if (l->name == name)
-				return l;
-		return NULL;
-	}
-
-
-	Layer& getLayer(int index) const {
-		return *layers[index];
-	}
-
-
-	inline int getLayerCount() const {
-		return (int)layers.size();
-	}
-
-
-	Scene::Layer* getLayer(float x, float y) const {
-		for (int i = layers.size() - 1; i >= 0; --i)
-			if (!layers[i]->phantom)
-				if (layers[i]->getType() == Scene::Layer::Type::SceneLayer) {
-					Layer* result = layers[i]->getChild(x, y);
-					if (result)
-						return result;
-				}
-				else
-					if (layers[i]->testPoint(x, y))
-						return layers[i];				
-		return NULL;
-	}
-
-
-	int getLayerIndex(const Layer& layer) const {
-		for (size_t i = 0; i < layers.size(); ++i)
-			if (layers[i] == &layer)
-				return i;
-		return -1;
-	}
-
-
-	bool resolveMapping(const Layer& layer, AffineMapping& mapping) const {
-		for (size_t i = layers.size() - 1; i >= 0; i--) {
-			if (&layer == layers[i]) {
-				mapping = layer.mapping;
-				return true;
-			}
-
-			// scene containers are checked recursively
-			if (layers[i]->getType() == Scene::Layer::Type::SceneLayer) {
-				const SceneLayer& container = layers[i]->castTo<SceneLayer>();
-				if (container.getScene().resolveMapping(layer, mapping)) {
-					mapping = container.mapping * mapping;
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-
-	void attachLayer(Layer& layer) {
-		layers.push_back(&layer);
-	}
-
-
-	Scene::Layer* detachLayer(int index) {
-		Layer* l = layers[index];
-		layers.erase(layers.begin() + index);
-		return l;
-	}
-};
-
-
-Scene::Scene() {
-	impl = new Scene::Impl();
+std::string generateUniqueLayerName(const Scene& scene, const char* prefix = "") {
+	int n = 1;
+	std::string candidate;
+	while (scene.getLayer(candidate = prefix + (" #" + to_string(n))))
+		n++;
+	return candidate;
 }
 
 
+Scene::Scene() {}
+
+
 Scene::~Scene() {
-	delete impl;
+	for (auto it : layers)
+		delete it;
 }
 
 
 Scene::BitmapLayer& Scene::newBitmapLayer(const string& name) {
-	return impl->newBitmapLayer<BitmapLayer>(name);
+	return newLayer<BitmapLayer>(name);
 }
 
 
 Scene::BitmapLayer& Scene::newBitmapLayer() {
-	return impl->newBitmapLayer<BitmapLayer>(impl->generateUniqueLayerName("Bitmap layer"));
+	return newLayer<BitmapLayer>(generateUniqueLayerName(*this, "Bitmap layer"));
 }
 
 
 Scene::MaskedBitmapLayer& Scene::newMaskedBitmapLayer(const string& name) {
-	return impl->newBitmapLayer<MaskedBitmapLayer>(name);
+	return newLayer<MaskedBitmapLayer>(name);
 }
 
 
 Scene::MaskedBitmapLayer& Scene::newMaskedBitmapLayer() {
-	return impl->newBitmapLayer<MaskedBitmapLayer>(impl->generateUniqueLayerName("Masked bitmap layer"));
+	return newLayer<MaskedBitmapLayer>(generateUniqueLayerName(*this, "Masked bitmap layer"));
 }
 
 
 Scene::ShapedBitmapLayer& Scene::newShapedBitmapLayer(const string& name) {
-	return impl->newBitmapLayer<ShapedBitmapLayer>(name);
+	return newLayer<ShapedBitmapLayer>(name);
 }
 
 
 Scene::ShapedBitmapLayer& Scene::newShapedBitmapLayer() {
-	return impl->newBitmapLayer<ShapedBitmapLayer>(impl->generateUniqueLayerName("Shaped bitmap layer"));
+	return newLayer<ShapedBitmapLayer>(generateUniqueLayerName(*this, "Shaped bitmap layer"));
 }
 
 
 Scene::ShadedBitmapLayer& Scene::newShadedBitmapLayer(const string& name) {
-	return impl->newBitmapLayer<ShadedBitmapLayer>(name);
+	return newLayer<ShadedBitmapLayer>(name);
 }
 
 
 Scene::ShadedBitmapLayer& Scene::newShadedBitmapLayer() {
-	return impl->newBitmapLayer<ShadedBitmapLayer>(impl->generateUniqueLayerName("Shaped bitmap layer"));
+	return newLayer<ShadedBitmapLayer>(generateUniqueLayerName(*this, "Shaped bitmap layer"));
 }
 
 
 Scene::SceneLayer& Scene::addScene(const Scene& scene) {
-	Scene::SceneLayer& newbie = impl->addScene(scene);
-	newbie.name = impl->generateUniqueLayerName("Scene layer");
-	return newbie;
+	SceneLayer* l = new SceneLayer(scene);
+	l->setName(generateUniqueLayerName(*this, "Scene layer"));
+	layers.push_back(l);
+	return *l;
 }
 
 
 Scene::Layer* Scene::getLayer(std::string name) const {
-	return impl->getLayer(name);
+	for (auto l : layers)
+		if (l->getName() == name)
+			return l;
+	return nullptr;
 }
 
 
 Scene::Layer& Scene::getLayer(int index) const {
-	return impl->getLayer(index);
+	return *layers[index];
 }
 
-Scene::Layer* Scene::getLayer(float x, float y) const {
-	return impl->getLayer(x, y);
+Scene::Layer* Scene::getLayer(float x, float y, unsigned int recursionDepth) const {
+	for (int i = layers.size() - 1; i >= 0; --i)
+		if (!layers[i]->isPhantom())
+			if (layers[i]->getType() == Scene::Layer::Type::SceneLayer) {
+				Layer* result = layers[i]->getChild(x, y, recursionDepth + 1);
+				if (result)
+					return result;
+			}
+			else
+				if (layers[i]->testPoint(x, y))
+					return layers[i];
+	return nullptr;
 }
 
 
 int Scene::getLayerIndex(const Layer& layer) const {
-	return impl->getLayerIndex(layer);
+	for (size_t i = 0; i < layers.size(); ++i)
+		if (layers[i] == &layer)
+			return i;
+	return -1;
 }
 
 
 int Scene::getLayerCount() const {
-	return impl->getLayerCount();
+	return (int)layers.size();
 }
 
 
 bool Scene::resolveMapping(const Layer& layer, AffineMapping& mapping) const {
-	return impl->resolveMapping(layer, mapping);
+	for (size_t i = layers.size() - 1; i >= 0; i--) {
+		if (&layer == layers[i]) {
+			mapping = layer.getMapping();
+			return true;
+		}
+
+		// scene containers are checked recursively
+		if (layers[i]->getType() == Scene::Layer::Type::SceneLayer) {
+			const SceneLayer& container = layers[i]->castTo<SceneLayer>();
+			if (container.getScene().resolveMapping(layer, mapping)) {
+				mapping = container.getMapping() * mapping;
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 
 void Scene::attachLayer(Layer& layer) {
 	if (getLayerIndex(layer) >= 0)
-		throw SceneIntegrityError("Layer " + layer.name + " is already in the scene", *this);
-	impl->attachLayer(layer);
+		throw SceneIntegrityError("Layer " + layer.getName() + " is already in the scene", *this);
+	layers.push_back(&layer);
 }
 
 
 Scene::Layer* Scene::detachLayer(int index) {
-	return impl->detachLayer(index);
+	Layer* l = layers[index];
+	layers.erase(layers.begin() + index);
+	return l;
 }
 
 
@@ -295,7 +224,7 @@ bool Scene::Layer::testPoint(float x, float y) const {
 	return mapping.isPointInside(Point(x, y));
 }
 
-Scene::Layer* Scene::Layer::getChild(float x, float y) const {
+Scene::Layer* Scene::Layer::getChild(float, float, unsigned int) const {
 	return NULL;
 }
 
@@ -306,9 +235,12 @@ bool Scene::SceneLayer::testPoint(float x, float y) const {
 	return getChild(x, y) != NULL;
 }
 
-Scene::Layer* Scene::SceneLayer::getChild(float x, float y) const {
-	Point p = mapping.getInverse(Point(x, y));
-	return scene.impl->getLayer(p.x, p.y);
+Scene::Layer* Scene::SceneLayer::getChild(float x, float y, unsigned int recursionDepth) const {
+	static const unsigned int MAX_RECURSION_DEPTH = 256;
+	if (recursionDepth >= MAX_RECURSION_DEPTH)
+		return nullptr;
+	Point p = mapping.getInverse(x, y);
+	return scene.getLayer(p.x, p.y, recursionDepth);
 }
 
 
@@ -364,7 +296,7 @@ bool Scene::MaskedBitmapLayer::testPoint(float x, float y) const {
 
 Scene::ShapedBitmapLayer::ShapedBitmapLayer() :
 	CustomMaskedBitmapLayer(Type::ShapedBitmapLayer),
-	shape(Shape::SQUARE), slopeWidth(0), borderWidth(0), cornerRadius(0), inPixels(true)
+	slopeWidth(0), borderWidth(0), cornerRadius(0), inPixels(true)
 {}
 
 

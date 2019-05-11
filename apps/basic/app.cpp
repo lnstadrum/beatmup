@@ -80,38 +80,38 @@ int main(int argc, char* argv[]) {
 	// constructing a simple scene
 	{
 		Beatmup::Scene::ShadedBitmapLayer& l = scene.newShadedBitmapLayer();
-		l.mapping.scale(0.44f);
-		l.mapping.rotateDegrees(1, Beatmup::Point(0.5, 0.5));
-		l.mapping.setCenterPosition(Beatmup::Point(0.25, 0.75));
-		l.bitmap = &fecamp;
-		l.layerShader = &blurringFilter;
+		l.getMapping().scale(0.44f);
+		l.getMapping().rotateDegrees(1, Beatmup::Point(0.5, 0.5));
+		l.getMapping().setCenterPosition(Beatmup::Point(0.25, 0.75));
+		l.setBitmap(&fecamp);
+		l.setLayerShader(&blurringFilter);
 	}
 	
 	{
 		Beatmup::Scene::ShadedBitmapLayer& l = scene.newShadedBitmapLayer();
-		l.mapping.scale(0.48f);
-		l.mapping.rotateDegrees(-1, Beatmup::Point(0.5, 0.5));
-		l.mapping.setCenterPosition(Beatmup::Point(0.75, 0.25));
-		l.bitmap = &fecamp;
-		l.layerShader = &distortShader;
+		l.getMapping().scale(0.48f);
+		l.getMapping().rotateDegrees(-1, Beatmup::Point(0.5, 0.5));
+		l.getMapping().setCenterPosition(Beatmup::Point(0.75, 0.25));
+		l.setBitmap(&fecamp);
+		l.setLayerShader(&distortShader);
 	}
 
 	{
 		Beatmup::Scene::ShadedBitmapLayer& l = scene.newShadedBitmapLayer();
-		l.mapping.scale(0.48f);
-		l.mapping.rotateDegrees(-2, Beatmup::Point(0.5, 0.5));
-		l.mapping.setCenterPosition(Beatmup::Point(0.75, 0.75));
-		l.bitmap = &fecamp;
-		l.layerShader = &grayShiftShader;
+		l.getMapping().scale(0.48f);
+		l.getMapping().rotateDegrees(-2, Beatmup::Point(0.5, 0.5));
+		l.getMapping().setCenterPosition(Beatmup::Point(0.75, 0.75));
+		l.setBitmap(&fecamp);
+		l.setLayerShader(&grayShiftShader);
 	}
 
 	{
 		Beatmup::Scene::ShadedBitmapLayer& l = scene.newShadedBitmapLayer();
-		l.mapping.scale(0.45f);
-		l.mapping.rotateDegrees(-3, Beatmup::Point(0.5, 0.5));
-		l.mapping.setCenterPosition(Beatmup::Point(0.25, 0.25));
-		l.bitmap = &fecamp;
-		l.layerShader = &recolorShader;
+		l.getMapping().scale(0.45f);
+		l.getMapping().rotateDegrees(-3, Beatmup::Point(0.5, 0.5));
+		l.getMapping().setCenterPosition(Beatmup::Point(0.25, 0.25));
+		l.setBitmap(&fecamp);
+		l.setLayerShader(&recolorShader);
 	}
 	printf("Running tasks...\n");
 

@@ -58,8 +58,8 @@ void SceneRenderer::renderLayer(GraphicPipeline& gpu, TaskThread& thread, const 
 		const Scene& scene = layer.castTo<Scene::SceneLayer>().getScene();
 		for (int i = 0; i < scene.getLayerCount() && !thread.isTaskAborted(); ++i) {
 			const Scene::Layer& l = scene.getLayer(i);
-			if (l.visible)
-				renderLayer(gpu, thread, l, base * layer.mapping, recursionLevel + 1);
+			if (l.isVisible())
+				renderLayer(gpu, thread, l, base * layer.getMapping(), recursionLevel + 1);
 		}
 	}
 	break;
@@ -68,10 +68,10 @@ void SceneRenderer::renderLayer(GraphicPipeline& gpu, TaskThread& thread, const 
 		Scene::BitmapLayer& l = layer.castTo<Scene::BitmapLayer>();
 		switch (l.source) {
 		case Scene::BitmapLayer::ImageSource::BITMAP:
-			if (l.bitmap) {
-				safeLockBitmap(l.bitmap);
-				gpu.blend(*l.bitmap, l.modulation, base * l.mapping * l.bitmapMapping);
-				l.invAr = l.bitmap->getInvAspectRatio();
+			if (l.getBitmap()) {
+				safeLockBitmap(l.getBitmap());
+				l.invAr = l.getBitmap()->getInvAspectRatio();
+				gpu.blend(*l.getBitmap(), l.getModulationColor(), base * l.getMapping() * l.getBitmapMapping());
 			}
 			break;
 #ifdef BEATMUP_PLATFORM_ANDROID
@@ -79,7 +79,7 @@ void SceneRenderer::renderLayer(GraphicPipeline& gpu, TaskThread& thread, const 
 			if (!cameraFrame && eventListener)
 				eventListener->onCameraFrameRendering(cameraFrame);
 			if (cameraFrame) {
-				gpu.blend(*cameraFrame, l.modulation, base * l.mapping * l.bitmapMapping);
+				gpu.blend(*cameraFrame, l.getModulationColor(), base * l.getMapping() * l.getBitmapMapping());
 				l.invAr = cameraFrame->getInvAspectRatio();
 			}
 			break;
@@ -92,23 +92,23 @@ void SceneRenderer::renderLayer(GraphicPipeline& gpu, TaskThread& thread, const 
 		Scene::MaskedBitmapLayer& l = layer.castTo<Scene::MaskedBitmapLayer>();
 		switch (l.source) {
 		case Scene::BitmapLayer::ImageSource::BITMAP:
-			if (l.bitmap) {
-				safeLockBitmap(l.bitmap);
-				if (l.mask) {
-					safeLockBitmap(l.mask);
+			if (l.getBitmap()) {
+				safeLockBitmap(l.getBitmap());
+				if (l.getMask()) {
+					safeLockBitmap(l.getMask());
 					gpu.blendMasked(
-						base * layer.mapping,
-						*l.bitmap,
-						l.bitmapMapping,
-						*l.mask,
-						l.maskMapping,
-						l.modulation,
-						l.bgColor
+						base * layer.getMapping(),
+						*l.getBitmap(),
+						l.getBitmapMapping(),
+						*l.getMask(),
+						l.getMaskMapping(),
+						l.getModulationColor(),
+						l.getBackgroundColor()
 					);
 				}
 				else
-					gpu.blend(*l.bitmap, l.modulation, base * layer.mapping * l.bitmapMapping);
-				l.invAr = l.bitmap->getInvAspectRatio();
+					gpu.blend(*l.getBitmap(), l.getModulationColor(), base * layer.getMapping() * l.getBitmapMapping());
+				l.invAr = l.getBitmap()->getInvAspectRatio();
 			}
 			break;
 
@@ -118,20 +118,20 @@ void SceneRenderer::renderLayer(GraphicPipeline& gpu, TaskThread& thread, const 
 				eventListener->onCameraFrameRendering(cameraFrame);
 			if (!cameraFrame)
 				break;
-			if (l.mask) {
-				safeLockBitmap(l.mask);
+			if (l.getMask()) {
+				safeLockBitmap(l.getMask());
 				gpu.blendMasked(
-					base * layer.mapping,
+					base * layer.getMapping(),
 					*cameraFrame,
-					l.bitmapMapping,
-					*l.mask,
-					l.maskMapping,
-					l.modulation,
-					l.bgColor
+					l.getBitmapMapping(),
+					*l.getMask(),
+					l.getMaskMapping(),
+					l.getModulationColor(),
+					l.getBackgroundColor()
 				);
 			}
 			else
-				gpu.blend(*cameraFrame, l.modulation, base * layer.mapping * l.bitmapMapping);
+				gpu.blend(*cameraFrame, l.getModulationColor(), base * layer.getMapping() * l.getBitmapMapping());
 			l.invAr = cameraFrame->getInvAspectRatio();
 			break;
 #endif
@@ -143,19 +143,19 @@ void SceneRenderer::renderLayer(GraphicPipeline& gpu, TaskThread& thread, const 
 		Scene::ShapedBitmapLayer& l = layer.castTo<Scene::ShapedBitmapLayer>();
 		switch (l.source) {
 		case Scene::BitmapLayer::ImageSource::BITMAP:
-			if (l.bitmap) {
-				safeLockBitmap(l.bitmap);
+			if (l.getBitmap()) {
+				safeLockBitmap(l.getBitmap());
 				gpu.blendShaped(
-					base * layer.mapping,
-					*l.bitmap,
-					l.bitmapMapping,
-					l.maskMapping,
-					l.borderWidth, l.slopeWidth, l.cornerRadius,
-					l.inPixels ? (referenceWidth > 0 ? referenceWidth : resolution.getWidth()) : 0,
-					l.modulation,
-					l.bgColor
+					base * layer.getMapping(),
+					*l.getBitmap(),
+					l.getBitmapMapping(),
+					l.getMaskMapping(),
+					l.getBorderWidth(), l.getSlopeWidth(), l.getCornerRadius(),
+					l.getInPixels() ? (referenceWidth > 0 ? referenceWidth : resolution.getWidth()) : 0,
+					l.getModulationColor(),
+					l.getBackgroundColor()
 				);
-				l.invAr = l.bitmap->getInvAspectRatio();
+				l.invAr = l.getBitmap()->getInvAspectRatio();
 			}
 			break;
 
@@ -165,14 +165,14 @@ void SceneRenderer::renderLayer(GraphicPipeline& gpu, TaskThread& thread, const 
 				eventListener->onCameraFrameRendering(cameraFrame);
 			if (cameraFrame) {
 				gpu.blendShaped(
-					base * layer.mapping,
+					base * layer.getMapping(),
 					*cameraFrame,
-					l.bitmapMapping,
-					l.maskMapping,
-					l.borderWidth, l.slopeWidth, l.cornerRadius,
-					l.inPixels ? (referenceWidth > 0 ? referenceWidth : resolution.getWidth()) : 0,
-					l.modulation,
-					l.bgColor
+					l.getBitmapMapping(),
+					l.getMaskMapping(),
+					l.getBorderWidth(), l.getSlopeWidth(), l.getCornerRadius(),
+					l.getInPixels() ? (referenceWidth > 0 ? referenceWidth : resolution.getWidth()) : 0,
+					l.getModulationColor(),
+					l.getBackgroundColor()
 				);
 				l.invAr = cameraFrame->getInvAspectRatio();
 			}
@@ -184,20 +184,20 @@ void SceneRenderer::renderLayer(GraphicPipeline& gpu, TaskThread& thread, const 
 
 	case Scene::Layer::Type::ShadedBitmapLayer: {
 		Scene::ShadedBitmapLayer& l = layer.castTo<Scene::ShadedBitmapLayer>();
-		if (l.layerShader)
+		if (l.getLayerShader())
 			switch (l.source) {
 			case Scene::BitmapLayer::ImageSource::BITMAP:
-				if (l.bitmap)
-					safeLockBitmap(l.bitmap);
-				l.layerShader->blend(gpu, l.bitmap, base * l.mapping * l.bitmapMapping);
-				if (l.bitmap)
-					l.invAr = l.bitmap->getInvAspectRatio();
+				if (l.getBitmap())
+					safeLockBitmap(l.getBitmap());
+				l.getLayerShader()->blend(gpu, l.getBitmap(), base * l.getMapping() * l.getBitmapMapping());
+				if (l.getBitmap())
+					l.invAr = l.getBitmap()->getInvAspectRatio();
 				break;
 #ifdef BEATMUP_PLATFORM_ANDROID
 			case Scene::BitmapLayer::ImageSource::CAMERA:
 				if (!cameraFrame && eventListener)
 					eventListener->onCameraFrameRendering(cameraFrame);
-				l.layerShader->blend(gpu, cameraFrame, base * l.mapping * l.bitmapMapping);
+				l.getLayerShader()->blend(gpu, cameraFrame, base * l.getMapping() * l.getBitmapMapping());
 				if (cameraFrame)
 					l.invAr = cameraFrame->getInvAspectRatio();
 				break;
@@ -360,7 +360,7 @@ bool SceneRenderer::doRender(GraphicPipeline& gpu, TaskThread& thread) {
 	// go
 	for (int i = 0; i < scene->getLayerCount() && !thread.isTaskAborted(); ++i) {
 		Scene::Layer& layer = scene->getLayer(i);
-		if (layer.visible)
+		if (layer.isVisible())
 			renderLayer(gpu, thread, layer, outputCoords);
 	}
 
