@@ -45,7 +45,7 @@ GPUBenchmark::GPUBenchmark(Environment& env):
 
 GPUBenchmark::~GPUBenchmark() {
 	if (program)
-		program->destroy(*env.getGPURecycleBin());
+		program->destroy(*env.getGpuRecycleBin());
 }
 
 

@@ -12,7 +12,7 @@ namespace Beatmup {
 	/**
 		A task applying a layer shader to a bitmap
 	*/
-	class ShaderApplicator : public GPUTask {
+	class ShaderApplicator : public GpuTask {
 	private:
 		LayerShader* shader;
 		AbstractBitmap *input, *output;

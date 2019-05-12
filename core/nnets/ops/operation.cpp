@@ -137,7 +137,7 @@ GPUOperation::GPUOperation(Environment& env, const std::string& name) :
 GPUOperation::~GPUOperation() {
 	for (auto& program: programs)
 		if (program)
-			program->destroy(*env.getGPURecycleBin());
+			program->destroy(*env.getGpuRecycleBin());
 }
 
 
@@ -166,7 +166,7 @@ void GPUOperation::load(GraphicPipeline& gpu, ChunkFile& cache, ProgressTracking
 	// free existing programs
 	for (auto& program : programs)
 		if (program)
-			program->destroy(*env.getGPURecycleBin());
+			program->destroy(*env.getGpuRecycleBin());
 	programs.clear();
 	
 	const size_t numPrograms = cache.fetch<size_t>(getName());

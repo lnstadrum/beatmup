@@ -46,7 +46,7 @@ Tensor::Tensor(Environment& env, GraphicPipeline& gpu, const int unpackedWidth, 
 
 Tensor::~Tensor() {
 	if (hasValidHandle()) {
-		TextureHandler::invalidate(*env.getGPURecycleBin());
+		TextureHandler::invalidate(*env.getGpuRecycleBin());
 	}
 }
 

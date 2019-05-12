@@ -1,7 +1,14 @@
-#include <stdio.h>
+/**
+	Basic rendering examples
+
+	Constructs a simple scene of four bitmap layers displaying all the same image using three different shaders
+	and a shaped bitmap layer.
+*/
 
 #include <bitmap/platform_specific/bitmap.h>
 #include <scene/renderer.h>
+
+#include <iostream>
 
 #define STRINGIFY(X) #X
 
@@ -9,11 +16,10 @@ int main(int argc, char* argv[]) {
 	Beatmup::Environment env;
 	Beatmup::Scene scene;
 	Beatmup::SceneRenderer renderer;
-	renderer.setScene(scene);
-	renderer.setOutputPixelsFetching(true);
-	renderer.setOutputMapping(Beatmup::SceneRenderer::OutputMapping::FIT_WIDTH);
+	Beatmup::Bitmap fecamp(env, L"images/fecamp.jpg");
+	Beatmup::Bitmap output(env, Beatmup::PixelFormat::TripleByte, 4000, 4000);
 
-	// radial image distortion
+	// setting up a radial image distortion shader
 	Beatmup::LayerShader distortShader(env);
 	distortShader.setSourceCode(STRINGIFY(
 		#beatmup_input_image image;
@@ -28,7 +34,7 @@ int main(int argc, char* argv[]) {
 		}
 	));
 
-	// channel shifting filter
+	// setting up a color channel shifting  shader
 	Beatmup::LayerShader grayShiftShader(env);
 	grayShiftShader.setSourceCode(STRINGIFY(
 		#beatmup_input_image image;
@@ -47,19 +53,16 @@ int main(int argc, char* argv[]) {
 		}
 	));
 	
-	// recoloring filter
+	// setting up a recoloring shader
+	// note: the same may be done by setting modulation color in a regular bitmap layer (the custom shader here is a bit an overkill)
 	Beatmup::LayerShader recolorShader(env);
 	recolorShader.setSourceCode(STRINGIFY(
 		#beatmup_input_image image;
 		varying vec2 texCoord;
 		void main() {
-			gl_FragColor = texture2D(image, texCoord) * vec4(1, 0.9, 0.6, 1);
+			gl_FragColor = texture2D(image, texCoord) * vec4(1, 0.8, 0.7, 1);
 		}
 	));
-
-	Beatmup::Bitmap fecamp(env, L"images/fecamp.jpg");
-	Beatmup::Bitmap output(env, 4000, 4000, Beatmup::PixelFormat::TripleByte);
-	renderer.setOutput(output);
 
 	// constructing a simple scene
 	{
@@ -99,11 +102,26 @@ int main(int argc, char* argv[]) {
 		l.setBitmap(&fecamp);
 		l.setLayerShader(&recolorShader);
 	}
-	printf("Running tasks...\n");
 
-	float time = env.performTask(renderer);
-	printf("Run: %0.2f ms\n", time);
+	// configuring renderer
+	renderer.setScene(scene);
+	renderer.setOutputPixelsFetching(true);
+	renderer.setOutputMapping(Beatmup::SceneRenderer::OutputMapping::FIT_WIDTH);
+	renderer.setOutput(output);
 
+	// warming up
+	env.warmUpGpu();
+
+	// go
+	std::cout << "Rendering..." << std::endl;
+	float time;
+	time = env.performTask(renderer);
+	std::cout << "  First run: " << time << " ms" << std::endl;
+	time = env.performTask(renderer);
+	std::cout << "  Second run: " << time << " ms" << std::endl;
+		// Second run is faster: it has the shaders compiled and all the bitmap data ready in the GPU memory.
+	
+	// save output
 	output.save(L"output.png");
 	return 0;
 }

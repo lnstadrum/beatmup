@@ -20,7 +20,7 @@ namespace Beatmup {
 	};
 
 
-	class SceneRenderer : public GPUTask {
+	class SceneRenderer : public GpuTask {
 	public:
 		/**
 			Scene coordinates to output (screen or bitmap) mapping

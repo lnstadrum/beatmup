@@ -45,7 +45,7 @@ LayerShader::~LayerShader() {
 		}
 	};
 
-	env.getGPURecycleBin()->put(new Deleter(program, fragmentShader));
+	env.getGpuRecycleBin()->put(new Deleter(program, fragmentShader));
 }
 
 

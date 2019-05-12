@@ -465,12 +465,12 @@ public:
 	}
 
 
-	inline bool isGPUQueried() const {
-		return threadPools[0]->isGPUQueried();
+	inline bool isGpuQueried() const {
+		return threadPools[0]->isGpuQueried();
 	}
 
 
-	inline bool isGPUReady() const {
+	inline bool isGpuReady() const {
 		return threadPools[0]->getGraphicPipeline() != NULL;
 	}
 
@@ -556,12 +556,12 @@ Environment::EventListener* Environment::getEventListener() const {
 	return impl->eventListener;
 }
 
-bool Environment::isGPUQueried() const {
-	return impl->isGPUQueried();
+bool Environment::isGpuQueried() const {
+	return impl->isGpuQueried();
 }
 
-bool Environment::isGPUReady() const {
-	return impl->isGPUReady();
+bool Environment::isGpuReady() const {
+	return impl->isGpuReady();
 }
 
 bool Environment::isManagingThread() const {
@@ -569,12 +569,12 @@ bool Environment::isManagingThread() const {
 }
 
 
-GL::RecycleBin* Environment::getGPURecycleBin() const {
+GL::RecycleBin* Environment::getGpuRecycleBin() const {
 	return recycleBin;
 }
 
 
-msize Environment::getTotalRAM() {
+msize Environment::getTotalRam() {
 #if BEATMUP_PLATFORM_WINDOWS
 	MEMORYSTATUSEX status;
 	status.dwLength = sizeof(status);
@@ -587,4 +587,13 @@ msize Environment::getTotalRAM() {
 #else
 	Unimplemented!
 #endif
+}
+
+
+void Environment::warmUpGpu() {
+	if (!isGpuReady()) {
+		GpuTask task;
+		startTask(task);
+		waitForTask(false);
+	}
 }

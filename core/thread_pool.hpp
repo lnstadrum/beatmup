@@ -545,7 +545,7 @@ public:
     /**
         \return `true` if GPU was queried
     */
-    inline bool isGPUQueried() const {
+    inline bool isGpuQueried() const {
         return isGpuTested;
     }
 

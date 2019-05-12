@@ -4,9 +4,13 @@
 
 #pragma once
 #include "../parallelism.h"
+#include "../environment.h"
 
 namespace Beatmup {
-    class GPUTask : public AbstractTask {
+	/**
+		Template of a task using GPU
+	*/
+	class GpuTask : public AbstractTask {
     private:
         ExecutionTarget getExecutionTarget() const;
         ThreadIndex maxAllowedThreads() const;

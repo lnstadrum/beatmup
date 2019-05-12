@@ -13,7 +13,7 @@
 namespace Beatmup {
     namespace NNets {
 
-		class Inference : public GPUTask {
+		class Inference : public GpuTask {
 		private:
 #ifdef BEATMUP_DEBUG
 			Profiler prof;
