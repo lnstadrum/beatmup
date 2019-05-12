@@ -17,8 +17,8 @@ static const struct {
 #ifdef BEATMUP_CHANNEL_ORDER_ARGB
 	0, 1, 2, 3
 #elif BEATMUP_CHANNEL_ORDER_BGRA
-	2, 1, 0, 3
-#else
+	3, 2, 1, 0
+#else // rgba
 	3, 0, 1, 2
 #endif
 };
@@ -151,7 +151,7 @@ namespace Beatmup {
 
 		inline pixint3 operator()(int x, int y) const {
 			int i = 3 * (y * width + x);
-			return pixint3{ data[i], data[i + 1], data[i + 2] };
+			return pixint3{ data[i + CHANNELS.R], data[i + CHANNELS.G], data[i + CHANNELS.B] };
 		}
 
 		TripleByteBitmapReader(const AbstractBitmap& bitmap, int x = 0, int y = 0) : CustomBitmapScanner(bitmap, x, y) {}
@@ -216,7 +216,7 @@ namespace Beatmup {
 
 		inline pixfloat3 operator()(int x, int y) const {
 			int i = 3 * (y * width + x);
-			return pixfloat3{ data[i], data[i + 1], data[i + 2] };
+			return pixfloat3{ data[i + CHANNELS.R], data[i + CHANNELS.G], data[i + CHANNELS.B] };
 		}
 
 		TripleFloatBitmapReader(const AbstractBitmap& bitmap, int x = 0, int y = 0) : CustomBitmapScanner(bitmap, x, y) {}
