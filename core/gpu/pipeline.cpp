@@ -666,13 +666,14 @@ public:
 			return;
 		}
 
-		AffineMapping arMapping(imageMapping);
-		arMapping.matrix.scale(1.0f, image.getInvAspectRatio());
+		AffineMapping arImgMapping(imageMapping), arMaskMapping(maskMapping);
+		arImgMapping.matrix.scale(1.0f, image.getInvAspectRatio());
+		arMaskMapping.matrix.scale(1.0f, image.getInvAspectRatio());
 
 		program->enable(front);
 		program->setMatrix3("modelview", baseMapping);
-		program->setMatrix3("invImgMapping", arMapping.getInverse() * maskMapping);
-		program->setMatrix3("maskMapping", maskMapping);
+		program->setMatrix3("invImgMapping", arImgMapping.getInverse() * arMaskMapping);
+		program->setMatrix3("maskMapping", arMaskMapping);
 		program->setVector4("modulationColor", modulation.r, modulation.g, modulation.b, modulation.a);
 		program->setVector4("bgColor", bgColor.r, bgColor.g, bgColor.b, bgColor.a);
 		program->setInteger("flipVertically", !onScreen);
