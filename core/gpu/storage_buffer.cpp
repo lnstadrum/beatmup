@@ -23,7 +23,7 @@ StorageBuffer::~StorageBuffer() {
 	};
 
 	if (handle)
-		env.getGPURecycleBin()->put(new Deleter(handle));
+		env.getGpuRecycleBin()->put(new Deleter(handle));
 }
 
 

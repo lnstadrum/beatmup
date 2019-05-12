@@ -1,5 +1,5 @@
 /*
-	Environment class
+	Beatmup environment
 */
 
 #pragma once
@@ -174,12 +174,12 @@ namespace Beatmup {
 		/**
 			\return `true` if GPU was queried
 		*/
-		bool isGPUQueried() const;
+		bool isGpuQueried() const;
 
 		/**
 			\return `true` if GPU was queried and ready to use
 		*/
-		bool isGPUReady() const;
+		bool isGpuReady() const;
 
 		/**
 			\internal
@@ -191,11 +191,18 @@ namespace Beatmup {
 		/**
 			\return GPU recycle bin to store GPU resources that can be freed only within a GPU-aware thread
 		*/
-		GL::RecycleBin* getGPURecycleBin() const;
+		GL::RecycleBin* getGpuRecycleBin() const;
 
 		/**
 			\return total RAM size in bytes
 		*/
-		static msize getTotalRAM();
+		static msize getTotalRam();
+
+		/**
+			\brief Initializes GPU within a given Environment.
+			GPU initialization may take some time and is done when a first task using GPU is being run. Warping up
+			the GPU is useful to avoid the app get stucked for some time when it launches its first task on GPU.
+		*/
+		void warmUpGpu();
 	};
 };

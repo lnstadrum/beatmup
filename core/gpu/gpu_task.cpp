@@ -3,15 +3,15 @@
 
 using namespace Beatmup;
 
-AbstractTask::ExecutionTarget GPUTask::getExecutionTarget() const {
+AbstractTask::ExecutionTarget GpuTask::getExecutionTarget() const {
     return ExecutionTarget::useGPU;
 }
 
-ThreadIndex GPUTask::maxAllowedThreads() const {
+ThreadIndex GpuTask::maxAllowedThreads() const {
     return 1;
 }
 
-bool GPUTask::process(TaskThread &thread) {
-    Insanity::insanity("A GPU requiring task is run on CPU.");
+bool GpuTask::process(TaskThread &thread) {
+    Insanity::insanity("A GPU requiring task is being run with no GPU support provided.");
     return false;
 }

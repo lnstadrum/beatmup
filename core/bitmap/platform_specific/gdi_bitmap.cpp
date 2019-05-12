@@ -73,6 +73,7 @@ public:
 		init();
 		Gdiplus::PixelFormat pf;
 		switch (format) {
+		case SingleByte:
 		case TripleByte:
 			pf = PixelFormat24bppRGB;
 			break;
@@ -80,6 +81,9 @@ public:
 		case QuadByte:
 			pf = PixelFormat32bppARGB;
 			break;
+		
+		default:
+			BEATMUP_ERROR("Unsupported pixel format");
 		}
 		bitmap = new Gdiplus::Bitmap(width, height, pf);
 		size.X = size.Y = 0;
@@ -151,7 +155,7 @@ GDIBitmap::GDIBitmap(Environment &env, const wchar_t* filename) :
 }
 
 
-GDIBitmap::GDIBitmap(Environment &env, int width, int height, PixelFormat format) : AbstractBitmap(env) {
+GDIBitmap::GDIBitmap(Environment &env, PixelFormat format, int width, int height) : AbstractBitmap(env) {
 	impl = new Impl(env, width, height, format);
 }
 

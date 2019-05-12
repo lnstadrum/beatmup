@@ -132,7 +132,7 @@ void AbstractBitmap::unlockPixels() {
 void AbstractBitmap::invalidate(ProcessingTarget target) {
 	upToDate[target] = false;
 	if (target == ProcessingTarget::GPU)
-		GL::TextureHandler::invalidate(*env.getGPURecycleBin());
+		GL::TextureHandler::invalidate(*env.getGpuRecycleBin());
 }
 
 
@@ -233,7 +233,7 @@ AbstractBitmap::AbstractBitmap(Environment& env) : env(env) {
 
 AbstractBitmap::~AbstractBitmap() {
 	if (hasValidHandle()) {
-		TextureHandler::invalidate(*env.getGPURecycleBin());
+		TextureHandler::invalidate(*env.getGpuRecycleBin());
 	}
 }
 

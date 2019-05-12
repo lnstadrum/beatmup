@@ -29,7 +29,7 @@ namespace Beatmup {
 			inline size_t getEntrySize() const { return entrySize; }
 		};
 
-		class StorageBufferFetcher : public GPUTask {
+		class StorageBufferFetcher : public GpuTask {
 		private:
 			StorageBuffer& buffer;
 			void* outputBuffer;

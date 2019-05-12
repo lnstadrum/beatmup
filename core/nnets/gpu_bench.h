@@ -11,7 +11,7 @@
 
 namespace Beatmup {
 	namespace NNets {
-		class GPUBenchmark : public GPUTask {
+		class GPUBenchmark : public GpuTask {
 		private:
 			static const int CONTROL_POINTS_NUM = 100;
 			

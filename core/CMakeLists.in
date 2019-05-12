@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 3.2.1)
 
 # main stuff
-set(ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}/..")
-set(SOURCES_DIR "${CMAKE_CURRENT_LIST_DIR}")
+set(BEATMUP_ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}/..")
+set(BEATMUP_SRC_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
 # build workspace
-set(BUILD_DIR "${ROOT_DIR}/build")
+set(BEATMUP_BUILD_DIR "${BEATMUP_ROOT_DIR}/build")
 
 # glew root folder
-set(GLEW_DIR "${ROOT_DIR}/glew-cmake")
+set(BEATMUP_GLEW_DIR "${BEATMUP_ROOT_DIR}/glew-cmake")
 
 if (WIN32)
 	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DBEATMUP_PLATFORM_WINDOWS")
@@ -16,94 +16,94 @@ endif (WIN32)
 
     
 set(BEATMUP_SOURCES
-    ${SOURCES_DIR}/environment.cpp
-    ${SOURCES_DIR}/exception.cpp
-    ${SOURCES_DIR}/geometry.cpp
-    ${SOURCES_DIR}/parallelism.cpp
-    ${SOURCES_DIR}/bitmap/abstract_bitmap.cpp
-    ${SOURCES_DIR}/bitmap/bitmap_access.cpp
-    ${SOURCES_DIR}/bitmap/converter.cpp
-    ${SOURCES_DIR}/bitmap/crop.cpp
-    ${SOURCES_DIR}/bitmap/internal_bitmap.cpp
-    ${SOURCES_DIR}/bitmap/resampler.cpp
-    ${SOURCES_DIR}/bitmap/operator.cpp
-    ${SOURCES_DIR}/bitmap/tools.cpp
-    ${SOURCES_DIR}/bitmap/tools.cpp
-    ${SOURCES_DIR}/color/color_spaces.cpp
-    ${SOURCES_DIR}/color/matrix.cpp
-    ${SOURCES_DIR}/contours/contours.cpp
-    ${SOURCES_DIR}/filters/tuning.cpp
-    ${SOURCES_DIR}/filters/local/color_matrix.cpp
-    ${SOURCES_DIR}/filters/local/pixelwise_filter.cpp
-    ${SOURCES_DIR}/filters/local/sepia.cpp
-    ${SOURCES_DIR}/fragments/fragment.cpp
-    ${SOURCES_DIR}/fragments/sequence.cpp
-    ${SOURCES_DIR}/gpu/display_switch.cpp
-    ${SOURCES_DIR}/gpu/gpu_task.cpp
-    ${SOURCES_DIR}/gpu/pipeline.cpp
-    ${SOURCES_DIR}/gpu/program.cpp
-    ${SOURCES_DIR}/gpu/recycle_bin.cpp
-    ${SOURCES_DIR}/gpu/shaders.cpp
-    ${SOURCES_DIR}/gpu/swapper.cpp
-    ${SOURCES_DIR}/gpu/texture_handler.cpp
-    ${SOURCES_DIR}/gpu/variables_bundle.cpp
-    ${SOURCES_DIR}/masking/flood_fill.cpp
-    ${SOURCES_DIR}/masking/region_filling.cpp
-    ${SOURCES_DIR}/pipelining/custom_pipeline.cpp
-    ${SOURCES_DIR}/pipelining/multitask.cpp
-    ${SOURCES_DIR}/scene/layer_shader.cpp
-    ${SOURCES_DIR}/scene/renderer.cpp
-    ${SOURCES_DIR}/scene/scene.cpp
-    ${SOURCES_DIR}/scene/shader_applicator.cpp
-    ${SOURCES_DIR}/utils/chunkfile.cpp
-    ${SOURCES_DIR}/utils/image_resolution.cpp
-    ${SOURCES_DIR}/utils/profiler.cpp
-    ${SOURCES_DIR}/utils/progress_tracking.cpp
-    ${SOURCES_DIR}/utils/string_builder.cpp
+    ${BEATMUP_SRC_DIR}/environment.cpp
+    ${BEATMUP_SRC_DIR}/exception.cpp
+    ${BEATMUP_SRC_DIR}/geometry.cpp
+    ${BEATMUP_SRC_DIR}/parallelism.cpp
+    ${BEATMUP_SRC_DIR}/bitmap/abstract_bitmap.cpp
+    ${BEATMUP_SRC_DIR}/bitmap/bitmap_access.cpp
+    ${BEATMUP_SRC_DIR}/bitmap/converter.cpp
+    ${BEATMUP_SRC_DIR}/bitmap/crop.cpp
+    ${BEATMUP_SRC_DIR}/bitmap/internal_bitmap.cpp
+    ${BEATMUP_SRC_DIR}/bitmap/resampler.cpp
+    ${BEATMUP_SRC_DIR}/bitmap/operator.cpp
+    ${BEATMUP_SRC_DIR}/bitmap/tools.cpp
+    ${BEATMUP_SRC_DIR}/bitmap/tools.cpp
+    ${BEATMUP_SRC_DIR}/color/color_spaces.cpp
+    ${BEATMUP_SRC_DIR}/color/matrix.cpp
+    ${BEATMUP_SRC_DIR}/contours/contours.cpp
+    ${BEATMUP_SRC_DIR}/filters/tuning.cpp
+    ${BEATMUP_SRC_DIR}/filters/local/color_matrix.cpp
+    ${BEATMUP_SRC_DIR}/filters/local/pixelwise_filter.cpp
+    ${BEATMUP_SRC_DIR}/filters/local/sepia.cpp
+    ${BEATMUP_SRC_DIR}/fragments/fragment.cpp
+    ${BEATMUP_SRC_DIR}/fragments/sequence.cpp
+    ${BEATMUP_SRC_DIR}/gpu/display_switch.cpp
+    ${BEATMUP_SRC_DIR}/gpu/gpu_task.cpp
+    ${BEATMUP_SRC_DIR}/gpu/pipeline.cpp
+    ${BEATMUP_SRC_DIR}/gpu/program.cpp
+    ${BEATMUP_SRC_DIR}/gpu/recycle_bin.cpp
+    ${BEATMUP_SRC_DIR}/gpu/shaders.cpp
+    ${BEATMUP_SRC_DIR}/gpu/swapper.cpp
+    ${BEATMUP_SRC_DIR}/gpu/texture_handler.cpp
+    ${BEATMUP_SRC_DIR}/gpu/variables_bundle.cpp
+    ${BEATMUP_SRC_DIR}/masking/flood_fill.cpp
+    ${BEATMUP_SRC_DIR}/masking/region_filling.cpp
+    ${BEATMUP_SRC_DIR}/pipelining/custom_pipeline.cpp
+    ${BEATMUP_SRC_DIR}/pipelining/multitask.cpp
+    ${BEATMUP_SRC_DIR}/scene/layer_shader.cpp
+    ${BEATMUP_SRC_DIR}/scene/renderer.cpp
+    ${BEATMUP_SRC_DIR}/scene/scene.cpp
+    ${BEATMUP_SRC_DIR}/scene/shader_applicator.cpp
+    ${BEATMUP_SRC_DIR}/utils/chunkfile.cpp
+    ${BEATMUP_SRC_DIR}/utils/image_resolution.cpp
+    ${BEATMUP_SRC_DIR}/utils/profiler.cpp
+    ${BEATMUP_SRC_DIR}/utils/progress_tracking.cpp
+    ${BEATMUP_SRC_DIR}/utils/string_builder.cpp
 )
 
 if (PROFILE_NNETS)
     set(BEATMUP_SOURCES ${BEATMUP_SOURCES}
-        ${SOURCES_DIR}/gpu/compute_program.cpp
-        ${SOURCES_DIR}/gpu/storage_buffer.cpp
-        ${SOURCES_DIR}/gpu/tensor.cpp
-        ${SOURCES_DIR}/nnets/gpu_bench.cpp
-        ${SOURCES_DIR}/nnets/inference.cpp
-        ${SOURCES_DIR}/nnets/model.cpp
-        ${SOURCES_DIR}/nnets/storage.cpp
-        ${SOURCES_DIR}/nnets/ops/operation.cpp
-        ${SOURCES_DIR}/nnets/ops/convs_2d.cpp
-        ${SOURCES_DIR}/nnets/ops/pooling.cpp
+        ${BEATMUP_SRC_DIR}/gpu/compute_program.cpp
+        ${BEATMUP_SRC_DIR}/gpu/storage_buffer.cpp
+        ${BEATMUP_SRC_DIR}/gpu/tensor.cpp
+        ${BEATMUP_SRC_DIR}/nnets/gpu_bench.cpp
+        ${BEATMUP_SRC_DIR}/nnets/inference.cpp
+        ${BEATMUP_SRC_DIR}/nnets/model.cpp
+        ${BEATMUP_SRC_DIR}/nnets/storage.cpp
+        ${BEATMUP_SRC_DIR}/nnets/ops/operation.cpp
+        ${BEATMUP_SRC_DIR}/nnets/ops/convs_2d.cpp
+        ${BEATMUP_SRC_DIR}/nnets/ops/pooling.cpp
     )
 endif()
 
 if (PROFILE_AUDIO)
     set(BEATMUP_SOURCES ${BEATMUP_SOURCES}
-        ${SOURCES_DIR}/audio/audio_signal.cpp
-        ${SOURCES_DIR}/audio/audio_signal_fragment.cpp
-        ${SOURCES_DIR}/audio/audio_signal_plot.cpp
-        ${SOURCES_DIR}/audio/sample_arithmetic.cpp
-        ${SOURCES_DIR}/audio/source.cpp
-        ${SOURCES_DIR}/audio/wav_utilities.cpp
-        ${SOURCES_DIR}/audio/playback/abstract_playback.cpp
-        ${SOURCES_DIR}/audio/playback/realtime_playback.cpp
+        ${BEATMUP_SRC_DIR}/audio/audio_signal.cpp
+        ${BEATMUP_SRC_DIR}/audio/audio_signal_fragment.cpp
+        ${BEATMUP_SRC_DIR}/audio/audio_signal_plot.cpp
+        ${BEATMUP_SRC_DIR}/audio/sample_arithmetic.cpp
+        ${BEATMUP_SRC_DIR}/audio/source.cpp
+        ${BEATMUP_SRC_DIR}/audio/wav_utilities.cpp
+        ${BEATMUP_SRC_DIR}/audio/playback/abstract_playback.cpp
+        ${BEATMUP_SRC_DIR}/audio/playback/realtime_playback.cpp
     )
 endif()
 
 if (PROFILE_PLATFORM_SPECIFIC_BITMAP)
     if (WIN32)
 		set(BEATMUP_SOURCES ${BEATMUP_SOURCES}
-			${SOURCES_DIR}/bitmap/platform_specific/gdi_bitmap.cpp
+			${BEATMUP_SRC_DIR}/bitmap/platform_specific/gdi_bitmap.cpp
 		)
 	endif()
 endif()
 
-include_directories(${SOURCES_DIR})
+include_directories(${BEATMUP_SRC_DIR})
 
 if (WIN32)
 	find_package(OpenGL REQUIRED)
-	add_subdirectory(${GLEW_DIR} "${BUILD_DIR}/glew-build")
-	link_directories("${BUILD_DIR}/lib")
-	include_directories("${GLEW_DIR}/include")
+	add_subdirectory(${BEATMUP_GLEW_DIR} "${BEATMUP_BUILD_DIR}/glew-build")
+	link_directories("${BEATMUP_BUILD_DIR}/lib")
+	include_directories("${BEATMUP_GLEW_DIR}/include")
 	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DGLEW_STATIC -DBEATMUP_CHANNEL_ORDER_BGRA")
 endif()

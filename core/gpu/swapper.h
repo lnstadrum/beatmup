@@ -7,7 +7,7 @@
 #include "../bitmap/abstract_bitmap.h"
 
 namespace Beatmup {
-	class Swapper : public GPUTask {
+	class Swapper : public GpuTask {
 	private:
 		AbstractBitmap* bitmap;
 
