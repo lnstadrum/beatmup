@@ -9,8 +9,9 @@
 #include <scene/renderer.h>
 
 #include <iostream>
+#include <ctime>
 
-#define STRINGIFY(X) #X
+#define SHADERCODE(X) "#version 130\n" #X
 
 int main(int argc, char* argv[]) {
 	Beatmup::Environment env;
@@ -21,9 +22,9 @@ int main(int argc, char* argv[]) {
 
 	// setting up a radial image distortion shader
 	Beatmup::LayerShader distortShader(env);
-	distortShader.setSourceCode(STRINGIFY(
+	distortShader.setSourceCode(SHADERCODE(
 		#beatmup_input_image image;
-		varying vec2 texCoord;
+		varying highp vec2 texCoord;
 		vec2 distort(vec2 xy) {
 			vec2 r = xy - vec2(0.5, 0.5);
 			float t = length(r);
@@ -34,15 +35,15 @@ int main(int argc, char* argv[]) {
 		}
 	));
 
-	// setting up a color channel shifting  shader
+	// setting up a color channel shifting shader
 	Beatmup::LayerShader grayShiftShader(env);
-	grayShiftShader.setSourceCode(STRINGIFY(
+	grayShiftShader.setSourceCode(SHADERCODE(
 		#beatmup_input_image image;
-		varying vec2 texCoord;
+		varying highp vec2 texCoord;
 		float gray(vec2 pos) {
 			vec4 clr = texture2D(image, pos);
 			return 0.333 * (clr.r + clr.g + clr.b);
-		}
+		};
 		void main() {
 			gl_FragColor = vec4(
 				gray(texCoord + vec2(0.01, 0.01)),
@@ -53,22 +54,29 @@ int main(int argc, char* argv[]) {
 		}
 	));
 	
-	// setting up a recoloring shader
-	// note: the same may be done by setting modulation color in a regular bitmap layer (the custom shader here is a bit an overkill)
+	// setting up a recoloring shader (applying a random matrix to RGB triplets)
 	Beatmup::LayerShader recolorShader(env);
-	recolorShader.setSourceCode(STRINGIFY(
+	recolorShader.setSourceCode(SHADERCODE(
 		#beatmup_input_image image;
-		varying vec2 texCoord;
+		varying highp vec2 texCoord;
+		uniform mediump mat3 matrix;
 		void main() {
-			gl_FragColor = texture2D(image, texCoord) * vec4(1, 0.8, 0.7, 1);
+			gl_FragColor = vec4(matrix * texture2D(image, texCoord).rgb, 1);
 		}
 	));
+	float matrix[9];
+	std::srand(std::time(nullptr));
+	for (int i = 0; i < 9; ++i) {
+		matrix[i] = (float)std::rand() / RAND_MAX;
+		std::cout << matrix[i] << " ";
+	}
+	recolorShader.setFloatMatrix3("matrix", matrix);
 
 	// constructing a simple scene
 	{
 		Beatmup::Scene::ShapedBitmapLayer& l = scene.newShapedBitmapLayer();
 		l.getMapping().scale(0.48f);
-		l.getMapping().rotateDegrees(1, Beatmup::Point(0.5, 0.5));
+		l.getMapping().rotateDegrees(1);
 		l.getMapping().setCenterPosition(Beatmup::Point(0.25, 0.75));
 		l.setBitmap(&fecamp);
 		l.setCornerRadius(0.05f);
@@ -79,7 +87,7 @@ int main(int argc, char* argv[]) {
 	{
 		Beatmup::Scene::ShadedBitmapLayer& l = scene.newShadedBitmapLayer();
 		l.getMapping().scale(0.48f);
-		l.getMapping().rotateDegrees(-1, Beatmup::Point(0.5, 0.5));
+		l.getMapping().rotateDegrees(-1);
 		l.getMapping().setCenterPosition(Beatmup::Point(0.75, 0.25));
 		l.setBitmap(&fecamp);
 		l.setLayerShader(&distortShader);
@@ -88,7 +96,7 @@ int main(int argc, char* argv[]) {
 	{
 		Beatmup::Scene::ShadedBitmapLayer& l = scene.newShadedBitmapLayer();
 		l.getMapping().scale(0.48f);
-		l.getMapping().rotateDegrees(-2, Beatmup::Point(0.5, 0.5));
+		l.getMapping().rotateDegrees(-2);
 		l.getMapping().setCenterPosition(Beatmup::Point(0.75, 0.75));
 		l.setBitmap(&fecamp);
 		l.setLayerShader(&grayShiftShader);
@@ -97,7 +105,7 @@ int main(int argc, char* argv[]) {
 	{
 		Beatmup::Scene::ShadedBitmapLayer& l = scene.newShadedBitmapLayer();
 		l.getMapping().scale(0.45f);
-		l.getMapping().rotateDegrees(-3, Beatmup::Point(0.5, 0.5));
+		l.getMapping().rotateDegrees(-3);
 		l.getMapping().setCenterPosition(Beatmup::Point(0.25, 0.25));
 		l.setBitmap(&fecamp);
 		l.setLayerShader(&recolorShader);
