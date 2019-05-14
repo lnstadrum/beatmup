@@ -115,6 +115,14 @@ void VariablesBundle::setFloat(std::string name, float x, float y, float z, floa
 }
 
 
+void VariablesBundle::setFloatMatrix3(std::string name, const float matrix[9]) {
+	MatrixParameter& param = params[name];
+	param.configure(MatrixParameter::Type::FLOAT, 3, 3);
+	GLfloat *out = param.getData<GLfloat>();
+	for (const float* in = matrix; in < matrix + 9; ++in)
+		*out++ = *in;
+}
+
 
 void VariablesBundle::setFloatMatrix4(std::string name, const float matrix[16]) {
 	MatrixParameter& param = params[name];

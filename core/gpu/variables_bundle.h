@@ -66,6 +66,8 @@ namespace Beatmup {
 			void setFloat(std::string name, float x, float y, float z);
 			void setFloat(std::string name, float x, float y, float z, float w);
 
+			void setFloatMatrix3(std::string name, const float matrix[9]);
+
 			void setFloatMatrix4(std::string name, const float matrix[16]);
 			void setFloatMatrix4(std::string name, const Color::Matrix& matrix);
 		};
