@@ -180,8 +180,6 @@ void BitmapConverter::doConvert(int outX, int outY, msize nPix) {
 
 
 void BitmapConverter::convert(AbstractBitmap& input, AbstractBitmap& output) {
-	if (input.getPixelFormat() == output.getPixelFormat())
-		return;
 	BitmapConverter me;
 	me.setBitmaps(&input, &output);
 
