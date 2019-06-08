@@ -66,7 +66,7 @@ std::vector<std::string> Pooling::generateCode(GraphicPipeline& gpu, ChunkFile& 
 	else
 		Insanity::insanity("mode not implemented");
 
-	std::vector<std::string> code(1, BGL_SHADER_CODE(
+	std::vector<std::string> code(1, BEATMUP_SHADER_CODE(
 		layout(local_size_x = 1, local_size_y = 1) in;
 		<<DECL>>
 		void main() {

@@ -101,7 +101,7 @@ Storage::~Storage() {
 void Storage::bind(GraphicPipeline& gpu, GL::ComputeProgram& program, int unit, bool read, bool write) {
 	switch (type) {
 	case Type::TENSOR:
-		program.bindImage(gpu, *tensor, unit, read, write);
+		gpu.bind(*tensor, unit, read, write);
 		break;
 
 	case Type::BUFFER_1D:
@@ -114,7 +114,7 @@ void Storage::bind(GraphicPipeline& gpu, GL::ComputeProgram& program, int unit, 
 		break;
 
 	case Type::TEXTURE_REFERENCE:
-		program.bindSampler(gpu, *textureReference, unit);
+		gpu.bind(*textureReference, unit, false);
 		break;
 	}
 }

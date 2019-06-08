@@ -206,7 +206,7 @@ void AudioSignal::Meter::prepareSignal(AudioSignal& signal, bool runTask) {
 		};
 
 		DynamicsLookupPreparation task(signal);
-		signal.getEnvironment().performTask(0, task);
+		signal.getEnvironment().performTask(task);
 	}
 	else
 		Meter::prepare(signal);
