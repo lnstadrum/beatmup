@@ -43,12 +43,11 @@ namespace Beatmup {
 
 		/**
 			\internal
-			\brief Performs the shading.
-			\param gpu			GPU pipeline interface
-			\param image		input bitmap, may be NULL
-			\param mapping		specifies the output geometry
+			\brief Conducts required preparations for the blending. Compiles shaders and links the rendering program if not yet.
+			\param gpu			Graphic pipeline instance
+			\param image		Image to blend, may be null
 		*/
-		void blend(GraphicPipeline& gpu, GL::TextureHandler* image, const AffineMapping& mapping);
+		void prepare(GraphicPipeline& gpu, GL::TextureHandler* image, const AffineMapping& mapping);
 		
 		/**
 			A preprocessor directive for the fragment shader code to be replaced by an appropriate sampler (ordinary or extension)

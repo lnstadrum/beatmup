@@ -43,7 +43,6 @@ set(BEATMUP_SOURCES
     ${BEATMUP_SRC_DIR}/gpu/pipeline.cpp
     ${BEATMUP_SRC_DIR}/gpu/program.cpp
     ${BEATMUP_SRC_DIR}/gpu/recycle_bin.cpp
-    ${BEATMUP_SRC_DIR}/gpu/shaders.cpp
     ${BEATMUP_SRC_DIR}/gpu/swapper.cpp
     ${BEATMUP_SRC_DIR}/gpu/texture_handler.cpp
     ${BEATMUP_SRC_DIR}/gpu/variables_bundle.cpp
@@ -53,6 +52,8 @@ set(BEATMUP_SOURCES
     ${BEATMUP_SRC_DIR}/pipelining/multitask.cpp
     ${BEATMUP_SRC_DIR}/scene/layer_shader.cpp
     ${BEATMUP_SRC_DIR}/scene/renderer.cpp
+    ${BEATMUP_SRC_DIR}/scene/rendering_context.cpp
+    ${BEATMUP_SRC_DIR}/scene/rendering_programs.cpp
     ${BEATMUP_SRC_DIR}/scene/scene.cpp
     ${BEATMUP_SRC_DIR}/scene/shader_applicator.cpp
     ${BEATMUP_SRC_DIR}/utils/chunkfile.cpp

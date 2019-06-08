@@ -8,6 +8,17 @@
 #include "../basic_types.h"
 #include "storage_buffer.h"
 
+
+#ifdef BEATMUP_OPENGLVERSION_GLES20
+#define BEATMUP_SHADER_HEADER_VERSION "#version 200 es"
+#elif BEATMUP_OPENGLVERSION_GLES31
+#define BEATMUP_SHADER_HEADER_VERSION "#version 310 es"
+#else
+#define BEATMUP_SHADER_HEADER_VERSION "#version 430"
+#endif
+
+#define BEATMUP_SHADER_CODE(X) BEATMUP_SHADER_HEADER_VERSION "\n" #X
+
 namespace Beatmup {
 	namespace GL {
 	
@@ -97,15 +108,15 @@ namespace Beatmup {
 			*/
 			void setFloat(const char* name, const float value, bool safe = false);
 
+
+			void setVector2(const char* name, const float x, const float y);
 			void setVector3(const char* name, const float x, const float y, const float z);
 			void setVector4(const char* name, const float x, const float y, const float z, const float w);
 			void setMatrix2(const char* name, const Matrix2& mat);		
 			void setMatrix3(const char* name, const Matrix2& mat, const Point& pos);
 			void setMatrix3(const char* name, const AffineMapping& mapping);
 
-			void bindSampler(GraphicPipeline& gpu, GL::TextureHandler& image, int unit);
 			void bindSampler(GraphicPipeline& gpu, GL::TextureHandler& image, const char* uniformId);
-			void bindImage(GraphicPipeline& gpu, GL::TextureHandler& image, int unit, bool read, bool write);
 			void bindImage(GraphicPipeline& gpu, GL::TextureHandler& image, const char* uniformId, bool read, bool write);
 
 			void bindAtomicCounter(GraphicPipeline& gpu, AtomicCounter& counter, int unit);

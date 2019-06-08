@@ -1,5 +1,4 @@
 #include "pipeline.h"
-#include "../gpu/shaders.h"
 #include "../bitmap/converter.h"
 #include "../bitmap/internal_bitmap.h"
 #include "../debug.h"
@@ -22,35 +21,10 @@ using namespace Beatmup;
 */
 class GraphicPipeline::Impl {
 private:
-	/**
-		Specification of one vertex attribute buffer element
-	*/
-	typedef struct {
-		GLfloat x, y, s, t;
-	} VertexAttribBufferElement;
 
 	GraphicPipeline& front;
 
-	GL::Program
-		*blending, *blendingMasked, *blendingShaped,
-		*blendingExt, *blendingMaskedExt, *blendingShapedExt;
-
-	struct {
-		GL::VertexShader
-			*vertexPlain, *vertexMasked;
-		GL::FragmentShader
-			*fragmentPlain, *fragmentMasked, *fragmentShaped,
-			*fragmentPlainExt, *fragmentMaskedExt, *fragmentShapedExt;
-	} shaders;
-
-	GLuint hMaskLookups[3];			//!< texture containing mask values for 1, 2 and 4 bpp
-
-	VertexAttribBufferElement vertexAttribBuffer[4];
-	GLuint hVertexAttribBuffer;				//!< buffer used when rendering
-
 	GLuint hFrameBuffer;
-
-	GLuint textureUnitCtr;					//!< texture unit counter for binding
 
 	bool onScreen;							//!< if `true` on-screen rendering is enabled
 
@@ -90,24 +64,13 @@ private:
 	}
 
 
-	unsigned int bindExtTexture(GLuint handle) {
-		glActiveTexture(GL_TEXTURE0 + textureUnitCtr);
-		glBindTexture(BGL_TEXTURE_TARGET, handle);
+	void bindExtSampler(GL::TextureHandler& handler, int unit) {
+		glActiveTexture(GL_TEXTURE0 + unit);
+		glBindTexture(BGL_TEXTURE_TARGET, handler.textureHandle);
 		glTexParameteri(BGL_TEXTURE_TARGET, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(BGL_TEXTURE_TARGET, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(BGL_TEXTURE_TARGET, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(BGL_TEXTURE_TARGET, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 #ifdef BEATMUP_DEBUG
 		GL::GLException::check("binding EXT texture");
-#endif
-		return textureUnitCtr++;
-	}
-
-
-	inline void doRender() {
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-#ifdef BEATMUP_DEBUG
-		GL::GLException::check("actual rendering");
 #endif
 	}
 
@@ -248,64 +211,7 @@ public:
 		// init buffers
 		glGenFramebuffers(1, &hFrameBuffer);
 		GL::GLException::check("initialization");
-
-		shaders.vertexPlain		= new GL::VertexShader(front, GL::ShaderSources::VERTEXSHADER_BLEND);
-		shaders.vertexMasked	= new GL::VertexShader(front, GL::ShaderSources::VERTEXSHADER_BLENDMASK);
-		shaders.fragmentPlain		= new GL::FragmentShader(front, std::string(GL::ShaderSources::FRAGMENTSHADERHEADER_NORMAL) + std::string(GL::ShaderSources::FRAGMENTSHADER_BLEND));
-		shaders.fragmentMasked		= new GL::FragmentShader(front, std::string(GL::ShaderSources::FRAGMENTSHADERHEADER_NORMAL) + std::string(GL::ShaderSources::FRAGMENTSHADER_BLENDMASK));
-		shaders.fragmentShaped		= new GL::FragmentShader(front, std::string(GL::ShaderSources::FRAGMENTSHADERHEADER_NORMAL) + std::string(GL::ShaderSources::FRAGMENTSHADER_BLENDSHAPE));
-		shaders.fragmentPlainExt	= new GL::FragmentShader(front, std::string(GL::ShaderSources::FRAGMENTSHADERHEADER_EXT) + std::string(GL::ShaderSources::FRAGMENTSHADER_BLEND));
-		shaders.fragmentMaskedExt	= new GL::FragmentShader(front, std::string(GL::ShaderSources::FRAGMENTSHADERHEADER_EXT) + std::string(GL::ShaderSources::FRAGMENTSHADER_BLENDMASK));
-		shaders.fragmentShapedExt	= new GL::FragmentShader(front, std::string(GL::ShaderSources::FRAGMENTSHADERHEADER_EXT) + std::string(GL::ShaderSources::FRAGMENTSHADER_BLENDSHAPE));
 		
-		// init shaders and programs
-		blending       = new GL::Program(front, *shaders.vertexPlain, *shaders.fragmentPlain);
-		blendingMasked = new GL::Program(front, *shaders.vertexMasked, *shaders.fragmentMasked);
-		blendingShaped = new GL::Program(front, *shaders.vertexMasked, *shaders.fragmentShaped);
-
-		blendingExt       = new GL::Program(front, *shaders.vertexPlain, *shaders.fragmentPlainExt);
-		blendingMaskedExt = new GL::Program(front, *shaders.vertexMasked, *shaders.fragmentMaskedExt);
-		blendingShapedExt = new GL::Program(front, *shaders.vertexMasked, *shaders.fragmentShapedExt);
-
-		// masked blending lookup textures initialization
-		unsigned char mask1[8][256], mask2[4][256], mask4[2][256];
-		for (int v = 0; v < 256; ++v) {
-			for (int o = 0; o < 8; ++o)
-				mask1[o][v] = ((v >> o) % 2) * 255;
-			for (int o = 0; o < 4; ++o)
-				mask2[o][v] = (int)((v >> (2 * o)) % 4) * 255 / 3;
-			for (int o = 0; o < 2; ++o)
-				mask4[o][v] = (int)((v >> (4 * o)) % 16) * 255 / 15;
-		}
-		glGenTextures(3, hMaskLookups);
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		glBindTexture(GL_TEXTURE_2D, hMaskLookups[0]);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, 256, 8, 0, GL_ALPHA, GL_UNSIGNED_BYTE, mask1);
-		glBindTexture(GL_TEXTURE_2D, hMaskLookups[1]);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, 256, 4, 0, GL_ALPHA, GL_UNSIGNED_BYTE, mask2);
-		glBindTexture(GL_TEXTURE_2D, hMaskLookups[2]);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, 256, 2, 0, GL_ALPHA, GL_UNSIGNED_BYTE, mask4);
-
-		// attribute buffer initialization
-		vertexAttribBuffer[0] = { 0.0f, 0.0f, 0.0f, 0.0f };
-		vertexAttribBuffer[1] = { 1.0f, 0.0f, 1.0f, 0.0f };
-		vertexAttribBuffer[2] = { 0.0f, 1.0f, 0.0f, 1.0f };
-		vertexAttribBuffer[3] = { 1.0f, 1.0f, 1.0f, 1.0f };
-		glGenBuffers(1, &hVertexAttribBuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, hVertexAttribBuffer);
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexAttribBuffer), vertexAttribBuffer, GL_DYNAMIC_DRAW);
-
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(blending->getAttribLocation("inVertex"), 2, GL_FLOAT, GL_FALSE, sizeof(VertexAttribBufferElement), NULL);
-		glVertexAttribPointer(blendingMasked->getAttribLocation("inVertex"), 2, GL_FLOAT, GL_FALSE, sizeof(VertexAttribBufferElement), NULL);
-		glVertexAttribPointer(blendingShaped->getAttribLocation("inVertex"), 2, GL_FLOAT, GL_FALSE, sizeof(VertexAttribBufferElement), NULL);
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(blending->getAttribLocation("inTexCoord"), 2, GL_FLOAT, GL_FALSE, sizeof(VertexAttribBufferElement), (void*)(2 * sizeof(GLfloat)));
-		glVertexAttribPointer(blendingMasked->getAttribLocation("inTexCoord"), 2, GL_FLOAT, GL_FALSE, sizeof(VertexAttribBufferElement), (void*)(2 * sizeof(GLfloat)));
-		glVertexAttribPointer(blendingShaped->getAttribLocation("inTexCoord"), 2, GL_FLOAT, GL_FALSE, sizeof(VertexAttribBufferElement), (void*)(2 * sizeof(GLfloat)));
-		GL::GLException::check("attribute buffer initialization");
-
 		// setting up main controls
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_CULL_FACE);
@@ -317,19 +223,7 @@ public:
 
 
 	~Impl() {
-		delete blending;
-		delete blendingMasked;
-		delete blendingShaped;
-		delete shaders.fragmentPlain;
-		delete shaders.fragmentPlainExt;
-		delete shaders.fragmentMasked;
-		delete shaders.fragmentMaskedExt;
-		delete shaders.fragmentShaped;
-		delete shaders.fragmentShapedExt;
-		delete shaders.vertexMasked;
-		delete shaders.vertexPlain;
 		glDeleteFramebuffers(1, &hFrameBuffer);
-		glDeleteBuffers(1, &hVertexAttribBuffer);
 
 #ifdef BEATMUP_PLATFORM_WINDOWS
 		wglDeleteContext(hglrc);
@@ -402,53 +296,66 @@ public:
 			throw GL::GLException("EGL: swapping buffers", eglGetError());
 #endif
 	}
-	
-
-	void resetTextureBinding() {
-		textureUnitCtr = 0;
-	}
 
 
-	unsigned int bindSampler(GL::TextureHandler& handler, const bool clampToEdge = true) {
+	void bindSampler(GL::TextureHandler& handler, int unit) {
 		// setting up a new texture or taking an existing one
-		glActiveTexture(GL_TEXTURE0 + textureUnitCtr);
+		glActiveTexture(GL_TEXTURE0 + unit);
 		useTexture(handler);
 		handler.prepare(front);		
-		if (clampToEdge) {
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		}
-		GL::GLException::check("preparing texture unit");
-
-		return textureUnitCtr++;
+		GL::GLException::check("binding sampler");
 	}
 
 
 	/**
 		Binds a texture handle to an image unit
 		\param[in] bitmap		The texture handler
-		\param[in] unit			The image unit number
+		\param[in] imageUnit	The image unit number
 		\param[in] read			If `true`, the image will be read
 		\param[in] write		If `true`, the image will be modified
-		\return texture unit number
 	*/
-	unsigned int bindImage(GL::TextureHandler& texture, int unit, bool read, bool write) {
+	void bindImage(GL::TextureHandler& texture, int imageUnit, bool read, bool write) {
 #ifdef BEATMUP_OPENGLVERSION_GLES20
 		throw GL::Unsupported("Images binding is not supported in GL ES 2.0.");
 #else
-		glActiveTexture(GL_TEXTURE0 + textureUnitCtr);
 		const GL::glhandle handle = useTexture(texture);
 		texture.prepare(front);
-		glBindImageTexture(unit,
+		glBindImageTexture(imageUnit,
 			handle,
 			0, texture.getDepth() > 1 ? GL_TRUE : GL_FALSE, 0,
 			read && write ? GL_READ_WRITE : (write ? GL_WRITE_ONLY : GL_READ_ONLY),
 			GL::TEXTUREHANDLER_INTERNALFORMATS[ texture.getTextureFormat() ]
 		);
 		GL::GLException::check("preparing image unit");
-		return textureUnitCtr++;
 #endif
 	}
+
+
+	void bind(GL::TextureHandler& texture, int unit, bool repeat) {
+		switch (texture.getTextureFormat()) {
+		case GL::TextureHandler::TextureFormat::Rx8:
+		case GL::TextureHandler::TextureFormat::RGBx8:
+		case GL::TextureHandler::TextureFormat::RGBAx8:
+		case GL::TextureHandler::TextureFormat::Rx32f:
+		case GL::TextureHandler::TextureFormat::RGBx32f:
+		case GL::TextureHandler::TextureFormat::RGBAx32f:
+			bindSampler(texture, unit);
+			break;
+		case GL::TextureHandler::TextureFormat::OES_Ext:
+			bindExtSampler(texture, unit);
+			break;
+		}
+
+		if (repeat) {
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		}
+		else {
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		}
+	}
+
 
 	void setInterpolation(const GraphicPipeline::Interpolation interpolation) {
 		switch (interpolation) {
@@ -601,253 +508,6 @@ public:
 	}
 
 
-	void blend(GL::TextureHandler& image, const pixfloat4& modulation, const AffineMapping& mapping) {
-		GL::Program* program;
-		resetTextureBinding();
-		unsigned int unit;
-		switch (image.getTextureFormat()) {
-		case GL::TextureHandler::TextureFormat::Rx8:
-		case GL::TextureHandler::TextureFormat::RGBx8:
-		case GL::TextureHandler::TextureFormat::RGBAx8:
-		case GL::TextureHandler::TextureFormat::Rx32f:
-		case GL::TextureHandler::TextureFormat::RGBx32f:
-		case GL::TextureHandler::TextureFormat::RGBAx32f:
-			program = blending;
-			unit = bindSampler(image);
-			break;
-		case GL::TextureHandler::TextureFormat::OES_Ext:
-			program = blendingExt;
-			unit = bindExtTexture(image.textureHandle);
-			break;
-		default:
-			return;
-		}
-
-		AffineMapping arMapping(mapping);
-		arMapping.matrix.scale(1.0f, image.getInvAspectRatio());
-
-		program->enable(front);
-		program->setMatrix3("modelview", arMapping);
-		program->setVector4("modulationColor", modulation.r, modulation.g, modulation.b, modulation.a);
-		program->setInteger("flipVertically", !onScreen);
-		program->setInteger("image", (int)unit);
-
-		doRender();
-	}
-
-
-	void blendMasked(
-		const AffineMapping& baseMapping,
-		GL::TextureHandler& image,
-		const AffineMapping& imageMapping,
-		AbstractBitmap& mask,
-		const AffineMapping& maskMapping,
-		const pixfloat4& modulation,
-		const pixfloat4& bgColor
-	) {
-		GL::Program* program = NULL;
-		resetTextureBinding();
-		unsigned int imageUnit, maskUnit;
-		switch (image.getTextureFormat()) {
-		case GL::TextureHandler::TextureFormat::Rx8:
-		case GL::TextureHandler::TextureFormat::RGBx8:
-		case GL::TextureHandler::TextureFormat::RGBAx8:
-		case GL::TextureHandler::TextureFormat::Rx32f:
-		case GL::TextureHandler::TextureFormat::RGBx32f:
-		case GL::TextureHandler::TextureFormat::RGBAx32f:
-			program = blendingMasked;
-			imageUnit = bindSampler(image);
-			break;
-		case GL::TextureHandler::TextureFormat::OES_Ext:
-			program = blendingMaskedExt;
-			imageUnit = bindExtTexture(image.textureHandle);
-			break;
-		default:
-			return;
-		}
-
-		AffineMapping arImgMapping(imageMapping), arMaskMapping(maskMapping);
-		arImgMapping.matrix.scale(1.0f, image.getInvAspectRatio());
-		arMaskMapping.matrix.scale(1.0f, image.getInvAspectRatio());
-
-		program->enable(front);
-		program->setMatrix3("modelview", baseMapping);
-		program->setMatrix3("invImgMapping", arImgMapping.getInverse() * arMaskMapping);
-		program->setMatrix3("maskMapping", arMaskMapping);
-		program->setVector4("modulationColor", modulation.r, modulation.g, modulation.b, modulation.a);
-		program->setVector4("bgColor", bgColor.r, bgColor.g, bgColor.b, bgColor.a);
-		program->setInteger("flipVertically", !onScreen);
-
-		maskUnit = bindSampler(mask);
-
-		// binding lookup
-		const unsigned int maskHandleUnit = textureUnitCtr++;
-		glActiveTexture(GL_TEXTURE0 + maskHandleUnit);
-		switch (mask.getPixelFormat()) {
-		case BinaryMask:
-			glBindTexture(GL_TEXTURE_2D, hMaskLookups[0]);
-			break;
-		case QuaternaryMask:
-			glBindTexture(GL_TEXTURE_2D, hMaskLookups[1]);
-			break;
-		case HexMask:
-			glBindTexture(GL_TEXTURE_2D, hMaskLookups[2]);
-			break;
-		default:
-			throw GL::GLException("Mask bitmap pixel format is not supported");
-		}
-		setInterpolation(Interpolation::NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-		//seting up shader variables
-		program->setInteger("image", (int)imageUnit);
-		program->setInteger("mask", (int)maskUnit);
-		program->setInteger("maskLookup", (int)maskHandleUnit);
-		program->setFloat("blockSize", 8.0f / mask.getBitsPerPixel() / mask.getWidth());
-		program->setFloat("pixOffset", 0.5f / mask.getWidth());
-
-		doRender();
-	}
-
-		
-	void blendShaped(
-		const AffineMapping& baseMapping,
-		GL::TextureHandler& image,
-		const AffineMapping& imageMapping,
-		const AffineMapping& maskMapping,
-		const float border,
-		const float slope,
-		const float radius,
-		const int referenceSize,
-		const pixfloat4& modulation,
-		const pixfloat4& bgColor
-	) {
-		GL::Program* program = NULL;
-		resetTextureBinding();
-		unsigned int unit;
-		switch (image.getTextureFormat()) {
-		case GL::TextureHandler::TextureFormat::Rx8:
-		case GL::TextureHandler::TextureFormat::RGBx8:
-		case GL::TextureHandler::TextureFormat::RGBAx8:
-		case GL::TextureHandler::TextureFormat::Rx32f:
-		case GL::TextureHandler::TextureFormat::RGBx32f:
-		case GL::TextureHandler::TextureFormat::RGBAx32f:
-			program = blendingShaped;
-			unit = bindSampler(image);
-			break;
-		case GL::TextureHandler::TextureFormat::OES_Ext:
-			program = blendingShapedExt;
-			unit = bindExtTexture(image.textureHandle);
-			break;
-		default:
-			return;
-		}
-
-		AffineMapping arImgMapping(imageMapping), arMaskMapping(maskMapping);
-		arImgMapping.matrix.scale(1.0f, image.getInvAspectRatio());
-		arMaskMapping.matrix.scale(1.0f, image.getInvAspectRatio());
-
-		program->enable(front);
-		program->setMatrix3("modelview", baseMapping);
-		program->setMatrix3("invImgMapping", arImgMapping.getInverse() * arMaskMapping);
-		program->setMatrix3("maskMapping", arMaskMapping);
-		program->setVector4("bgColor", bgColor.r, bgColor.g, bgColor.b, bgColor.a);
-		program->setVector4("modulationColor", modulation.r, modulation.g, modulation.b, modulation.a);
-		program->setInteger("flipVertically", !onScreen);
-
-		// computing border profile in pixels
-		Matrix2 mat = baseMapping.matrix * arMaskMapping.matrix;
-		mat.prescale(1.0f, outputResolution.getInvAspectRatio());
-		const float scale = referenceSize > 0 ? referenceSize : 1;
-		const Point borderProfile(scale * mat.getScalingX(), scale * mat.getScalingY());
-		
-		//seting up shader variables
-		program->setInteger("image", (int)unit);
-		glUniform2f(program->getUniformLocation("borderProfile"), borderProfile.x, borderProfile.y);
-		program->setFloat("slope", slope);
-		program->setFloat("border", border);
-		program->setFloat("cornerRadius", radius + border);
-
-		doRender();
-	}
-
-
-	void blendCustom(GL::TextureHandler* image, const AffineMapping& mapping, GL::Program& program) {
-		resetTextureBinding();
-		unsigned int unit;
-
-		// if there is a texture, prepare it
-		if (image) {
-			switch (image->getTextureFormat()) {
-			case GL::TextureHandler::TextureFormat::Rx8:
-			case GL::TextureHandler::TextureFormat::RGBx8:
-			case GL::TextureHandler::TextureFormat::RGBAx8:
-			case GL::TextureHandler::TextureFormat::Rx32f:
-			case GL::TextureHandler::TextureFormat::RGBx32f:
-			case GL::TextureHandler::TextureFormat::RGBAx32f:
-				unit = bindSampler(*image);
-				break;
-			case GL::TextureHandler::TextureFormat::OES_Ext:
-				unit = bindExtTexture(image->textureHandle);
-				break;
-			}
-		}
-
-		// bind vertex attribute buffer (to be able to specify the output mapping)
-#ifdef BEATMUP_DEBUG
-		if (program.getVertexShader() != &getBlendingVertexShader())
-			throw GL::GLException("Program vertex shader does not match default blending vertex shader");
-#endif
-
-		AffineMapping arMapping(mapping);
-		arMapping.matrix.scale(1.0f, image->getInvAspectRatio());
-
-		program.enable(front);
-		program.setInteger("image", (int)unit);
-		program.setMatrix3("modelview", arMapping);
-		program.setInteger("flipVertically", !onScreen, true);
-
-		doRender();
-	}
-
-
-	GL::VertexShader& getBlendingVertexShader() const {
-		return *shaders.vertexPlain;
-	}
-
-	
-	void paveBackground(AbstractBitmap& image) {
-		blending->enable(front);
-
-		// setting texture coords, bitmap size and updating buffer data in GPU
-		vertexAttribBuffer[1].s = vertexAttribBuffer[3].s = (float)outputResolution.getWidth() / image.getWidth();
-		vertexAttribBuffer[2].t = vertexAttribBuffer[3].t = (float)outputResolution.getHeight() / image.getHeight();
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexAttribBuffer), vertexAttribBuffer, GL_DYNAMIC_DRAW);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(blending->getAttribLocation("inVertex"), 2, GL_FLOAT, GL_FALSE, sizeof(VertexAttribBufferElement), NULL);
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(blending->getAttribLocation("inTexCoord"), 2, GL_FLOAT, GL_FALSE, sizeof(VertexAttribBufferElement), (void*)(2 * sizeof(GLfloat)));
-		
-		// setting modelview matrix
-		GLfloat m[9] = { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
-		glUniformMatrix3fv(blending->getUniformLocation("modelview"), 1, false, m);
-		blending->setVector4("modulationColor", 1.0f, 1.0f, 1.0f, 1.0f);
-		blending->setInteger("flipVertically", !onScreen);
-		resetTextureBinding();
-		blending->setInteger("image", (int)bindSampler(image, false));
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		doRender();
-
-		// reset texture coords
-		vertexAttribBuffer[1].s = vertexAttribBuffer[3].s =
-		vertexAttribBuffer[2].t = vertexAttribBuffer[3].t = 1.0f;
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(blending->getAttribLocation("inTexCoord"), 2, GL_FLOAT, GL_FALSE, sizeof(VertexAttribBufferElement), (void*)(2 * sizeof(GLfloat)));
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexAttribBuffer), vertexAttribBuffer, GL_DYNAMIC_DRAW);
-	}
-
 	int getLimit(GraphicPipeline::Limit limit) const {
 		switch (limit) {
 		case Limit::LOCAL_GROUPS_TOTAL: return glLimits.maxTotalWorkGroupSize;
@@ -866,7 +526,7 @@ public:
 
 
 
-GraphicPipeline::GraphicPipeline() {
+GraphicPipeline::GraphicPipeline(): renderingPrograms(this) {
 	DEBUG_I("GRAPHIC PIPELINE INITIALIZATION");
 	impl = new Impl(*this);
 }
@@ -897,18 +557,13 @@ void GraphicPipeline::swapBuffers() {
 }
 
 
-void GraphicPipeline::resetTextureBinding() {
-	impl->resetTextureBinding();
+void GraphicPipeline::bind(GL::TextureHandler& texture, int unit, bool repeat) {
+	impl->bind(texture, unit, repeat);
 }
 
 
-unsigned int GraphicPipeline::bindSampler(GL::TextureHandler& texture, int unit) {
-	return impl->bindSampler(texture, unit);
-}
-
-
-unsigned int GraphicPipeline::bindImage(GL::TextureHandler& texture, int unit, bool read, bool write) {
-	return impl->bindImage(texture, unit, read, write);
+void GraphicPipeline::bind(GL::TextureHandler& texture, int imageUnit, bool read, bool write) {
+	impl->bindImage(texture, imageUnit, read, write);
 }
 
 
@@ -929,55 +584,6 @@ void GraphicPipeline::resetOutput() {
 
 ImageResolution GraphicPipeline::getOutputResolution() const {
 	return impl->getOutputResolution();
-}
-
-
-void GraphicPipeline::blend(GL::TextureHandler& image, const pixfloat4& modulation, const AffineMapping& mapping) {
-	impl->blend(image, modulation, mapping);
-}
-
-
-void GraphicPipeline::blendMasked(
-	const AffineMapping& baseMapping,
-	GL::TextureHandler& image,
-	const AffineMapping& imageMapping,
-	AbstractBitmap& mask,
-	const AffineMapping& maskMapping,
-	const pixfloat4& modulation,
-	const pixfloat4& bgColor
-) {
-	impl->blendMasked(baseMapping, image, imageMapping, mask, maskMapping, modulation, bgColor);
-}
-
-
-void GraphicPipeline::blendShaped(
-	const AffineMapping& baseMapping,
-	GL::TextureHandler& image,
-	const AffineMapping& imageMapping,
-	const AffineMapping& maskMapping,
-	const float border,
-	const float slope,
-	const float radius,
-	const int referenceSize,
-	const pixfloat4& modulation,
-	const pixfloat4& bgColor
-) {
-	impl->blendShaped(baseMapping, image, imageMapping, maskMapping, border, slope, radius, referenceSize, modulation, bgColor);
-}
-
-
-void GraphicPipeline::blendCustom(GL::TextureHandler* image, const AffineMapping& mapping, GL::Program& program) {
-	impl->blendCustom(image, mapping, program);
-}
-
-
-GL::VertexShader& GraphicPipeline::getBlendingVertexShader() const {
-	return impl->getBlendingVertexShader();
-}
-
-
-void GraphicPipeline::paveBackground(AbstractBitmap& image) {
-	impl->paveBackground(image);
 }
 
 

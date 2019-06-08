@@ -142,16 +142,20 @@ void VariablesBundle::setFloatMatrix4(std::string name, const Color::Matrix& mat
 			*out++ = matrix[x][y];
 }
 
+float VariablesBundle::getFloat(const std::string& name) const {
+	const auto& it = floats.find(name);
+	if (it == floats.cend())
+		return std::numeric_limits<float>::quiet_NaN();
+	return it->second;
+}
 
 void VariablesBundle::apply(Program& program) {
 	for (auto& var : integers)
 		program.setInteger(var.first.c_str(), var.second);
-	integers.clear();
-
+	
 	for (auto& var : floats)
 		program.setFloat(var.first.c_str(), var.second);
-	floats.clear();
-
+	
 	for (auto& var : params) {
 		// assign a vector
 		if (var.second.getHeight() == 1 && var.second.getCount() == 1)
@@ -247,5 +251,4 @@ void VariablesBundle::apply(Program& program) {
 		
 		GL::GLException::check((std::string("setting uniform variable ") + var.first).c_str());
 	}
-	params.clear();
 }

@@ -5,8 +5,10 @@
 	and a shaped bitmap layer.
 */
 
+#include <bitmap/internal_bitmap.h>
 #include <bitmap/platform_specific/bitmap.h>
 #include <scene/renderer.h>
+#include <bitmap/converter.h>
 
 #include <iostream>
 #include <ctime>
@@ -18,8 +20,20 @@ int main(int argc, char* argv[]) {
 	Beatmup::Scene scene;
 	Beatmup::SceneRenderer renderer;
 	Beatmup::Bitmap fecamp(env, L"images/fecamp.jpg");
+	Beatmup::Bitmap bg(env, L"images/bg.png");
 	Beatmup::Bitmap output(env, Beatmup::PixelFormat::TripleByte, 4000, 4000);
 
+	Beatmup::InternalBitmap bitmap1 (env, Beatmup::PixelFormat::SingleByte,  fecamp.getWidth(), fecamp.getHeight());
+	Beatmup::InternalBitmap bitmap3 (env, Beatmup::PixelFormat::TripleByte,  fecamp.getWidth(), fecamp.getHeight());
+	Beatmup::InternalBitmap bitmap3f(env, Beatmup::PixelFormat::TripleFloat, fecamp.getWidth(), fecamp.getHeight());
+	Beatmup::InternalBitmap bitmap4f(env, Beatmup::PixelFormat::QuadFloat,   fecamp.getWidth(), fecamp.getHeight());
+
+	env.limitWorkerCount(1);
+	Beatmup::BitmapConverter::convert(fecamp, bitmap3);
+	Beatmup::BitmapConverter::convert(fecamp, bitmap1);
+	Beatmup::BitmapConverter::convert(fecamp, bitmap3f);
+	Beatmup::BitmapConverter::convert(fecamp, bitmap4f);
+	
 	// setting up a radial image distortion shader
 	Beatmup::LayerShader distortShader(env);
 	distortShader.setSourceCode(SHADERCODE(
@@ -68,7 +82,6 @@ int main(int argc, char* argv[]) {
 	std::srand(std::time(nullptr));
 	for (int i = 0; i < 9; ++i) {
 		matrix[i] = (float)std::rand() / RAND_MAX;
-		std::cout << matrix[i] << " ";
 	}
 	recolorShader.setFloatMatrix3("matrix", matrix);
 
@@ -78,7 +91,7 @@ int main(int argc, char* argv[]) {
 		l.getMapping().scale(0.48f);
 		l.getMapping().rotateDegrees(1);
 		l.getMapping().setCenterPosition(Beatmup::Point(0.25, 0.75));
-		l.setBitmap(&fecamp);
+		l.setBitmap(&bitmap1);
 		l.setCornerRadius(0.05f);
 		l.setSlopeWidth(0.01f);
 		l.setInPixels(false);
@@ -89,7 +102,7 @@ int main(int argc, char* argv[]) {
 		l.getMapping().scale(0.48f);
 		l.getMapping().rotateDegrees(-1);
 		l.getMapping().setCenterPosition(Beatmup::Point(0.75, 0.25));
-		l.setBitmap(&fecamp);
+		l.setBitmap(&bitmap4f);
 		l.setLayerShader(&distortShader);
 	}
 
@@ -98,7 +111,7 @@ int main(int argc, char* argv[]) {
 		l.getMapping().scale(0.48f);
 		l.getMapping().rotateDegrees(-2);
 		l.getMapping().setCenterPosition(Beatmup::Point(0.75, 0.75));
-		l.setBitmap(&fecamp);
+		l.setBitmap(&bitmap3);
 		l.setLayerShader(&grayShiftShader);
 	}
 
@@ -107,12 +120,13 @@ int main(int argc, char* argv[]) {
 		l.getMapping().scale(0.45f);
 		l.getMapping().rotateDegrees(-3);
 		l.getMapping().setCenterPosition(Beatmup::Point(0.25, 0.25));
-		l.setBitmap(&fecamp);
+		l.setBitmap(&bitmap3f);
 		l.setLayerShader(&recolorShader);
 	}
 
 	// configuring renderer
 	renderer.setScene(scene);
+	renderer.setBackgroundImage(&bg);
 	renderer.setOutputPixelsFetching(true);
 	renderer.setOutputMapping(Beatmup::SceneRenderer::OutputMapping::FIT_WIDTH);
 	renderer.setOutput(output);

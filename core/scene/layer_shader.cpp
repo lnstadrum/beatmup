@@ -1,6 +1,5 @@
 #include "layer_shader.h"
 #include "../gpu/program.h"
-#include "../gpu/shaders.h"
 #include "../gpu/bgl.h"
 
 #include "../debug.h"
@@ -22,8 +21,8 @@ LayerShader::LayerShader(Environment& env) :
 	env(env),
 	fragmentShaderReady(false),
 	sourceCode(),
-	fragmentShader(NULL),
-	program(NULL),
+	fragmentShader(nullptr),
+	program(nullptr),
 	inputFormat(GL::TextureHandler::TextureFormat::RGBx8)
 {}
 
@@ -57,23 +56,23 @@ void LayerShader::setSourceCode(const char* sourceCode) {
 }
 
 
-void LayerShader::blend(GraphicPipeline& gpu, GL::TextureHandler* image, const AffineMapping& mapping) {
+void LayerShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* image, const AffineMapping& mapping) {
 	LockGuard lock(this);
 	if (sourceCode.empty())
 		throw NoSource();
 
 	// check if input format changed
-	if (image && image->getTextureFormat() != inputFormat)		
+	if (image && image->getTextureFormat() != inputFormat)
 		fragmentShaderReady = false;
 
 	// compile fragment shader
 	if (!fragmentShaderReady && fragmentShader) {
 		delete fragmentShader;
-		fragmentShader = NULL;
+		fragmentShader = nullptr;
 	}
+
 	if (!fragmentShader) {
 		std::string preprocessed(sourceCode);
-
 		if (image) {
 			switch (inputFormat = image->getTextureFormat()) {
 			case GL::TextureHandler::TextureFormat::Rx8:
@@ -100,7 +99,7 @@ void LayerShader::blend(GraphicPipeline& gpu, GL::TextureHandler* image, const A
 	// link program
 	if (!program) {
 		program = new GL::Program(gpu);
-		program->link(gpu.getBlendingVertexShader(), *fragmentShader);
+		program->link(gpu.getRenderingPrograms().getDefaultVertexShader(&gpu), *fragmentShader);
 		fragmentShaderReady = true;
 	}
 	else if (!fragmentShaderReady) {
@@ -108,9 +107,16 @@ void LayerShader::blend(GraphicPipeline& gpu, GL::TextureHandler* image, const A
 		fragmentShaderReady = true;
 	}
 
-	program->enable(gpu);
+	// enable program and configure
+	gpu.getRenderingPrograms().enableProgram(&gpu, *program);
 	apply(*program);
 
-	// blend
-	gpu.blendCustom(image, mapping, *program);
+	if (image) {
+		gpu.bind(*image, 0, false);
+		program->setInteger("image", 0);
+
+		AffineMapping arMapping(mapping);
+		arMapping.matrix.scale(1.0f, image->getInvAspectRatio());
+		program->setMatrix3("modelview", arMapping);
+	}
 }
