@@ -251,7 +251,7 @@ std::vector<std::string> Ops::ImageInput::generateCode(GraphicPipeline& gpu, Chu
 	Storage::CodeGenerator gen;
 	gen("outp", getOutputType(), size, 1, "writeonly", Storage::CodeGenerator::Access::STORING);
 
-	std::vector<std::string> code(1, BGL_SHADER_CODE(
+	std::vector<std::string> code(1, BEATMUP_SHADER_CODE(
 		layout(local_size_x = 1, local_size_y = 1) in;
 		layout(binding = 0) uniform highp sampler2D inputImage;
 		$OUT$
@@ -278,7 +278,6 @@ void Ops::ImageInput::perform(GraphicPipeline& gpu, GL::ComputeProgram& program,
 	Size outputSize(getOutputSize());
 	program.setInteger("width", outputSize.getWidth());
 	program.setInteger("height", outputSize.getHeight());
-	gpu.resetTextureBinding();
 	input->bind(gpu, program, 0, true, false);
 	output->bind(gpu, program, 1, false, true);
 	program.dispatch(gpu, outputSize.getWidth(), outputSize.getHeight(), 1);
@@ -329,7 +328,6 @@ void FeedforwardGPUOperation::perform(GraphicPipeline& gpu, GL::ComputeProgram& 
 	BEATMUP_ASSERT_DEBUG(input);
 	BEATMUP_ASSERT_DEBUG(output);
 	program.enable(gpu);
-	gpu.resetTextureBinding();
 	input->bind(gpu, program, 0, true, false);
 	output->bind(gpu, program, 1, false, true);
 }
@@ -395,7 +393,7 @@ Storage* Probe::allocateOutput(int outputIndex) const {
 
 
 std::vector<std::string> Probe::generateCode(GraphicPipeline& gpu, ChunkFile& data) {
-	std::vector<std::string> code(1, BGL_SHADER_CODE(
+	std::vector<std::string> code(1, BEATMUP_SHADER_CODE(
 		layout(local_size_x = 1, local_size_y = 1) in;
 		$IN$
 		layout(binding = 1, rgba32f) uniform highp writeonly image2D outp;
@@ -422,9 +420,8 @@ void Probe::perform(GraphicPipeline& gpu, GL::ComputeProgram& program, int worke
 	BEATMUP_ASSERT_DEBUG(input);
 	BEATMUP_ASSERT_DEBUG(output);
 	program.enable(gpu);
-	gpu.resetTextureBinding();
 	input->bind(gpu, program, 0, true, false);
-	program.bindImage(gpu, *output, 1, false, true);
+	gpu.bind(*output, 1, false, true);
 	program.setInteger("channel", laneIndex);
 	Size size(getOutputSize());
 	program.dispatch(gpu, size.getWidth(), size.getHeight(), 1);

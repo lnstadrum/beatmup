@@ -9,7 +9,7 @@ using namespace Beatmup;
 using namespace NNets;
 
 
-static const char* BENCHMARK_PROGRAM_SOURCE = BGL_SHADER_CODE(
+static const char* BENCHMARK_PROGRAM_SOURCE = BEATMUP_SHADER_CODE(
 	layout(local_size_x = 1, local_size_y = 1) in;
 	layout(binding = 0, rgba32f) uniform highp readonly image2D inputTensor;
 	layout(binding = 1, rgba32f) uniform highp writeonly image2D outputTensor;
@@ -120,9 +120,8 @@ void GPUBenchmark::afterProcessing(ThreadIndex threadCount, bool aborted) {
 
 bool GPUBenchmark::processOnGPU(GraphicPipeline& gpu, TaskThread& thread) {
 	program->enable(gpu);
-	gpu.resetTextureBinding();
-	program->bindImage(gpu, input, 0, true, false);
-	program->bindImage(gpu, output, 1, false, true);
+	gpu.bind(input, 0, true, false);
+	gpu.bind(output, 1, false, true);
 	auto startTime = std::chrono::high_resolution_clock::now();
 	program->dispatch(gpu, TEST_BITMAP_SIZE, TEST_BITMAP_SIZE, 1);
 	auto endTime = std::chrono::high_resolution_clock::now();

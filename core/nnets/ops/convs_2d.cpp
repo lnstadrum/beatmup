@@ -708,7 +708,7 @@ std::vector<std::string> Convolution2D::generateCode(GraphicPipeline& gpu, Chunk
 		}
 
 		// make source code
-		code[sliceIdx] = BGL_SHADER_CODE(
+		code[sliceIdx] = BEATMUP_SHADER_CODE(
 			<<LYT>>
 			<<DATA>>
 			ivec3 dpos(int channel) {
