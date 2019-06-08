@@ -15,7 +15,6 @@
 #elif BEATMUP_PLATFORM_ANDROID
 	#include <EGL/egl.h>
 	#include <EGL/eglext.h>
-#define BEATMUP_OPENGLVERSION_GLES
 #ifdef BEATMUP_OPENGLVERSION_GLES31
     #include <GLES3/gl31.h>
     #include <GLES3/gl3ext.h>

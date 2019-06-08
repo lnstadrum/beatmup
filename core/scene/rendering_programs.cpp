@@ -345,6 +345,7 @@ void RenderingPrograms::enableProgram(GraphicPipeline* gpu, GL::Program& program
 	currentProgram = Program::CUSTOM;
 	currentGlProgram = &program;
 	program.enable(*gpu);
+	backend->setupVertexAttributes(program);
 	maskSetUp = false;
 }
 
