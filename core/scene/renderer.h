@@ -9,17 +9,6 @@
 #include <map>
 
 namespace Beatmup {
-	class RenderingEventListener {
-	public:
-		virtual void onRenderingStart() = 0;
-
-		/**
-			Called once per rendering session just before the camera frame is going to be rendered
-		*/
-		virtual void onCameraFrameRendering(GL::TextureHandler*& cameraFrame) = 0;
-	};
-
-
 	class SceneRenderer : public GpuTask {
 	public:
 		/**
@@ -33,7 +22,6 @@ namespace Beatmup {
 		};
 
 	private:
-		std::map<BitmapPtr, int> lockedBitmaps;		//!< all the locked bitmaps with reference counters
 		Scene* scene;								//!< content to render
 		AbstractBitmap* background;					//!< used to pave the screen before rendering
 		BitmapPtr output;							//!< output bitmap
@@ -48,14 +36,12 @@ namespace Beatmup {
 
 		GL::TextureHandler* cameraFrame;			//!< last got camera frame; set to NULL before rendering, then asked from outside through eventListener
 
-		RenderingEventListener* eventListener;
+		RenderingContext::EventListener* eventListener;
 
 		static const unsigned int
 			MAX_RECURSION_LEVEL = 256;
 
-		void safeLockBitmap(BitmapPtr bitmap);
-		void safeUnlockBitmap(BitmapPtr bitmap);
-		void renderLayer(GraphicPipeline& gpu, TaskThread& thread, const Scene::Layer& layer, const AffineMapping& base, unsigned int recursionLevel = 0);
+		void renderLayer(RenderingContext& context, TaskThread& thread, Scene::Layer& layer, const AffineMapping& base, unsigned int recursionLevel = 0);
 		bool doRender(GraphicPipeline& gpu, TaskThread& thread);
 
 	protected:
@@ -139,6 +125,6 @@ namespace Beatmup {
 		Scene::Layer* pickLayer(float x, float y, bool normalized) const;
 
 
-		void setRenderingEventListener(RenderingEventListener* eventListener);
+		void setRenderingEventListener(RenderingContext::EventListener* eventListener);
 	};
 }

@@ -172,6 +172,14 @@ void AbstractProgram::setFloat(const char* name, const float value, bool safe) {
 }
 
 
+void AbstractProgram::setVector2(const char* name, const float x, const float y) {
+	glUniform2f(glGetUniformLocation(handle, name), x, y);
+#ifdef BEATMUP_DEBUG
+	GL::GLException::check("setting shader vector 2");
+#endif
+}
+
+
 void AbstractProgram::setVector3(const char* name, const float x, const float y, const float z) {
 	glUniform3f(glGetUniformLocation(handle, name), x, y, z);
 #ifdef BEATMUP_DEBUG
@@ -213,22 +221,12 @@ void AbstractProgram::setMatrix3(const char* name, const AffineMapping& mapping)
 }
 
 
-void AbstractProgram::bindSampler(GraphicPipeline& gpu, GL::TextureHandler& image, int unit) {
-	gpu.bindSampler(image, unit);
-}
-
-
 void AbstractProgram::bindSampler(GraphicPipeline& gpu, GL::TextureHandler& image, const char* uniformId) {
 	glhandle uniform = getUniformLocation(uniformId);
 	GLint unit;
 	glGetUniformiv(getHandle(), uniform, &unit);
 	GL::GLException::check("binding sampler in program");
-	bindSampler(gpu, image, unit);
-}
-
-
-void AbstractProgram::bindImage(GraphicPipeline& gpu, GL::TextureHandler& image, int unit, bool read, bool write) {
-	gpu.bindImage(image, unit, read, write);
+	gpu.bind(image, unit, false);
 }
 
 
@@ -237,7 +235,7 @@ void AbstractProgram::bindImage(GraphicPipeline& gpu, GL::TextureHandler& image,
 	GLint unit;
 	glGetUniformiv(getHandle(), uniform, &unit);
 	GL::GLException::check("binding image in program");
-	bindImage(gpu, image, unit, read, write);
+	gpu.bind(image, unit, read, write);
 }
 
 

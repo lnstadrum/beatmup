@@ -3,6 +3,7 @@
 */
 
 #pragma once
+#include "rendering_context.h"
 #include "../exception.h"
 #include "../bitmap/abstract_bitmap.h"
 #include "../bitmap/pixel_arithmetic.h"
@@ -47,6 +48,7 @@ namespace Beatmup {
 			Abstract scene layer
 		*/
 		class Layer : public Object {
+			friend class SceneRenderer;
 			Layer(const Layer&) = delete;		//!< disabling copying constructor
 		public:
 			enum class Type {
@@ -59,6 +61,8 @@ namespace Beatmup {
 
 		protected:
 			Layer(Type type);
+			virtual void render(RenderingContext& context) {}
+			
 			AffineMapping mapping;		//!< layer mapping
 			bool visible;				//!< layer visibility
 			bool phantom;				//!< if `true`, layer is ignored by selection by point
@@ -69,7 +73,7 @@ namespace Beatmup {
 
 		public:
 			/**
-				Returns layer object type
+				Returns layer type
 			*/
 			inline Type getType() const { return type; }
 
@@ -117,7 +121,7 @@ namespace Beatmup {
 
 
 		/**
-			Layer that contains an entire scene
+			Layer containing an entire scene
 		*/
 		class SceneLayer : public Layer {
 			friend class Scene;
@@ -132,7 +136,7 @@ namespace Beatmup {
 
 
 		/**
-			Layer containing a bitmap cropped by a mask
+			Layer having a bitmap
 		*/
 		class BitmapLayer : public Layer {
 			friend class Scene;
@@ -151,6 +155,10 @@ namespace Beatmup {
 		protected:
 			BitmapLayer();
 			BitmapLayer(Type type);
+			GL::TextureHandler* resolveContent(RenderingContext& context);
+			void configure(RenderingContext& context, GL::TextureHandler* content);
+			void render(RenderingContext& context);
+
 			float invAr;					//!< inversed aspect ratio of what is rendered (set by SceneRenderer)
 			ImageSource source;				//!< content source
 			BitmapPtr bitmap;				//!< content to display, used if the image source is set to BITMAP
@@ -181,6 +189,8 @@ namespace Beatmup {
 		class CustomMaskedBitmapLayer : public BitmapLayer {
 		protected:
 			CustomMaskedBitmapLayer(Type type);
+			void configure(RenderingContext& context, GL::TextureHandler* content);
+
 			AffineMapping maskMapping;		//!< mask mapping w.r.t. the layer mapping
 			pixfloat4 bgColor;				//!< color to fill mask areas where the bitmap is not present
 		public:
@@ -198,10 +208,12 @@ namespace Beatmup {
 		*/
 		class MaskedBitmapLayer : public CustomMaskedBitmapLayer {
 			friend class Scene;
+			friend class SceneRenderer;
 		private:
 			BitmapPtr mask;		//!< mask bitmap
 		protected:
 			MaskedBitmapLayer();
+			void render(RenderingContext& context);
 		public:
 			inline const BitmapPtr getMask() const { return mask; }
 			inline void setMask(BitmapPtr mask) { this->mask = mask; }
@@ -214,6 +226,7 @@ namespace Beatmup {
 		*/
 		class ShapedBitmapLayer : public CustomMaskedBitmapLayer {
 			friend class Scene;
+			friend class SceneRenderer;
 		private:
 			float borderWidth;		//!< constant border thickness
 			float slopeWidth;		//!< thickness of the smoothed line between border and image
@@ -222,6 +235,7 @@ namespace Beatmup {
 
 		protected:
 			ShapedBitmapLayer();
+			void render(RenderingContext& context);
 
 		public:
 			inline float getBorderWidth() const { return borderWidth; }
@@ -245,10 +259,12 @@ namespace Beatmup {
 		*/
 		class ShadedBitmapLayer : public BitmapLayer {
 			friend class Scene;
+			friend class SceneRenderer;
 		private:
 			LayerShader* layerShader;
 		protected:
 			ShadedBitmapLayer();
+			void render(RenderingContext& context);
 		public:
 			inline LayerShader* getLayerShader() const { return layerShader; }
 			inline void setLayerShader(LayerShader* layerShader) { this->layerShader = layerShader; }

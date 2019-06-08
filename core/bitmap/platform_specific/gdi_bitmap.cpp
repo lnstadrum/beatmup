@@ -73,7 +73,6 @@ public:
 		init();
 		Gdiplus::PixelFormat pf;
 		switch (format) {
-		case SingleByte:
 		case TripleByte:
 			pf = PixelFormat24bppRGB;
 			break;
@@ -119,7 +118,6 @@ public:
 
 	inline void lockPixelData() {
 		bitmap->LockBits(&size, Gdiplus::ImageLockModeRead | Gdiplus::ImageLockModeWrite, bitmap->GetPixelFormat(), &data);
-			
 	}
 
 

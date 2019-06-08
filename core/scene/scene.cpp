@@ -249,8 +249,61 @@ Scene::BitmapLayer::BitmapLayer():
 {}
 
 Scene::BitmapLayer::BitmapLayer(Type type):
-	Layer(type), source(ImageSource::BITMAP), invAr(0), bitmap(NULL), bitmapMapping(), modulation(1.0f, 1.0f, 1.0f, 1.0f)
+	Layer(type), source(ImageSource::BITMAP), invAr(0), bitmap(nullptr), bitmapMapping(), modulation(1, 1, 1, 1)
 {}
+
+
+GL::TextureHandler* Scene::BitmapLayer::resolveContent(RenderingContext& context) {
+	GL::TextureHandler* texture = nullptr;
+	switch (source) {
+	case Scene::BitmapLayer::ImageSource::BITMAP:
+		if (bitmap)
+			context.lockBitmap(bitmap);
+		return bitmap;
+		
+#ifdef BEATMUP_PLATFORM_ANDROID
+	case Scene::BitmapLayer::ImageSource::CAMERA:
+		return context.getCameraFrame();
+#endif
+	}
+
+	return nullptr;
+}
+
+void Scene::BitmapLayer::configure(RenderingContext& context, GL::TextureHandler* content) {
+	if (content) {
+		invAr = content->getInvAspectRatio();
+		context.getGpu().bind(*content, 0, false);
+		context.getProgram().setInteger("image", 0);
+	}
+	else
+		invAr = 0;
+
+	context.getProgram().setVector4("modulationColor", modulation.r, modulation.g, modulation.b, modulation.a);
+}
+
+
+void Scene::BitmapLayer::render(RenderingContext& context) {
+	GL::TextureHandler* content = resolveContent(context);
+	if (content) {
+		// program selection
+		switch (content->getTextureFormat()) {
+		case GL::TextureHandler::TextureFormat::OES_Ext:
+			context.enableProgram(RenderingPrograms::Program::BLEND_EXT);
+			break;
+		default:
+			context.enableProgram(RenderingPrograms::Program::BLEND);
+			break;
+		}
+
+		configure(context, content);
+		
+		AffineMapping arMapping(context.getMapping() * mapping * bitmapMapping);
+		arMapping.matrix.scale(1.0f, invAr);
+		context.getProgram().setMatrix3("modelview", arMapping);
+		context.blend();
+	}
+}
 
 
 bool Scene::BitmapLayer::testPoint(float x, float y) const {
@@ -262,13 +315,47 @@ bool Scene::BitmapLayer::testPoint(float x, float y) const {
 
 
 Scene::CustomMaskedBitmapLayer::CustomMaskedBitmapLayer(Type type) :
-	BitmapLayer(type), maskMapping(), bgColor(0,0,0,0)
+	BitmapLayer(type), maskMapping()
 {}
+
+void Scene::CustomMaskedBitmapLayer::configure(RenderingContext& context, GL::TextureHandler* content) {
+	BitmapLayer::configure(context, content);
+
+	AffineMapping arImgMapping(bitmapMapping), arMaskMapping(maskMapping);
+	arImgMapping.matrix.scale(1.0f, invAr);
+	arMaskMapping.matrix.scale(1.0f, invAr);
+	context.getProgram().setVector4("bgColor", bgColor.r, bgColor.g, bgColor.b, bgColor.a);
+	context.getProgram().setMatrix3("modelview", context.getMapping());
+	context.getProgram().setMatrix3("invImgMapping", arImgMapping.getInverse() * arMaskMapping);
+	context.getProgram().setMatrix3("maskMapping", arMaskMapping);
+}
 
 
 Scene::MaskedBitmapLayer::MaskedBitmapLayer() :
 	CustomMaskedBitmapLayer(Type::MaskedBitmapLayer), mask(NULL)
 {}
+
+
+void Scene::MaskedBitmapLayer::render(RenderingContext& context) {
+	GL::TextureHandler* content = resolveContent(context);
+	if (content && mask) {
+		// program selection
+		switch (content->getTextureFormat()) {
+		case GL::TextureHandler::TextureFormat::OES_Ext:
+			context.enableProgram(RenderingPrograms::Program::MASKED_BLEND_EXT);
+			break;
+		default:
+			context.enableProgram(RenderingPrograms::Program::MASKED_BLEND);
+			break;
+		}
+
+		context.lockBitmap(mask);
+		
+		CustomMaskedBitmapLayer::configure(context, content);
+		context.bindMask(*mask);
+		context.blend();
+	}
+}
 
 
 bool Scene::MaskedBitmapLayer::testPoint(float x, float y) const {
@@ -300,6 +387,39 @@ Scene::ShapedBitmapLayer::ShapedBitmapLayer() :
 {}
 
 
+void Scene::ShapedBitmapLayer::render(RenderingContext& context) {
+	GL::TextureHandler* content = CustomMaskedBitmapLayer::resolveContent(context);
+
+	// program selection
+	if (content) {
+		switch (content->getTextureFormat()) {
+		case GL::TextureHandler::TextureFormat::OES_Ext:
+			context.enableProgram(RenderingPrograms::Program::SHAPED_BLEND_EXT);
+			break;
+		default:
+			context.enableProgram(RenderingPrograms::Program::SHAPED_BLEND);
+			break;
+		}
+	
+		CustomMaskedBitmapLayer::configure(context, content);
+
+		// computing border profile in pixels
+		AffineMapping arMaskMapping(maskMapping);
+		arMaskMapping.matrix.scale(1.0f, invAr);
+
+		Matrix2 mat = context.getMapping().matrix * arMaskMapping.matrix;
+		mat.prescale(1.0f, context.getGpu().getOutputResolution().getInvAspectRatio());
+
+		const float scale = inPixels ? context.getOutputWidth() : 1;
+		const Point borderProfile(scale * mat.getScalingX(), scale * mat.getScalingY());
+		context.getProgram().setVector2("borderProfile", borderProfile.x, borderProfile.y);
+		context.getProgram().setFloat("cornerRadius", cornerRadius + borderWidth);
+
+		context.blend();
+	}
+}
+
+
 bool Scene::ShapedBitmapLayer::testPoint(float x, float y) const {
 	// no bitmap - no deal (if the source is set to bitmap)
 	if (!bitmap && source == ImageSource::BITMAP)
@@ -312,3 +432,19 @@ Scene::ShadedBitmapLayer::ShadedBitmapLayer() :
 	BitmapLayer(Type::ShadedBitmapLayer),
 	layerShader(nullptr)
 {}
+
+
+void Scene::ShadedBitmapLayer::render(RenderingContext& context) {
+	if (!layerShader)
+		return;
+	GL::TextureHandler* content = BitmapLayer::resolveContent(context);
+	
+	if (content)
+		invAr = content->getInvAspectRatio();
+	else
+		invAr = 0;
+
+	layerShader->prepare(context.getGpu(), content, context.getMapping());
+
+	context.blend();
+}
