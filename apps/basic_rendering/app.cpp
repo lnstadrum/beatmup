@@ -6,22 +6,23 @@
 */
 
 #include <bitmap/internal_bitmap.h>
-#include <bitmap/platform_specific/bitmap.h>
 #include <scene/renderer.h>
 #include <bitmap/converter.h>
 
 #include <iostream>
 #include <ctime>
 
-#define SHADERCODE(X) "#version 130\n" #X
+#define SHADERCODE(X) \
+	"#version 130\n" \
+	"#beatmup_input_image image;\n" #X
 
 int main(int argc, char* argv[]) {
 	Beatmup::Environment env;
 	Beatmup::Scene scene;
 	Beatmup::SceneRenderer renderer;
-	Beatmup::Bitmap fecamp(env, L"images/fecamp.jpg");
-	Beatmup::Bitmap bg(env, L"images/bg.png");
-	Beatmup::Bitmap output(env, Beatmup::PixelFormat::TripleByte, 4000, 4000);
+	Beatmup::InternalBitmap fecamp(env, "images/fecamp.bmp");
+	Beatmup::InternalBitmap bg(env, "images/bg.bmp");
+	Beatmup::InternalBitmap output(env, Beatmup::PixelFormat::TripleByte, 4000, 4000);
 
 	Beatmup::InternalBitmap bitmap1 (env, Beatmup::PixelFormat::SingleByte,  fecamp.getWidth(), fecamp.getHeight());
 	Beatmup::InternalBitmap bitmap3 (env, Beatmup::PixelFormat::TripleByte,  fecamp.getWidth(), fecamp.getHeight());
@@ -33,11 +34,10 @@ int main(int argc, char* argv[]) {
 	Beatmup::BitmapConverter::convert(fecamp, bitmap1);
 	Beatmup::BitmapConverter::convert(fecamp, bitmap3f);
 	Beatmup::BitmapConverter::convert(fecamp, bitmap4f);
-	
+
 	// setting up a radial image distortion shader
 	Beatmup::LayerShader distortShader(env);
 	distortShader.setSourceCode(SHADERCODE(
-		#beatmup_input_image image;
 		varying highp vec2 texCoord;
 		vec2 distort(vec2 xy) {
 			vec2 r = xy - vec2(0.5, 0.5);
@@ -52,7 +52,6 @@ int main(int argc, char* argv[]) {
 	// setting up a color channel shifting shader
 	Beatmup::LayerShader grayShiftShader(env);
 	grayShiftShader.setSourceCode(SHADERCODE(
-		#beatmup_input_image image;
 		varying highp vec2 texCoord;
 		float gray(vec2 pos) {
 			vec4 clr = texture2D(image, pos);
@@ -67,11 +66,10 @@ int main(int argc, char* argv[]) {
 			);
 		}
 	));
-	
+
 	// setting up a recoloring shader (applying a random matrix to RGB triplets)
 	Beatmup::LayerShader recolorShader(env);
 	recolorShader.setSourceCode(SHADERCODE(
-		#beatmup_input_image image;
 		varying highp vec2 texCoord;
 		uniform mediump mat3 matrix;
 		void main() {
@@ -96,7 +94,7 @@ int main(int argc, char* argv[]) {
 		l.setSlopeWidth(0.01f);
 		l.setInPixels(false);
 	}
-	
+
 	{
 		Beatmup::Scene::ShadedBitmapLayer& l = scene.newShadedBitmapLayer();
 		l.getMapping().scale(0.48f);
@@ -142,8 +140,8 @@ int main(int argc, char* argv[]) {
 	time = env.performTask(renderer);
 	std::cout << "  Second run: " << time << " ms" << std::endl;
 		// Second run is faster: it has the shaders compiled and all the bitmap data ready in the GPU memory.
-	
+
 	// save output
-	output.save(L"output.png");
+	output.saveBmp("output.bmp");
 	return 0;
 }

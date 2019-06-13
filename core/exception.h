@@ -24,9 +24,20 @@ namespace Beatmup {
 		static void check(bool condition, const char* message);
 	};
 
+	class IOError : public Exception {
+	private:
+		std::string filename;
+	public:
+		IOError(const std::string& filename, const char * message):
+			Exception("File access error: %s\n%s", filename.c_str(), message),
+			filename(filename) { }
+		const std::string& getFilename() const { return filename; }
+	};
+
 	class NullTaskInput : public Exception {
 	public:
-		NullTaskInput(const char* which) : Exception("Task input is not set: %s", which) {}
+		NullTaskInput(const char* which) :
+			Exception("Task input is not set: %s", which) {}
 		static void check(void* pointer, const char* which);
 	};
 

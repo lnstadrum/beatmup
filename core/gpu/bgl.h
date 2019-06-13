@@ -10,8 +10,8 @@
 	#undef max
 	#include <gl/glew.h>
 	#include <gl/wglew.h>
-	#include <gl/GL.h>
 	#define BGL_TEXTURE_TARGET GL_TEXTURE_2D
+
 #elif BEATMUP_PLATFORM_ANDROID
 	#include <EGL/egl.h>
 	#include <EGL/eglext.h>
@@ -28,6 +28,11 @@
 	#error OpenGL ES version is not specified
 #endif
 	#include <android/native_window_jni.h>
+
+#else
+	#include <X11/Xlib.h>
+	#include <GL/glxew.h>
+	#define BGL_TEXTURE_TARGET GL_TEXTURE_2D
 #endif
 
 #include "../exception.h"

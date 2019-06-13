@@ -23,10 +23,12 @@ namespace Beatmup {
 					pixfloat4
 #ifdef BEATMUP_CHANNEL_ORDER_ARGB
 						a, r, g, b;
+#elif BEATMUP_CHANNEL_ORDER_BGRA
+						b, g, r, a;
 #else
 						r, g, b, a;
 #endif
-				};
+					} channels;
 			};
 
 			Matrix();

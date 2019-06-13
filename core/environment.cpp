@@ -14,7 +14,7 @@
 	#include <windows.h>
 	#undef min
 	#undef max
-#elif BEATMUP_PLATFORM_ANDROID
+#else
 	#include <unistd.h>
 	#include <sys/statfs.h>
 	#include <sys/sysinfo.h>
@@ -54,13 +54,11 @@ msize getAvailableDiskSpace() {
 	ULARGE_INTEGER result;
 	GetDiskFreeSpaceEx(NULL, &result, NULL, NULL);
 	return (msize) result.QuadPart;
-#elif BEATMUP_PLATFORM_ANDROID
+#else
 	struct statfs data;
 	if (fstatfs(0, &data) < 0)
 		BEATMUP_ERROR("Unable to get available disk space");
 	return (msize)data.f_bsize * data.f_bfree;
-#else
-	Unimplemented!
 #endif
 }
 
@@ -74,12 +72,10 @@ msize getAvailableMemory() {
 	status.dwLength = sizeof(status);
 	GlobalMemoryStatusEx(&status);
 	return status.ullAvailPhys;
-#elif BEATMUP_PLATFORM_ANDROID
+#else
 	struct sysinfo info;
 	sysinfo(&info);
 	return info.freeram * info.mem_unit;
-#else
-	Unimplemented!
 #endif
 }
 
@@ -177,7 +173,7 @@ private:
 #else
 		snprintf(fileName, SIZE, "%s%04d%s", swapFilePrefix.c_str(), chunk, swapFileSuffix.c_str());
 #endif
-		
+
 		if (operation == SwappingOperation::CLEAR)
 			std::remove(fileName);
 		else {
@@ -293,7 +289,7 @@ protected:
 			if (C.swapping == ChunkSwappingState::AVAILABLE)
 				free(C.data);
 			else if (C.swapping == ChunkSwappingState::ON_DISK)
-				swapChunk(chunk, SwappingOperation::CLEAR);			
+				swapChunk(chunk, SwappingOperation::CLEAR);
 			else if (C.swapping != ChunkSwappingState::SOMEWHERE)
 				BEATMUP_ERROR("Unimplemented memory disposing operation for specified swapping state");
 			removeChunkFromSwappables(chunk);
@@ -398,7 +394,7 @@ public:
 		chunks[chunkCounter].data = allocateWithSwapping(size);
 		return chunkCounter++;
 	}
-	
+
 
 	const pixptr acquireMemory(memchunk chunk) {
 		std::lock_guard<std::mutex> lock(memAccess);
@@ -451,7 +447,7 @@ public:
 		else throw InternalMemoryManagementError("Releasing a bad chunk", chunk);
 #endif
 	}
-	
+
 
 	void freeMemory(memchunk chunk) {
 		std::lock_guard<std::mutex> lock(memAccess);
@@ -580,12 +576,10 @@ msize Environment::getTotalRam() {
 	status.dwLength = sizeof(status);
 	GlobalMemoryStatusEx(&status);
 	return status.ullTotalPhys;
-#elif BEATMUP_PLATFORM_ANDROID
+#else
 	struct sysinfo info;
 	sysinfo(&info);
 	return info.totalram * info.mem_unit;
-#else
-	Unimplemented!
 #endif
 }
 

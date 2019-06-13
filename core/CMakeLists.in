@@ -14,7 +14,7 @@ if (WIN32)
 	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DBEATMUP_PLATFORM_WINDOWS")
 endif (WIN32)
 
-    
+
 set(BEATMUP_SOURCES
     ${BEATMUP_SRC_DIR}/environment.cpp
     ${BEATMUP_SRC_DIR}/exception.cpp
@@ -101,10 +101,9 @@ endif()
 
 include_directories(${BEATMUP_SRC_DIR})
 
-if (WIN32)
+
 	find_package(OpenGL REQUIRED)
 	add_subdirectory(${BEATMUP_GLEW_DIR} "${BEATMUP_BUILD_DIR}/glew-build")
 	link_directories("${BEATMUP_BUILD_DIR}/lib")
 	include_directories("${BEATMUP_GLEW_DIR}/include")
-	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DGLEW_STATIC -DBEATMUP_CHANNEL_ORDER_BGRA")
-endif()
+	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DGLEW_STATIC")

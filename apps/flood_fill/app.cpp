@@ -2,7 +2,6 @@
 	Example of generating a mask using flood fill.
 */
 
-#include <bitmap/platform_specific/bitmap.h>
 #include <scene/renderer.h>
 #include <masking/flood_fill.h>
 #include <bitmap/internal_bitmap.h>
@@ -17,10 +16,10 @@ int main(int argc, char* argv[]) {
 	Beatmup::FloodFill floodFill;
 	float time;
 
-	Beatmup::Bitmap fecamp(env, L"images/fecamp.jpg");
-	Beatmup::Bitmap spiral(env, L"images/spiral.png");
+	Beatmup::InternalBitmap fecamp(env, "images/fecamp.bmp");
+	Beatmup::InternalBitmap spiral(env, "images/spiral.bmp");
 	Beatmup::InternalBitmap mask(env, Beatmup::PixelFormat::HexMask, spiral.getWidth(), spiral.getHeight());
-	Beatmup::Bitmap output(env, Beatmup::PixelFormat::TripleByte, fecamp.getWidth(), fecamp.getHeight());
+	Beatmup::InternalBitmap output(env, Beatmup::PixelFormat::TripleByte, fecamp.getWidth(), fecamp.getHeight());
 	Beatmup::IntPoint seeds[1] = { Beatmup::IntPoint(300, 20) };
 
 	// floodfill
@@ -28,7 +27,7 @@ int main(int argc, char* argv[]) {
 	floodFill.setOutput(mask);
 	floodFill.setSeeds(seeds, 1);
 	floodFill.setBorderPostprocessing(Beatmup::FloodFill::BorderMorphology::ERODE, 2, 3);
-	
+
 	mask.zero();
 		// It is important to zero the mask before going floodfill. By default it contains random stuff (what has been before
 		// in RAM), and floodfill will likely not modify all its pixels.
@@ -63,6 +62,6 @@ int main(int argc, char* argv[]) {
 	std::cout << "Time: " << time << " ms" << std::endl;
 
 	// saving output
-	output.save(L"output.png");
+	output.saveBmp("output.bmp");
 	return 0;
 }

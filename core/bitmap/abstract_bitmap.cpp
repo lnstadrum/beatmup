@@ -4,6 +4,7 @@
 #include "internal_bitmap.h"
 #include "converter.h"
 #include "../gpu/bgl.h"
+#include <cstring>
 
 
 using namespace Beatmup;
@@ -41,7 +42,7 @@ void AbstractBitmap::prepare(GraphicPipeline& gpu) {
 		return;
 
 	// disable any high order alignment
-	glPixelStorei(GL_UNPACK_ALIGNMENT, getLinesAlignment());
+	glPixelStorei(GL_UNPACK_ALIGNMENT, getScanlineAlignment());
 
 	if (isMask()) {
 		// masks are stored as horizontally-stretched bitmaps
@@ -57,7 +58,7 @@ void AbstractBitmap::prepare(GraphicPipeline& gpu) {
 			GL_UNSIGNED_BYTE,
 			getData(0, 0));
 #endif
-		GL::GLException::check("allocating texture image (mask)");		
+		GL::GLException::check("allocating texture image (mask)");
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	}
@@ -75,7 +76,7 @@ void AbstractBitmap::prepare(GraphicPipeline& gpu) {
 #else
 		glTexStorage2D(GL_TEXTURE_2D, 1, GL::BITMAP_INTERNALFORMATS[getPixelFormat()], getWidth(), getHeight());
 		glTexSubImage2D(GL_TEXTURE_2D,
-			0, 0, 0, getWidth(), getHeight(), 
+			0, 0, 0, getWidth(), getHeight(),
 			GL::BITMAP_PIXELFORMATS[getPixelFormat()],
 			GL::BITMAP_PIXELTYPES[getPixelFormat()],
 			getData(0, 0));
@@ -101,7 +102,7 @@ void AbstractBitmap::lockPixels(ProcessingTarget target) {
 	/*if (target == ProcessingTarget::CPU) {
 		// If pixel data in CPU memory is asked, GPU has it, cannot handle.
 		if (!upToDate[ProcessingTarget::CPU]  && upToDate[ProcessingTarget::GPU]) {
-			throw AbstractBitmap::UnavailablePixelData(*this);		
+			throw AbstractBitmap::UnavailablePixelData(*this);
 		}
 		lockPixelData();
 		pixelDataLocked = true;
@@ -154,7 +155,7 @@ int AbstractBitmap::getPixelInt(int x, int y, int cha) const {
 			offset = (x + y*getWidth()) % pixPerByte;			// offset from byte-aligned bound in pixels
 		const pixptr p = getData(x, y);
 		return ((*p) >> (offset*BITS_PER_PIXEL[pf])) & ((1 << BITS_PER_PIXEL[pf]) - 1);
-	}	
+	}
 	const pixptr p = getData(x, y) + cha * BITS_PER_PIXEL[pf] / 8 / CHANNELS_PER_PIXEL[pf];
 	if (isInteger(pf))
 		return *p;
@@ -173,7 +174,7 @@ const unsigned char AbstractBitmap::getNumberOfChannels() const {
 }
 
 
-int AbstractBitmap::getLinesAlignment() const {
+int AbstractBitmap::getScanlineAlignment() const {
 	return 1;
 }
 

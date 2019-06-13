@@ -43,6 +43,12 @@ private:
 		eglDefaultSurface;		//!< default internally managed surface
 	EGLContext eglContext;
 	EGLConfig eglConfig;
+
+#else
+	Display* xDisplay;
+	Window xWindow;
+	GLXContext glxContext;
+	GLXPbuffer glxPbuffer;
 #endif
 
 	struct {
@@ -125,7 +131,7 @@ public:
 		EGLint configAttributes[] = {
 			EGL_SURFACE_TYPE,			EGL_PBUFFER_BIT,
 #ifdef BEATMUP_OPENGLVERSION_GLES20
-            EGL_RENDERABLE_TYPE,		EGL_OPENGL_ES2_BIT,
+			EGL_RENDERABLE_TYPE,		EGL_OPENGL_ES2_BIT,
 #elif defined BEATMUP_OPENGLVERSION_GLES31
 			EGL_RENDERABLE_TYPE,		EGL_OPENGL_ES3_BIT_KHR,
 #endif
@@ -141,20 +147,20 @@ public:
 			EGL_NONE
 		};
 		int numConfigs;
-		if (! eglChooseConfig(eglDisplay, configAttributes, &eglConfig, 1, &numConfigs))
+		if (!eglChooseConfig(eglDisplay, configAttributes, &eglConfig, 1, &numConfigs))
 			throw GL::GLException("EGL: bad configuration", eglGetError());
 		DEBUG_I("Number of EGL configs got: %d", numConfigs);
 
-
 		// Step 6 - Create a context.
 		EGLint contextAttributes[] = {
-                EGL_CONTEXT_CLIENT_VERSION,
+			EGL_CONTEXT_CLIENT_VERSION,
 #ifdef BEATMUP_OPENGLVERSION_GLES20
-                2,
+			2,
 #elif defined BEATMUP_OPENGLVERSION_GLES31
-                3,
+			3,
 #endif
-                EGL_NONE };
+			EGL_NONE
+		};
 		eglContext = eglCreateContext(eglDisplay, eglConfig, EGL_NO_CONTEXT, contextAttributes);
 		if (eglContext == EGL_NO_CONTEXT)
 			throw GL::GLException("EGL: context initialization failed", eglGetError());
@@ -173,10 +179,57 @@ public:
 			throw GL::GLException("EGL: window surface creation failed when init", eglGetError());
 
 		// Step 7 - Bind the context to the current thread
-		if (! eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext))
+		if (!eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext))
 			throw GL::GLException("EGL: making current", eglGetError());
+
 #else
-		Undefined OS!
+		// creating a display & a window
+		xDisplay = XOpenDisplay(0);
+		xWindow = XCreateSimpleWindow(xDisplay, DefaultRootWindow(xDisplay),
+			0, 0,   /* x, y */
+			1, 1, /* width, height */
+			0, 0,     /* border_width, border */
+			0);       /* background */
+
+		// setup a bootstrap context to load glew
+		static int dummy_visual_attribs[] = { GLX_RGBA, None };
+		XVisualInfo* vi = glXChooseVisual(xDisplay, 0, dummy_visual_attribs);
+		glxContext = glXCreateContext(xDisplay, vi, NULL, GL_TRUE);
+		glXMakeCurrent(xDisplay, xWindow, glxContext);
+
+		// power on glew
+		glewExperimental = GL_TRUE;
+		GLenum err = glewInit();
+		if (err != GLEW_OK)
+			throw GL::GLException((const char*)glewGetErrorString(err));
+
+		// destroying the bootstrap context
+		glXDestroyContext(xDisplay, glxContext);
+
+		static int visual_attribs[] = {
+				/*GLX_DRAWABLE_TYPE, GLX_PBUFFER_BIT,
+				GLX_RENDER_TYPE, GLX_RGBA_BIT,*/
+				GLX_DOUBLEBUFFER, true,
+				None
+		};
+		int num_fbc = 0;
+		GLXFBConfig *config = glXChooseFBConfig(xDisplay, DefaultScreen(xDisplay),
+			visual_attribs, &num_fbc);
+		if (!config)
+			throw GL::GLException("glXChooseFBConfig() failed");
+
+		// create pbuffer
+		static int pbuffer_attribs[] = {
+				GLX_LARGEST_PBUFFER,
+				None
+		};
+		glxPbuffer = glXCreatePbuffer(xDisplay, config[0], pbuffer_attribs);
+
+		// create main context
+		vi = glXGetVisualFromFBConfig(xDisplay, config[0]);
+		glxContext = glXCreateContext(xDisplay, vi, 0, GL_TRUE);
+		glXMakeCurrent(xDisplay, glxPbuffer, glxContext);
+
 #endif
 
 		// query GL limits
@@ -211,7 +264,7 @@ public:
 		// init buffers
 		glGenFramebuffers(1, &hFrameBuffer);
 		GL::GLException::check("initialization");
-		
+
 		// setting up main controls
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_CULL_FACE);
@@ -234,6 +287,9 @@ public:
 		eglDestroySurface(eglDisplay, eglDefaultSurface);
 		eglDestroyContext(eglDisplay, eglContext);
 		eglTerminate(eglDisplay);
+#else
+		glXDestroyContext(xDisplay, glxContext);
+		glXDestroyPbuffer(xDisplay, glxPbuffer);
 #endif
 	}
 
@@ -302,7 +358,7 @@ public:
 		// setting up a new texture or taking an existing one
 		glActiveTexture(GL_TEXTURE0 + unit);
 		useTexture(handler);
-		handler.prepare(front);		
+		handler.prepare(front);
 		GL::GLException::check("binding sampler");
 	}
 
@@ -457,7 +513,7 @@ public:
 		glBindFramebuffer(GL_FRAMEBUFFER, hFrameBuffer);
 		glBindTexture(GL_TEXTURE_2D, handle);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, handle, 0);
-		
+
 		// disable high order alignment
 		glPixelStorei(GL_PACK_ALIGNMENT, 1);
 

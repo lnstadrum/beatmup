@@ -3,6 +3,7 @@
 #include "../bitmap/bitmap_access.h"
 #include "../exception.h"
 #include <algorithm>
+#include <cstring>
 
 using namespace Beatmup;
 
@@ -15,7 +16,7 @@ template<class in_t, class out_t> inline void convertBlock(AbstractBitmap& input
 }
 
 
-BitmapConverter::BitmapConverter() : 
+BitmapConverter::BitmapConverter() :
 	input(NULL), output(NULL)
 {}
 
@@ -78,7 +79,7 @@ bool BitmapConverter::process(TaskThread& thread) {
 
 	// computing initial position
 	int outx = (int)(start % w), outy = (int)(start / w);
-	
+
 	const int LOOK_AROUND_INTERVAL = 123456;
 	while (start < stop && !thread.isTaskAborted()) {
 		doConvert(outx, outy, stop-start);
@@ -130,7 +131,7 @@ void BitmapConverter::doConvert(int outX, int outY, msize nPix) {
 			case TripleFloat:	CALL_CONVERT_AND_RETURN(SingleFloatBitmapReader, TripleFloatBitmapWriter)
 			case QuadFloat:		CALL_CONVERT_AND_RETURN(SingleFloatBitmapReader, QuadFloatBitmapWriter)
 		}
-	
+
 	case TripleFloat:
 		switch (output->getPixelFormat()) {
 			case SingleByte:	CALL_CONVERT_AND_RETURN(TripleFloatBitmapReader, SingleByteBitmapWriter)
@@ -186,10 +187,10 @@ void BitmapConverter::convert(AbstractBitmap& input, AbstractBitmap& output) {
 	if (input.getEnvironment().isManagingThread()) {
 		if (input.getImageResolution() != output.getImageResolution())
 			BEATMUP_ERROR("Input and output bitmap must be of the same size.");
-		
+
 		// the bitmaps are assumed locked in this case
 		me.doConvert(0, 0, input.getImageResolution().numPixels());
-				
+
 	}
 	else
 		input.getEnvironment().performTask(me);
