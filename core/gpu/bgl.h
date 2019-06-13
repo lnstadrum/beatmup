@@ -66,35 +66,47 @@ namespace Beatmup {
 #else
 			GL_RED,			// SingleByte
 #endif
+
+
 #ifdef BEATMUP_CHANNEL_ORDER_BGRA
 			GL_BGR,			// TripleByte
 #else
 			GL_RGB,			// TripleByte
 #endif
 
+
 #ifdef BEATMUP_CHANNEL_ORDER_BGRA
-			GL_BGRA,
+			GL_BGRA,		// QuadByte
+#elif BEATMUP_CHANNEL_ORDER_ARGB
+			GL_BGRA,		// QuadByte; an inversion is done in a modern OpenGL using the pixeltype trick
 #else
 			GL_RGBA,		// QuadByte
 #endif
 
+
 #ifdef BEATMUP_OPENGLVERSION_GLES20
-            GL_LUMINANCE,	// SingleFloat
+			GL_LUMINANCE,	// SingleFloat
 #else
 			GL_RED,			// SingleFloat
 #endif
+
+
 #ifdef BEATMUP_CHANNEL_ORDER_BGRA
-            GL_BGR,		    // TripleFloat
+			GL_BGR,			// TripleFloat
 #else
 			GL_RGB,			// TripleFloat
 #endif
 
+
 #ifdef BEATMUP_CHANNEL_ORDER_BGRA
-			GL_BGRA,
+			GL_BGRA			// QuadFloat
+#elif BEATMUP_CHANNEL_ORDER_ARGB
+			GL_BGRA			// QuadFloat
 #else
-            GL_RGBA         // QuadFloat
+			GL_RGBA			// QuadFloat
 #endif
 		};
+
 
 		const GLuint TEXTUREHANDLER_INTERNALFORMATS[] = {
 #ifdef BEATMUP_OPENGLVERSION_GLES20
@@ -130,10 +142,29 @@ namespace Beatmup {
 		*/
 		const GLuint BITMAP_PIXELTYPES[] = {
 			GL_UNSIGNED_BYTE,	// SingleByte
+
 			GL_UNSIGNED_BYTE,	// TripleByte
-			GL_UNSIGNED_BYTE,	// QuadByte
+
+#if BEATMUP_CHANNEL_ORDER_ARGB	// QuadByte, special case of ARGB first
+	#ifdef BEATMUP_OPENGLVERSION_GLES
+			GL_UNSIGNED_BYTE,		// no way to do in OpenGL ES...
+	#else
+		// QuadByte, inverting BGRA by applying appropriate pixel type. The latter
+		// depends on the current platform endianness.
+		#ifdef BEATMUP_PLATFORM_BIGENDIAN
+			GL_UNSIGNED_INT_8_8_8_8_REV,
+		#else
+			GL_UNSIGNED_INT_8_8_8_8,
+		#endif
+	#endif
+#else
+			GL_UNSIGNED_BYTE,	// QuadByte, other pixel orders
+#endif
+
 			GL_FLOAT,			// SingleFloat
+
 			GL_FLOAT,			// TripleFloat
+
 			GL_FLOAT			// QuadFloat
 		};
 	}

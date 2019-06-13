@@ -92,7 +92,7 @@ void BitmapTools::makeOpaque(AbstractBitmap& bitmap, IntRectangle area) {
 	if (bitmap.getPixelFormat() == QuadFloat)
 		for (int y = area.A.y; y <= area.B.y; ++y) {
 			pixfloat* p = (pixfloat*)bitmap.getData(area.A.x, y);
-			p += CHANNELS.A;
+			p += CHANNELS_4.A;
 			*p = 1.0f;
 			for (int x = area.A.x; x <= area.B.x; ++x)
 				*(p += 4) = 1.0f;
@@ -101,7 +101,7 @@ void BitmapTools::makeOpaque(AbstractBitmap& bitmap, IntRectangle area) {
 	else if (bitmap.getPixelFormat() == QuadByte)
 		for (int y = area.A.y; y <= area.B.y; ++y) {
 			pixbyte* p = bitmap.getData(area.A.x, y);
-			p += CHANNELS.A;
+			p += CHANNELS_4.A;
 			*p = 255;
 			for (int x = area.A.x; x <= area.B.x; ++x)
 				*(p += 4) = 255;
