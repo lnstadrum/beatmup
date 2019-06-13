@@ -21,10 +21,10 @@ public:
 				matrixI[i] = matrixF[i];
 			for (msize n = 0; n < nPix; n++) {
 				out.assign(
-					(in() * matrixI[CHANNELS.R]).sum() + addI.val[CHANNELS.R],
-					(in() * matrixI[CHANNELS.G]).sum() + addI.val[CHANNELS.G],
-					(in() * matrixI[CHANNELS.B]).sum() + addI.val[CHANNELS.B],
-					(in() * matrixI[CHANNELS.A]).sum() + addI.val[CHANNELS.A]
+					(in() * matrixI[CHANNELS_4.R]).sum() + addI.val[CHANNELS_4.R],
+					(in() * matrixI[CHANNELS_4.G]).sum() + addI.val[CHANNELS_4.G],
+					(in() * matrixI[CHANNELS_4.B]).sum() + addI.val[CHANNELS_4.B],
+					(in() * matrixI[CHANNELS_4.A]).sum() + addI.val[CHANNELS_4.A]
 				);
 				in++;
 				out++;
@@ -33,10 +33,10 @@ public:
 		else
 			for (msize n = 0; n < nPix; n++) {
 				out.assign(
-					(in() * matrixF[CHANNELS.R]).sum() + addF[CHANNELS.R],
-					(in() * matrixF[CHANNELS.G]).sum() + addF[CHANNELS.G],
-					(in() * matrixF[CHANNELS.B]).sum() + addF[CHANNELS.B],
-					(in() * matrixF[CHANNELS.A]).sum() + addF[CHANNELS.A]
+					(in() * matrixF[CHANNELS_4.R]).sum() + addF[CHANNELS_4.R],
+					(in() * matrixF[CHANNELS_4.G]).sum() + addF[CHANNELS_4.G],
+					(in() * matrixF[CHANNELS_4.B]).sum() + addF[CHANNELS_4.B],
+					(in() * matrixF[CHANNELS_4.A]).sum() + addF[CHANNELS_4.A]
 				);
 				in++;
 				out++;
@@ -63,10 +63,10 @@ void Filters::ColorMatrix::setCoefficients(int outChannel, float add, float inR,
 	if (outChannel < 0 || outChannel > 3)
 		BEATMUP_ERROR("Wrong output channel index: %d", outChannel);
 	this->add.val[outChannel] = add;
-	matrix[outChannel][CHANNELS.R] = inR;
-	matrix[outChannel][CHANNELS.G] = inG;
-	matrix[outChannel][CHANNELS.B] = inB;
-	matrix[outChannel][CHANNELS.A] = inA;
+	matrix[outChannel][CHANNELS_4.R] = inR;
+	matrix[outChannel][CHANNELS_4.G] = inG;
+	matrix[outChannel][CHANNELS_4.B] = inB;
+	matrix[outChannel][CHANNELS_4.A] = inA;
 }
 
 
