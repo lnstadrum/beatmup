@@ -3,6 +3,7 @@
 #include "bitmap_access.h"
 #include "processing.h"
 #include "crop.h"
+#include <cstring>
 
 using namespace Beatmup;
 
@@ -13,7 +14,7 @@ public:
 		const unsigned char
 			bpp = AbstractBitmap::BITS_PER_PIXEL[inputFormat],
 			ppb = 8 / bpp;		// pixels per byte
-	
+
 		// test if output origin and clip rect horizontal borders are byte-aligned and the pixel formats are identical
 		const bool mayCopy = (inputFormat == outputFormat) &&
 			(bpp >= 8 || (outOrigin.x % ppb == 0 && rect.A.x % ppb == 0 && rect.B.x % ppb == 0));

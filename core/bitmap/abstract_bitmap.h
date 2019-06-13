@@ -27,7 +27,7 @@ namespace Beatmup {
 		HexMask				//!< 4 bits per pixel
 	};
 
-	
+
 	class AbstractBitmap : public GL::TextureHandler {
 		friend class GraphicPipeline;
 
@@ -39,7 +39,7 @@ namespace Beatmup {
 
 	protected:
 		Environment& env;									//!< environment managing this bitmap
-		
+
 		// overridden methods from TextureHandler
 		virtual void prepare(GraphicPipeline& gpu);
 		virtual const TextureFormat getTextureFormat() const;
@@ -59,7 +59,7 @@ namespace Beatmup {
 		static const char* PIXEL_FORMAT_NAMES[9];			//!< pixel format names
 		static const unsigned char CHANNELS_PER_PIXEL[9];	//!< number of channels for each pixel format
 		static const unsigned char BITS_PER_PIXEL[9];		//!< number of bits per pixel for each pixel format
-		
+
 		class UnavailablePixelData : public Beatmup::Exception {
 		public:
 			UnavailablePixelData(AbstractBitmap& bitmap) :
@@ -88,7 +88,7 @@ namespace Beatmup {
 			Locks access to the pixel data guaranteeing that the bitmap is up to date on the required processing target
 		*/
 		virtual void lockPixels(ProcessingTarget);
-		
+
 		/**
 			Marks as out-of-date bitmap content stored specified target processing unit memory
 		*/
@@ -119,17 +119,18 @@ namespace Beatmup {
 			Returns number of bits per pixel stored in each bitmap.
 		*/
 		const unsigned char getBitsPerPixel() const;
-		
+
 		/**
 			Returns number of bytes per pixel stored in each bitmap.
 		*/
 		const unsigned char getNumberOfChannels() const;
 
 		/**
-			Returns number of bytes specifying the bitmap lines alignment.
-			`1`: no alignment.
+			Returns number of bytes specifying the bitmap scanline alignment.
+			`1`: no alignment,
+			`4`: every scaline is padded so that the padded length is a factor of 4.
 		*/
-		virtual int getLinesAlignment() const;
+		virtual int getScanlineAlignment() const;
 
 		/**
 			Returns the bitmap resolution within ImageResolution object
@@ -157,12 +158,12 @@ namespace Beatmup {
 			Returns `true` if the bitmap is a mask, `false` otherwise
 		*/
 		bool isMask() const;
-		
+
 		/**
 			Returns `true` if a given pixel format corresponds to integer values, `false` otherwise
 		*/
 		static bool isInteger(PixelFormat pixelFormat);
-		
+
 		/**
 			Returns `true` if a given pixel format corresponds to floating point values, `false` otherwise
 		*/

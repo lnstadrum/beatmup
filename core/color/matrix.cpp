@@ -1,17 +1,18 @@
 #include "matrix.h"
 #include "color_spaces.h"
+#include <cstring>
 
 using namespace Beatmup;
 using namespace Color;
 
 #define MUL(a,b,i,j) (a[i][0] * b[0][j] + a[i][1] * b[1][j] + a[i][2] * b[2][j] + a[i][3] * b[3][j])
 
-Matrix::Matrix():
-	r{ 1, 0, 0, 0 },
-	g{ 0, 1, 0, 0 },
-	b{ 0, 0, 1, 0 },
-	a{ 0, 0, 0, 1 }
-{}
+Matrix::Matrix() {
+	channels.r = pixfloat4{ 1, 0, 0, 0 };
+	channels.g = pixfloat4{ 0, 1, 0, 0 };
+	channels.b = pixfloat4{ 0, 0, 1, 0 };
+	channels.a = pixfloat4{ 0, 0, 0, 1 };
+}
 
 
 pixfloat4& Matrix::operator[](int row) {
@@ -49,9 +50,9 @@ Matrix Matrix::getHSVCorrection(float Hdegrees, float S, float V) {
 	*/
 	const float H = Hdegrees * (float)pi / 180;
 	Matrix result;
-	result.r = pixfloat4((V*(12 * S*cos(H) + 6)) / 18, -(V*(6 * S*cos(H) + 6 * sqrtf(3)*S*sin(H) - 6)) / 18, (V*(6 * sqrtf(3)*S*sin(H) - 6 * S*cos(H) + 6)) / 18, 0);
-	result.g = pixfloat4((V*(6 * sqrtf(3)*S*sin(H) - 6 * S*cos(H) + 6)) / 18, (V*(12 * S*cos(H) + 6)) / 18, -(V*(S*cos(H) + sqrtf(3)*S*sin(H) - 1)) / 3, 0);
-	result.b = pixfloat4(-(V*(6 * S*cos(H) + 6 * sqrtf(3)*S*sin(H) - 6)) / 18, (V*(6 * sqrtf(3)*S*sin(H) - 6 * S*cos(H) + 6)) / 18, (V*(4 * S*cos(H) + 2)) / 6, 0);
+	result.channels.r = pixfloat4((V*(12 * S*cos(H) + 6)) / 18, -(V*(6 * S*cos(H) + 6 * sqrtf(3)*S*sin(H) - 6)) / 18, (V*(6 * sqrtf(3)*S*sin(H) - 6 * S*cos(H) + 6)) / 18, 0);
+	result.channels.g = pixfloat4((V*(6 * sqrtf(3)*S*sin(H) - 6 * S*cos(H) + 6)) / 18, (V*(12 * S*cos(H) + 6)) / 18, -(V*(S*cos(H) + sqrtf(3)*S*sin(H) - 1)) / 3, 0);
+	result.channels.b = pixfloat4(-(V*(6 * S*cos(H) + 6 * sqrtf(3)*S*sin(H) - 6)) / 18, (V*(6 * sqrtf(3)*S*sin(H) - 6 * S*cos(H) + 6)) / 18, (V*(4 * S*cos(H) + 2)) / 6, 0);
 	return result;
 }
 
@@ -65,8 +66,8 @@ Matrix Matrix::getColorInversion(pixfloat3 preservedColor, float S, float V) {
 	pixhsva hsva(preservedColor);
 	const float _2H = 2 * (-hsva.h * 2 * pi - pi / 6);
 	Matrix result;
-	result.r = pixfloat4((V*(S*cos(_2H) - sqrtf(3)*S*sin(_2H) + 1)) / 3, -(V*(2 * S*cos(_2H) - 1)) / 3, (V*(S*cos(_2H) + sqrtf(3)*S*sin(_2H) + 1)) / 3, 0);
-	result.g = pixfloat4(-(V*(2 * S*cos(_2H) - 1)) / 3, (V*(S*cos(_2H) + sqrtf(3)*S*sin(_2H) + 1)) / 3, (V*(S*cos(_2H) - sqrtf(3)*S*sin(_2H) + 1)) / 3, 0);
-	result.b = pixfloat4((V*(S*cos(_2H) + sqrtf(3)*S*sin(_2H) + 1)) / 3, (V*(S*cos(_2H) - sqrtf(3)*S*sin(_2H) + 1)) / 3, -(V*(4 * S*cos(_2H) - 2)) / 6, 0);
+	result.channels.r = pixfloat4((V*(S*cos(_2H) - sqrtf(3)*S*sin(_2H) + 1)) / 3, -(V*(2 * S*cos(_2H) - 1)) / 3, (V*(S*cos(_2H) + sqrtf(3)*S*sin(_2H) + 1)) / 3, 0);
+	result.channels.g = pixfloat4(-(V*(2 * S*cos(_2H) - 1)) / 3, (V*(S*cos(_2H) + sqrtf(3)*S*sin(_2H) + 1)) / 3, (V*(S*cos(_2H) - sqrtf(3)*S*sin(_2H) + 1)) / 3, 0);
+	result.channels.b = pixfloat4((V*(S*cos(_2H) + sqrtf(3)*S*sin(_2H) + 1)) / 3, (V*(S*cos(_2H) - sqrtf(3)*S*sin(_2H) + 1)) / 3, -(V*(4 * S*cos(_2H) - 2)) / 6, 0);
 	return result;
 }

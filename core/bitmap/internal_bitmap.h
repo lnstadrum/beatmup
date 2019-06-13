@@ -23,9 +23,12 @@ namespace Beatmup {
 
 	public:
 		/**
-			Creates an emtpy bitmap using internal memory management utilities
+			Creates an emtpy bitmap
 		*/
 		InternalBitmap(Environment& env, PixelFormat pixelFormat, int width, int height);
+
+		InternalBitmap(Environment& env, const std::string& filename);
+
 		virtual ~InternalBitmap();
 
 		const PixelFormat getPixelFormat() const;
@@ -34,6 +37,8 @@ namespace Beatmup {
 		const msize getMemorySize() const;
 		const pixptr getData(int x, int y) const;
 		void unlockPixels();
+
+		void saveBmp(const std::string& filename);
 	};
 
 }

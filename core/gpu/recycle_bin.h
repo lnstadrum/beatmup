@@ -4,8 +4,8 @@
 #pragma once
 #include <mutex>
 #include <vector>
-#include "..\environment.h"
-#include "..\utils\lockable_object.h"
+#include "../environment.h"
+#include "../utils/lockable_object.h"
 
 namespace Beatmup {
 	namespace GL {
@@ -31,7 +31,7 @@ namespace Beatmup {
 		public:
 			RecycleBin(Environment& env);
 			~RecycleBin();
-		
+
 			/**
 				Puts an item into the recycle bin
 			*/

@@ -42,7 +42,7 @@ void ChunkFile::open(bool forceUpdateMap) {
 		stream.read((char*)&chunkDesc.size, sizeof(chunksize));
 		chunkDesc.pos = stream.tellg();
 		map[id] = chunkDesc;
-		stream.seekg(chunkDesc.size, std::fstream::cur);		
+		stream.seekg(chunkDesc.size, std::fstream::cur);
 	}
 	stream.clear();
 }
@@ -69,7 +69,7 @@ ChunkFile::chunksize ChunkFile::fetch(const std::string& id, void* data, const c
 	const auto& chunk = map.find(id);
 	if (chunk == map.end())
 		return 0;
-	
+
 	stream.seekg(chunk->second.pos, std::fstream::beg);
 	if (!stream.good())
 		throw ChunkFileAccessError(filename);
@@ -82,7 +82,7 @@ ChunkFile::chunksize ChunkFile::fetch(const std::string& id, void* data, const c
 
 
 ChunkFile::Writer::Writer(const std::string& filename, bool append) :
-	stream(filename, std::ios::binary | std::ios::out | (append ? std::ios::app | std::ios::ate : 0))
+	stream(filename, std::ios::binary | (append ? std::ios::out | std::ios::app | std::ios::ate : std::ios::out))
 {
 	if (!stream.good())
 		throw ChunkFileAccessError(filename, false);
