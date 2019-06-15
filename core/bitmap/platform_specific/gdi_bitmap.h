@@ -26,7 +26,7 @@ namespace Beatmup {
 
 		const int getHeight() const;
 
-		int getLinesAlignment() const;
+		int getStride() const;
 
 		const msize getMemorySize() const;
 

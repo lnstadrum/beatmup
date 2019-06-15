@@ -11,7 +11,7 @@ namespace Beatmup {
 	namespace GL {
 		class RecycleBin;
 	}
-	
+
 	typedef unsigned int memchunk;
 
 	class AbstractBitmap;
@@ -67,6 +67,26 @@ namespace Beatmup {
 			virtual void gpuInitFail(PoolIndex pool, const std::exception& ex) = 0;
 		};
 
+		/**
+			Tiny memory guard
+		*/
+		class Mem {
+		private:
+			Environment& env;
+			const memchunk mem;
+			const bool garbage;
+			pixptr data;
+		public:
+			Mem(Environment& env, memchunk mem, bool garbageAfterRelease = false):
+				env(env), mem(mem), garbage(garbageAfterRelease)
+			{
+				data = env.acquireMemory(mem);
+			}
+			~Mem() {
+				env.releaseMemory(mem, garbage);
+			}
+			pixptr operator()() { return data; }
+		};
 
 		Environment();
 		Environment(const PoolIndex numThreadPools, const char* swapFilePrefix, const char* swapFileSuffix);
@@ -134,7 +154,7 @@ namespace Beatmup {
 			Allocates some memory
 		*/
 		const memchunk allocateMemory(msize size);
-		
+
 		/**
 			Acquires an allocated memory chunk, putting it in RAM.
 			\param chunk	the chunk id
@@ -153,7 +173,7 @@ namespace Beatmup {
 			Frees previously allocated memory.
 		*/
 		void freeMemory(memchunk chunk);
-		
+
 		/**
 			Performs swapping of allocated but not currently used memory on disk.
 			\param howMush	required memory size in bytes to free; the environment attempts to free at least the required size
@@ -165,7 +185,7 @@ namespace Beatmup {
 			Installs new event listener
 		*/
 		void setEventListener(EventListener* eventListener);
-		
+
 		/**
 			Returns current event listener (or NULL)
 		*/

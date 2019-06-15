@@ -1,5 +1,5 @@
 #include <Windows.h>
-#include <gdiplus.h> 
+#include <gdiplus.h>
 #include "gdi_bitmap.h"
 #include "../../gpu/pipeline.h"
 #include "../../environment.h"
@@ -21,7 +21,7 @@ public:
 	static void init() {
 		static bool gdiStartedUp = false;
 		if (!gdiStartedUp) {
-			// Start Gdiplus 
+			// Start Gdiplus
 			Gdiplus::GdiplusStartupInput gdiplusStartupInput;
 			ULONG_PTR gdiplusToken;
 			Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
@@ -80,7 +80,7 @@ public:
 		case QuadByte:
 			pf = PixelFormat32bppARGB;
 			break;
-		
+
 		default:
 			BEATMUP_ERROR("Unsupported pixel format");
 		}
@@ -111,8 +111,8 @@ public:
 	}
 
 
-	inline int getLinesAlignment() const {
-		return 4;
+	inline int getStride() const {
+		return ceili(getBitsPerPixel() * getWidth(), 32) / 8;
 	}
 
 
@@ -126,7 +126,7 @@ public:
 	}
 
 
-	inline const pixptr getData(int x, int y) const {			
+	inline const pixptr getData(int x, int y) const {
 		return (const pixptr)data.Scan0 + x + y * data.Stride;
 	}
 
@@ -167,14 +167,14 @@ const int GDIBitmap::getWidth() const {
 	return impl->getWidth();
 }
 
-	
+
 const int GDIBitmap::getHeight() const {
 	return impl->getHeight();
 }
 
 
-int GDIBitmap::getLinesAlignment() const {
-	return impl->getLinesAlignment();
+int GDIBitmap::getStride() const {
+	return impl->getStride();
 }
 
 

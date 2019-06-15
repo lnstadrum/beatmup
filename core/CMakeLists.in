@@ -56,6 +56,7 @@ set(BEATMUP_SOURCES
     ${BEATMUP_SRC_DIR}/scene/rendering_programs.cpp
     ${BEATMUP_SRC_DIR}/scene/scene.cpp
     ${BEATMUP_SRC_DIR}/scene/shader_applicator.cpp
+    ${BEATMUP_SRC_DIR}/utils/bmp_file.cpp
     ${BEATMUP_SRC_DIR}/utils/chunkfile.cpp
     ${BEATMUP_SRC_DIR}/utils/image_resolution.cpp
     ${BEATMUP_SRC_DIR}/utils/profiler.cpp

@@ -41,8 +41,18 @@ void AbstractBitmap::prepare(GraphicPipeline& gpu) {
 	if (upToDate[ProcessingTarget::GPU])
 		return;
 
-	// disable any high order alignment
-	glPixelStorei(GL_UNPACK_ALIGNMENT, getScanlineAlignment());
+	// setup alignment
+	const int stride = getStride();
+	if (stride == getWidth() * getBitsPerPixel() / 8)
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	else if (stride % 8 == 0)
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 8);
+	else if (stride % 4 == 0)
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+	else if (stride % 2 == 0)
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
+	else
+		throw Exception("Unsupported stride %d", stride);
 
 	if (isMask()) {
 		// masks are stored as horizontally-stretched bitmaps
@@ -66,13 +76,13 @@ void AbstractBitmap::prepare(GraphicPipeline& gpu) {
 	else {
 #ifdef BEATMUP_OPENGLVERSION_GLES20
 		glTexImage2D(GL_TEXTURE_2D,
-                     0,
-                     GL::BITMAP_INTERNALFORMATS[getPixelFormat()],
-                     getWidth(), getHeight(),
-                     0,
-                     GL::BITMAP_PIXELFORMATS[getPixelFormat()],
-                     GL::BITMAP_PIXELTYPES[getPixelFormat()],
-                     getData(0, 0));
+				0,
+				GL::BITMAP_INTERNALFORMATS[getPixelFormat()],
+				getWidth(), getHeight(),
+				0,
+				GL::BITMAP_PIXELFORMATS[getPixelFormat()],
+				GL::BITMAP_PIXELTYPES[getPixelFormat()],
+				getData(0, 0));
 #else
 		glTexStorage2D(GL_TEXTURE_2D, 1, GL::BITMAP_INTERNALFORMATS[getPixelFormat()], getWidth(), getHeight());
 		glTexSubImage2D(GL_TEXTURE_2D,
@@ -174,8 +184,8 @@ const unsigned char AbstractBitmap::getNumberOfChannels() const {
 }
 
 
-int AbstractBitmap::getScanlineAlignment() const {
-	return 1;
+int AbstractBitmap::getStride() const {
+	return ceili(getWidth() * getBitsPerPixel(), 8);
 }
 
 
