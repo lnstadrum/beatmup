@@ -126,11 +126,9 @@ namespace Beatmup {
 		const unsigned char getNumberOfChannels() const;
 
 		/**
-			Returns number of bytes specifying the bitmap scanline alignment.
-			`1`: no alignment,
-			`4`: every scaline is padded so that the padded length is a factor of 4.
+			Returns the offset in bytes between scanlines.
 		*/
-		virtual int getScanlineAlignment() const;
+		virtual int getStride() const;
 
 		/**
 			Returns the bitmap resolution within ImageResolution object

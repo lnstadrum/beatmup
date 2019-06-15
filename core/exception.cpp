@@ -13,14 +13,14 @@ Beatmup::Exception::Exception(const char * message, ...) {
 	va_start(argptr, message);
 #if BEATMUP_PLATFORM_WINDOWS
 	vsnprintf_s(out, MAX_LENGTH, message, argptr);
-	printf("%s\n", out);
-#elif BEATMUP_PLATFORM_ANDROID
+#else
 	vsnprintf(out, MAX_LENGTH, message, argptr);
+	#if BEATMUP_PLATFORM_ANDROID
 	__android_log_print(ANDROID_LOG_ERROR, "Beatmup", "%s", out);
+	#endif
 #endif
 	va_end(argptr);
 	this->message.assign(out);
-	//TODO: out
 }
 
 
