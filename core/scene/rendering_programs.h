@@ -21,13 +21,15 @@ namespace Beatmup {
 			Standard rendering operations
 		*/
 		enum class Program {
-			BLEND,					//!< default blending of a single image
-			MASKED_BLEND,			//!< blending an image through a pixelwise mask
-			SHAPED_BLEND,			//!< shaping an image
-			BLEND_EXT,				//!< default blending using a texture extension
-			MASKED_BLEND_EXT,		//!< blending an image through a pixelwise mask (texture extension)
-			SHAPED_BLEND_EXT,		//!< shaping an image (texture extension)
-			CUSTOM					//!< using a user-defined program with a shared vertex shader
+			BLEND,                  //!< default blending of a single image
+			MASKED_BLEND,           //!< blending an image through a pixelwise mask
+			MASKED_8BIT_BLEND,      //!< blending an image through a 8 bit pixelwise mask
+			SHAPED_BLEND,           //!< shaping an image
+			BLEND_EXT,              //!< default blending using a texture extension
+			MASKED_BLEND_EXT,       //!< blending an image through a pixelwise mask (texture extension)
+			MASKED_8BIT_BLEND_EXT,  //!< blending an image through a 8 bit pixelwise mask (texture extension)
+			SHAPED_BLEND_EXT,       //!< shaping an image (texture extension)
+			CUSTOM                  //!< using a user-defined program with a shared vertex shader
 		};
 
 

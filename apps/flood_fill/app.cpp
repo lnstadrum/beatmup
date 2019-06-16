@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
 	floodFill.setInput(spiral);
 	floodFill.setOutput(mask);
 	floodFill.setSeeds(seeds, 1);
-	floodFill.setBorderPostprocessing(Beatmup::FloodFill::BorderMorphology::ERODE, 2, 3);
+	floodFill.setBorderPostprocessing(Beatmup::FloodFill::BorderMorphology::ERODE, 2, 10);
 
 	mask.zero();
 		// It is important to zero the mask before going floodfill. By default it contains random stuff (what has been before
@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
 		Beatmup::Scene::BitmapLayer& l = scene.newBitmapLayer();
 		l.setBitmap(&fecamp);
 		l.getMapping().setCenterPosition(Beatmup::Point(0.5f, 0.5f));
-		l.setModulationColor({ 1, 1, 1, 0.75f });
+		l.setModulationColor({ 1, 0, 0, 1 });
 	}
 
 	{
