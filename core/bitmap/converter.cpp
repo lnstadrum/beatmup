@@ -1,6 +1,7 @@
 #include "../environment.h"
 #include "../bitmap/converter.h"
 #include "../bitmap/bitmap_access.h"
+#include "../bitmap/mask_bitmap_access.h"
 #include "../exception.h"
 #include <algorithm>
 #include <cstring>

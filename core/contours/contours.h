@@ -6,6 +6,7 @@
 #include "../geometry.h"
 #include "../bitmap/abstract_bitmap.h"
 #include "../bitmap/bitmap_access.h"
+#include "../bitmap/mask_bitmap_access.h"
 #include "../exception.h"
 #include <vector>
 #include <mutex>
@@ -37,7 +38,7 @@ namespace Beatmup {
 		*/
 		void clear();
 
-		
+
 		/**
 			\return available point count
 		*/
