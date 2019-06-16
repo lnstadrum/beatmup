@@ -76,7 +76,7 @@ Scene::SceneIntegrityError::SceneIntegrityError(const std::string reason, const 
 	Exception( (std::string(reason) + "\n" + getSceneLog(scene, "")).c_str() )
 {}
 
-	
+
 
 std::string generateUniqueLayerName(const Scene& scene, const char* prefix = "") {
 	int n = 1;
@@ -260,7 +260,7 @@ GL::TextureHandler* Scene::BitmapLayer::resolveContent(RenderingContext& context
 		if (bitmap)
 			context.lockBitmap(bitmap);
 		return bitmap;
-		
+
 #ifdef BEATMUP_PLATFORM_ANDROID
 	case Scene::BitmapLayer::ImageSource::CAMERA:
 		return context.getCameraFrame();
@@ -297,7 +297,7 @@ void Scene::BitmapLayer::render(RenderingContext& context) {
 		}
 
 		configure(context, content);
-		
+
 		AffineMapping arMapping(context.getMapping() * mapping * bitmapMapping);
 		arMapping.matrix.scale(1.0f, invAr);
 		context.getProgram().setMatrix3("modelview", arMapping);
@@ -339,18 +339,25 @@ Scene::MaskedBitmapLayer::MaskedBitmapLayer() :
 void Scene::MaskedBitmapLayer::render(RenderingContext& context) {
 	GL::TextureHandler* content = resolveContent(context);
 	if (content && mask) {
+		const bool mask8bit = mask->getPixelFormat() == PixelFormat::SingleByte;
+
 		// program selection
 		switch (content->getTextureFormat()) {
 		case GL::TextureHandler::TextureFormat::OES_Ext:
-			context.enableProgram(RenderingPrograms::Program::MASKED_BLEND_EXT);
+			context.enableProgram(mask8bit ?
+				RenderingPrograms::Program::MASKED_8BIT_BLEND_EXT :
+				RenderingPrograms::Program::MASKED_BLEND_EXT
+			);
 			break;
 		default:
-			context.enableProgram(RenderingPrograms::Program::MASKED_BLEND);
+			context.enableProgram(mask8bit ?
+				RenderingPrograms::Program::MASKED_8BIT_BLEND :
+				RenderingPrograms::Program::MASKED_BLEND);
 			break;
 		}
 
 		context.lockBitmap(mask);
-		
+
 		CustomMaskedBitmapLayer::configure(context, content);
 		context.bindMask(*mask);
 		context.blend();
@@ -366,7 +373,7 @@ bool Scene::MaskedBitmapLayer::testPoint(float x, float y) const {
 		if (!mask->isUpToDate(CPU))
 			BEATMUP_ERROR("CPU version of the mask is out of date.");
 		const Point p = (mapping * maskMapping).getInverse(x, y);
-		int	
+		int
 			w = floorf_fast(mask->getWidth() * p.x),
 			h = floorf_fast(mask->getHeight() * p.y);
 		if (0 <= w && w < mask->getWidth() && 0 <= h && h < mask->getHeight()) {
@@ -400,7 +407,7 @@ void Scene::ShapedBitmapLayer::render(RenderingContext& context) {
 			context.enableProgram(RenderingPrograms::Program::SHAPED_BLEND);
 			break;
 		}
-	
+
 		CustomMaskedBitmapLayer::configure(context, content);
 
 		// computing border profile in pixels
@@ -438,7 +445,7 @@ void Scene::ShadedBitmapLayer::render(RenderingContext& context) {
 	if (!layerShader)
 		return;
 	GL::TextureHandler* content = BitmapLayer::resolveContent(context);
-	
+
 	if (content)
 		invAr = content->getInvAspectRatio();
 	else

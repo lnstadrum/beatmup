@@ -42,7 +42,7 @@ static const char
 				gl_Position.y = gl_Position.y * 2.0 - 1.0;
 			else
 				gl_Position.y = 1.0 - gl_Position.y * 2.0;
-			texCoord = (invImgMapping * vec3(inVertex, 1)).xy;									// image texture coordinates
+			texCoord = (invImgMapping * vec3(inVertex, 1)).xy;    // image texture coordinates
 			maskCoord = inTexCoord;
 		}
 	),
@@ -89,7 +89,35 @@ static const char
 				a = texture2D(
 					maskLookup,
 					vec2(texture2D(mask, vec2(maskCoord.x - o + pixOffset, maskCoord.y)).r, o / blockSize + 0.03125)
-				).a + 0.5;
+				).a;
+			gl_FragColor = mix(bgColor, texture2D(image, texCoord.xy).rgba, a) * modulationColor;
+		}
+	),
+#endif
+
+
+	*FRAGMENT_SHADER_BLENDMASK_8BIT = STRINGIFY(
+		uniform highp sampler2D mask;
+		uniform mediump vec4 modulationColor;
+		uniform mediump vec4 bgColor;
+		varying mediump vec2 texCoord;
+		varying highp vec2 maskCoord;
+	)
+#ifdef BEATMUP_OPENGLVERSION_GLES20
+	STRINGIFY(
+		void main() {
+			highp float a = 0.0;
+			if (texCoord.x >= 0.0 && texCoord.y >= 0.0 && texCoord.x < 1.0 && texCoord.y < 1.0)
+				a = texture2D(mask, maskCoord).a;
+			gl_FragColor = mix(bgColor, texture2D(image, texCoord.xy).rgba, a) * modulationColor;
+		}
+	),
+#else
+	STRINGIFY(
+		void main() {
+			highp float a = 0.0;
+			if (texCoord.x >= 0.0 && texCoord.y >= 0.0 && texCoord.x < 1.0 && texCoord.y < 1.0)
+				a = texture2D(mask, maskCoord).r;
 			gl_FragColor = mix(bgColor, texture2D(image, texCoord.xy).rgba, a) * modulationColor;
 		}
 	),
@@ -274,13 +302,15 @@ GL::VertexShader& RenderingPrograms::getVertexShader(const GraphicPipeline* gpu,
 	case Program::BLEND:
 	case Program::BLEND_EXT:
 		return emplace(map, Program::BLEND, gpu, VERTEX_SHADER_BLEND);
-	
+
 	case Program::MASKED_BLEND:
+	case Program::MASKED_8BIT_BLEND:
 	case Program::SHAPED_BLEND:
 	case Program::MASKED_BLEND_EXT:
+	case Program::MASKED_8BIT_BLEND_EXT:
 	case Program::SHAPED_BLEND_EXT:
 		return emplace(map, Program::MASKED_BLEND, gpu, VERTEX_SHADER_BLENDMASK);
-	
+
 	default:
 		Insanity::insanity("Invalid vertex shader type encountered");
 	}
@@ -300,12 +330,18 @@ GL::FragmentShader& RenderingPrograms::getFragmentShader(const GraphicPipeline* 
 
 	case Program::BLEND_EXT:
 		return emplace(map, Program::BLEND_EXT, gpu, std::string(FRAGMENT_SHADER_HEADER_EXT) + std::string(FRAGMENT_SHADER_BLEND));
-		
+
 	case Program::MASKED_BLEND:
 		return emplace(map, Program::MASKED_BLEND, gpu, std::string(FRAGMENT_SHADER_HEADER_NORMAL) + std::string(FRAGMENT_SHADER_BLENDMASK));
 
 	case Program::MASKED_BLEND_EXT:
 		return emplace(map, Program::MASKED_BLEND_EXT, gpu, std::string(FRAGMENT_SHADER_HEADER_EXT) + std::string(FRAGMENT_SHADER_BLENDMASK));
+
+	case Program::MASKED_8BIT_BLEND:
+		return emplace(map, Program::MASKED_8BIT_BLEND, gpu, std::string(FRAGMENT_SHADER_HEADER_NORMAL) + std::string(FRAGMENT_SHADER_BLENDMASK_8BIT));
+
+	case Program::MASKED_8BIT_BLEND_EXT:
+		return emplace(map, Program::MASKED_8BIT_BLEND_EXT, gpu, std::string(FRAGMENT_SHADER_HEADER_EXT) + std::string(FRAGMENT_SHADER_BLENDMASK_8BIT));
 
 	case Program::SHAPED_BLEND:
 		return emplace(map, Program::SHAPED_BLEND, gpu, std::string(FRAGMENT_SHADER_HEADER_NORMAL) + std::string(FRAGMENT_SHADER_BLENDSHAPE));
@@ -357,17 +393,15 @@ GL::Program& RenderingPrograms::getCurrentProgram() {
 
 
 void RenderingPrograms::bindMask(GraphicPipeline* gpu, AbstractBitmap& mask) {
-#ifdef BEATMUP_DEBUG
-	if (currentProgram != Program::MASKED_BLEND && currentProgram != Program::MASKED_BLEND_EXT)
-		throw Beatmup::Exception("Mask cannot be bound to the current rendering program");
-#endif
-	gpu->bind(mask, MASK_TEXTURE_UNIT, false);
-	backend->bindMaskLookup(mask.getPixelFormat());
 	GL::Program& program = getCurrentProgram();
+	gpu->bind(mask, MASK_TEXTURE_UNIT, false);
 	program.setInteger("mask", MASK_TEXTURE_UNIT);
-	program.setInteger("maskLookup", MASK_LOOKUP_TEXTURE_UNIT);
-	program.setFloat("blockSize", 8.0f / mask.getBitsPerPixel() / mask.getWidth());
-	program.setFloat("pixOffset", 0.5f / mask.getWidth());
+	if (mask.getBitsPerPixel() < 8) {
+		backend->bindMaskLookup(mask.getPixelFormat());
+		program.setInteger("maskLookup", MASK_LOOKUP_TEXTURE_UNIT);
+		program.setFloat("blockSize", 8.0f / mask.getBitsPerPixel() / mask.getWidth());
+		program.setFloat("pixOffset", 0.5f / mask.getWidth());
+	}
 	maskSetUp = true;
 }
 
