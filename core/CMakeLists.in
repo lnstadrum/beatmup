@@ -92,13 +92,6 @@ if (PROFILE_AUDIO)
     )
 endif()
 
-if (PROFILE_PLATFORM_SPECIFIC_BITMAP)
-    if (WIN32)
-		set(BEATMUP_SOURCES ${BEATMUP_SOURCES}
-			${BEATMUP_SRC_DIR}/bitmap/platform_specific/gdi_bitmap.cpp
-		)
-	endif()
-endif()
 
 include_directories(${BEATMUP_SRC_DIR})
 
@@ -108,3 +101,5 @@ include_directories(${BEATMUP_SRC_DIR})
 	link_directories("${BEATMUP_BUILD_DIR}/lib")
 	include_directories("${BEATMUP_GLEW_DIR}/include")
 	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DGLEW_STATIC")
+
+set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DBEATMUP_DEBUG")

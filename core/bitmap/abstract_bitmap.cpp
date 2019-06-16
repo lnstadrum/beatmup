@@ -42,17 +42,7 @@ void AbstractBitmap::prepare(GraphicPipeline& gpu) {
 		return;
 
 	// setup alignment
-	const int stride = getStride();
-	if (stride == getWidth() * getBitsPerPixel() / 8)
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	else if (stride % 8 == 0)
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 8);
-	else if (stride % 4 == 0)
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-	else if (stride % 2 == 0)
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
-	else
-		throw Exception("Unsupported stride %d", stride);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 	if (isMask()) {
 		// masks are stored as horizontally-stretched bitmaps
@@ -181,11 +171,6 @@ const unsigned char AbstractBitmap::getBitsPerPixel() const {
 
 const unsigned char AbstractBitmap::getNumberOfChannels() const {
 	return CHANNELS_PER_PIXEL[getPixelFormat()];
-}
-
-
-int AbstractBitmap::getStride() const {
-	return ceili(getWidth() * getBitsPerPixel(), 8);
 }
 
 

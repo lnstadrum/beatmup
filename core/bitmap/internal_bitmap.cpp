@@ -49,7 +49,7 @@ InternalBitmap::InternalBitmap(Environment& env, const std::string& filename) :
 	// allocate & read
 	memory = env.allocateMemory(getMemorySize());
 	Environment::Mem mem(env, memory);
-	bmp.load(mem(), getStride(), getMemorySize());
+	bmp.load(mem(), getMemorySize());
 }
 
 
@@ -113,7 +113,7 @@ void InternalBitmap::saveBmp(const std::string& filename) {
 	Environment::Mem mem(env, memory);
 	BmpFile::save(
 		mem(),
-		width, getStride(), height,
+		width, height,
 		getBitsPerPixel(),
 		filename
 	);
