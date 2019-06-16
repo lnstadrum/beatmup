@@ -30,7 +30,7 @@ namespace Beatmup {
 		std::ifstream in;
 	public:
 		BmpFile(const std::string& filename);
-		void load(void* pixels, uint32_t stride, const uint32_t pixelsSizeInBytes);
+		void load(void* pixels, const uint32_t pixelsSizeInBytes);
 
 		uint8_t getBitsPerPixel() const { return header.bpp; }
 		int32_t getWidth()        const { return header.width; }
@@ -39,7 +39,6 @@ namespace Beatmup {
 		static void save(
 			const void* pixels,
 			int32_t width,
-			int32_t stride,
 			int32_t height,
 			uint8_t bpp,
 			const std::string& filename

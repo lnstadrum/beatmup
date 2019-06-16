@@ -126,11 +126,6 @@ namespace Beatmup {
 		const unsigned char getNumberOfChannels() const;
 
 		/**
-			Returns the offset in bytes between scanlines.
-		*/
-		virtual int getStride() const;
-
-		/**
 			Returns the bitmap resolution within ImageResolution object
 		*/
 		const ImageResolution getImageResolution() const;

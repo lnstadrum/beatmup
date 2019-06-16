@@ -112,7 +112,7 @@ BmpFile::BmpFile(const std::string& filename) {
 }
 
 
-void BmpFile::load(void* pixels, uint32_t stride, const uint32_t pixelsSizeInBytes) {
+void BmpFile::load(void* pixels, const uint32_t pixelsSizeInBytes) {
 	const msize
 		rowSize = ceili(header.width * header.bpp, 8),
 		rowAlign = ceili(rowSize, 4) * 4 - rowSize;
@@ -157,7 +157,6 @@ void BmpFile::load(void* pixels, uint32_t stride, const uint32_t pixelsSizeInByt
 void BmpFile::save(
 	const void* pixels,
 	int32_t width,
-	int32_t stride,
 	int32_t height,
 	uint8_t bpp,
 	const std::string& filename
@@ -272,7 +271,7 @@ void BmpFile::save(
 				out << LSB_MSB_REVERSE_LOOKUP[*ptr];
 		else {
 			out.write((const char*)ptr, rowSize);
-			ptr += stride;
+			ptr += width;
 		}
 		out.write(pad, rowAlign);
 	}
