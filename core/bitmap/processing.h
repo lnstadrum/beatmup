@@ -1,6 +1,8 @@
 #pragma once
 #include "../exception.h"
 #include "abstract_bitmap.h"
+#include "bitmap_access.h"
+#include "mask_bitmap_access.h"
 
 namespace Beatmup {
 	namespace BitmapProcessing {
@@ -111,6 +113,9 @@ namespace Beatmup {
 			case HexMask:
 				Func<HexMaskWriter>::process(HexMaskWriter(mask, x0, y0), args...);
 				break;
+			case SingleByte:
+				Func<SingleByteMaskWriter>::process(SingleByteMaskWriter(mask, x0, y0), args...);
+				break;
 			default:
 				throw ProcessingActionNotImplemented(mask.getPixelFormat());
 			}
@@ -200,6 +205,9 @@ namespace Beatmup {
 					break; \
 				case HexMask: \
 					Func<IN_R, HexMaskWriter>::process(IN_R(in,x0,y0), HexMaskWriter(out,x0,y0), args...); \
+					break; \
+				case SingleByte: \
+					Func<IN_R, SingleByteMaskWriter>::process(IN_R(in,x0,y0), SingleByteMaskWriter(out,x0,y0), args...); \
 					break; \
 				default: throw ProcessingActionNotImplemented(out.getPixelFormat()); \
 			}

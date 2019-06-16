@@ -1,5 +1,7 @@
 #include "operator.h"
 #include "bitmap_access.h"
+#include "mask_bitmap_access.h"
+
 
 using namespace Beatmup;
 

@@ -19,6 +19,10 @@ Beatmup::Exception::Exception(const char * message, ...) {
 	__android_log_print(ANDROID_LOG_ERROR, "Beatmup", "%s", out);
 	#endif
 #endif
+
+#ifdef BEATMUP_DEBUG
+	printf("%s\n", out);
+#endif
 	va_end(argptr);
 	this->message.assign(out);
 }

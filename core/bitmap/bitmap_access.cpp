@@ -1,4 +1,5 @@
 #include "bitmap_access.h"
+#include "mask_bitmap_access.h"
 
 int
 	Beatmup::MASK_LUT_1_BIT[2] = { 0, 255 },
