@@ -119,9 +119,9 @@ void BmpFile::load(void* pixels, const uint32_t pixelsSizeInBytes) {
 	Exception::check(pixelsSizeInBytes >= rowSize * header.height,
 		"Cannot fit BMP file to a pixel buffer");
 	char pad[3];
-	char* ptr = (char*)pixels;
 	in.seekg(header.offset, std::ios_base::beg);
-	for (int y = 0; y < header.height && !in.eof(); ++y) {
+	for (int y = header.height - 1; y >= 0 && !in.eof(); --y) {
+		char* ptr = (char*)pixels + y * rowSize;
 		if (header.bpp == 32)
 			for (int x = 0; x < header.width && !in.eof(); ++x, ptr+=4) {
 				in.read(ptr + CHANNELS_4.A, 1);
@@ -254,9 +254,9 @@ void BmpFile::save(
 	}
 
 	// writing cycle
-	pixbyte const* ptr = (pixbyte const*)pixels;
 	char pad[3] = {0, 0, 0};
-	for (int y = 0; y < height; ++y) {
+	for (int y = height - 1; y >= 0; --y) {
+		pixbyte const* ptr = (pixbyte const*)pixels + y * rowSize;
 		if (bpp == 32)
 			for (int x = 0; x < width; ++x, ptr+=4)
 				out << ptr[CHANNELS_4.A] << ptr[CHANNELS_4.B] << ptr[CHANNELS_4.G] << ptr[CHANNELS_4.R];
@@ -271,7 +271,6 @@ void BmpFile::save(
 				out << LSB_MSB_REVERSE_LOOKUP[*ptr];
 		else {
 			out.write((const char*)ptr, rowSize);
-			ptr += width;
 		}
 		out.write(pad, rowAlign);
 	}
