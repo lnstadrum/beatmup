@@ -28,7 +28,7 @@ namespace Beatmup {
 #else
 						r, g, b, a;
 #endif
-					} channels;
+				};
 			};
 
 			Matrix();

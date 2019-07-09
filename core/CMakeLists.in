@@ -4,14 +4,19 @@ cmake_minimum_required(VERSION 3.2.1)
 set(BEATMUP_ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}/..")
 set(BEATMUP_SRC_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
-# build workspace
+# building workspace
 set(BEATMUP_BUILD_DIR "${BEATMUP_ROOT_DIR}/build")
 
 # glew root folder
 set(BEATMUP_GLEW_DIR "${BEATMUP_ROOT_DIR}/glew-cmake")
 
+# platform-specific flags
 if (WIN32)
 	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DBEATMUP_PLATFORM_WINDOWS")
+    link_libraries(gdiplus)
+else()
+	find_package(Threads REQUIRED)
+	link_libraries(${CMAKE_THREAD_LIBS_INIT})
 endif (WIN32)
 
 
@@ -95,14 +100,13 @@ endif()
 
 include_directories(${BEATMUP_SRC_DIR})
 
+# trying to guess OpenGL backend
+if (NOT (USE_OPENGL OR USE_GLX OR USE_EGL))
+    if (WIN32)
+        set(USE_OPENGL YES)
+    endif()
+endif()
 
-if (WIN32)
-	link_libraries(gdiplus)
-else()
-	find_package(Threads REQUIRED)
-	link_libraries(${CMAKE_THREAD_LIBS_INIT})
-endif (WIN32)
-  
 
 # selecting OpenGL backend
 if (USE_OPENGL OR USE_GLX)
@@ -130,11 +134,11 @@ elseif(USE_EGL)
 	# handling raspberry pi having closed-source EGL/GLES implementation
 	if (EXISTS "/opt/vc/lib/libbrcmEGL.so")
 		set(USE_BRCM_LIBS YES)
-		set(path_EGL "/opt/vc/lib/libbrcmEGL.so")
+		set(EGL_LIBRARY "/opt/vc/lib/libbrcmEGL.so")
 		message("EGL binaries are found; we are likely running a Raspberry Pi")
   	else()
-		find_library(path_EGL   EGL)
-		if (NOT path_EGL)
+		find_library(EGL_LIBRARY   EGL)
+		if (NOT EGL_LIBRARY)
 			set(USE_PKGCONFIG YES)
 			message(WARNING "Unable to find EGL lib. Trying with PkgConfig...")
 			find_package(PkgConfig)
@@ -148,9 +152,9 @@ elseif(USE_EGL)
 		if (USE_PKGCONFIG)
 			pkg_check_modules(GLES2 REQUIRED glesv2)
 		elseif (USE_BRCM_LIBS)
-			set(path_GLES "/opt/vc/lib/libbrcmGLESv2.so")
+			set(GLES_LIBRARY "/opt/vc/lib/libbrcmGLESv2.so")
 		else()
-			find_library(path_GLES  GLESv2)
+			find_library(GLES_LIBRARY  GLESv2)
 		endif()
 		set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DBEATMUP_OPENGLVERSION_GLES20")
 	elseif (GLES_VERSION EQUAL 31)
@@ -159,7 +163,7 @@ elseif(USE_EGL)
 		elseif (USE_BRCM_LIBS)
 			message(FATAL_ERROR "OpenGL ES 3.0 is not supported on Raspberry Pi.")
 		else()
-			find_library(path_GLES  GLESv3)
+			find_library(GLES_LIBRARY  GLESv3)
 		endif()
 		set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DBEATMUP_OPENGLVERSION_GLES31")
 	else()
@@ -170,8 +174,8 @@ elseif(USE_EGL)
 		link_libraries(${EGL_LIBRARIES} ${GLES2_LIBRARIES})
 		include_directories(${EGL_INCLUDE_DIR} ${GLES2_INCLUDE_DIR})
 	else()
-		message("EGL library used: ${path_EGL} ${path_GLES}")
-		link_libraries(${path_EGL} ${path_GLES})
+		message("EGL library used: ${EGL_LIBRARY} ${GLES_LIBRARY}")
+		link_libraries(${EGL_LIBRARY} ${GLES_LIBRARY})
 		if (USE_BRCM_LIBS)
 			include_directories("/opt/vc/include")
 		endif()

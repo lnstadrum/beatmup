@@ -79,36 +79,6 @@ BmpFile::BmpFile(const std::string& filename) {
 		throw IOError(filename, "Unsupported 32-bit bitmap compression.");
 	else if (header.bpp != 32 && header.compression != BMP_HEADER_REFERENCE.compression)
 		throw IOError(filename, "Compressed bitmaps are not supported.");
-
-	/*printf("size %d\n"
-	"reserved %d %d\n"
-	"offset %d\n"
-	"headerSize %d\n"
-	"width/height %d %d\n"
-	"numColorPlanes %d\n"
-	"bpp %d\n"
-	"compression %d\n"
-	"imageSize %d\n"
-	"dpi %d %d\n"
-	"numImportantColors %d\n\n\n",
-		(int)header.size,
-		(int)header.reserved[0],	(int)header.reserved[1],
-		(int)header.offset,
-		(int)header.headerSize,
-		(int)header.width, (int)header.height,
-		(int)header.numColorPlanes,
-		(int)header.bpp,
-		(int)header.compression,
-		(int)header.imageSize,
-		(int)header.hdpi, (int)header.vdpi,
-		(int)header.numImportantColors);
-
-	in.seekg(sizeof(header), std::ios_base::beg);
-	for (uint32_t i = sizeof(header); i < header.offset; i+=4) {
-		uint32_t _;
-		in.read((char*)&_, sizeof(_));
-		printf("0x%x, ", _);
-	}*/
 }
 
 
