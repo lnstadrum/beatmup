@@ -86,8 +86,10 @@ namespace Beatmup {
 
 			void enable(const GraphicPipeline& gpu);
 
+#ifndef BEATMUP_OPENGLVERSION_GLES20
 			Chunk* getBinary() const;
 			void loadBinary(const Chunk& binary);
+#endif
 
 			glhandle getUniformLocation(const char* name);
 			glhandle getAttribLocation(const char* name);
@@ -119,7 +121,9 @@ namespace Beatmup {
 			void bindSampler(GraphicPipeline& gpu, GL::TextureHandler& image, const char* uniformId);
 			void bindImage(GraphicPipeline& gpu, GL::TextureHandler& image, const char* uniformId, bool read, bool write);
 
+#ifndef BEATMUP_OPENGLVERSION_GLES20
 			void bindAtomicCounter(GraphicPipeline& gpu, AtomicCounter& counter, int unit);
+#endif
 		};
 
 

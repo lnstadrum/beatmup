@@ -32,18 +32,16 @@ private:
 		displayResolution,					//!< width and height of a display obtained when switching
 		outputResolution;					//!< actual output resolution (display or bitmap)
 
-#ifdef BEATMUP_PLATFORM_WINDOWS
-	HWND hwnd;
-	HGLRC hglrc;
-
-#elif BEATMUP_PLATFORM_ANDROID
+#ifdef BEATMUP_OPENGLVERSION_GLES
 	EGLDisplay eglDisplay;
 	EGLSurface
 		eglSurface,				//!< currently used surface
 		eglDefaultSurface;		//!< default internally managed surface
 	EGLContext eglContext;
 	EGLConfig eglConfig;
-
+#elif BEATMUP_PLATFORM_WINDOWS
+	HWND hwnd;
+	HGLRC hglrc;
 #else
 	Display* xDisplay;
 	Window xWindow;
@@ -84,45 +82,19 @@ private:
 public:
 	Impl(GraphicPipeline& front) : onScreen(false), front(front)
 	{
-#ifdef BEATMUP_PLATFORM_WINDOWS
-		PIXELFORMATDESCRIPTOR pfd;
-		memset(&pfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
-		pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-		pfd.nVersion = 1;
-		pfd.dwFlags = PFD_SUPPORT_OPENGL;
-		pfd.iPixelType = PFD_TYPE_RGBA;
-		pfd.cColorBits = 32;
-		pfd.cDepthBits = 16;
-		pfd.iLayerType = PFD_MAIN_PLANE;
-		hwnd = CreateWindowEx(WS_EX_TOOLWINDOW, "STATIC", "glctx",
-			WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-			0, 0, 1, 1, 0, 0, GetModuleHandle(NULL), 0);
-		if (!hwnd)
-			throw GL::GLException("Unable to initialize GL context");
-
-		ShowWindow(hwnd, SW_HIDE);
-		HDC hdc = GetDC(hwnd);
-		int pixelFormat = ChoosePixelFormat(hdc, &pfd);
-		SetPixelFormat(hdc, pixelFormat, &pfd);
-		hglrc = wglCreateContext(hdc);
-		wglMakeCurrent(hdc, hglrc);
-		if (!wglGetCurrentContext())
-			throw GL::GLException("Unable to initialize GL context");
-
-		// init glew
-		glewExperimental = GL_TRUE;
-		GLenum err = glewInit();
-		if (err != GLEW_OK)
-			throw GL::GLException((const char*)glewGetErrorString(err));
-
-#elif BEATMUP_PLATFORM_ANDROID
+#ifdef BEATMUP_OPENGLVERSION_GLES
 		// Step 1 - Get the default display.
 		if ((eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY)) == EGL_NO_DISPLAY)
 			throw GL::GLException("EGL: no display", eglGetError());
 
 		// Step 2 - Initialize EGL.
-		if (!eglInitialize(eglDisplay, 0, 0))
-			throw GL::GLException("EGL: initialization failed", eglGetError());
+		if (!eglInitialize(eglDisplay, 0, 0)) {
+			auto err = eglGetError();
+			if (err == EGL_NOT_INITIALIZED)
+				throw GL::GLException("EGL: display not initialized", err);
+			else
+				throw GL::GLException("EGL: initialization failed", err);
+		}
 
 		// Step 3 - Make OpenGL ES the current API.
 		eglBindAPI(EGL_OPENGL_ES_API);
@@ -181,6 +153,37 @@ public:
 		// Step 7 - Bind the context to the current thread
 		if (!eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext))
 			throw GL::GLException("EGL: making current", eglGetError());
+
+#elif BEATMUP_PLATFORM_WINDOWS
+		PIXELFORMATDESCRIPTOR pfd;
+		memset(&pfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
+		pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+		pfd.nVersion = 1;
+		pfd.dwFlags = PFD_SUPPORT_OPENGL;
+		pfd.iPixelType = PFD_TYPE_RGBA;
+		pfd.cColorBits = 32;
+		pfd.cDepthBits = 16;
+		pfd.iLayerType = PFD_MAIN_PLANE;
+		hwnd = CreateWindowEx(WS_EX_TOOLWINDOW, "STATIC", "glctx",
+			WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+			0, 0, 1, 1, 0, 0, GetModuleHandle(NULL), 0);
+		if (!hwnd)
+			throw GL::GLException("Unable to initialize GL context");
+
+		ShowWindow(hwnd, SW_HIDE);
+		HDC hdc = GetDC(hwnd);
+		int pixelFormat = ChoosePixelFormat(hdc, &pfd);
+		SetPixelFormat(hdc, pixelFormat, &pfd);
+		hglrc = wglCreateContext(hdc);
+		wglMakeCurrent(hdc, hglrc);
+		if (!wglGetCurrentContext())
+			throw GL::GLException("Unable to initialize GL context");
+
+		// init glew
+		glewExperimental = GL_TRUE;
+		GLenum err = glewInit();
+		if (err != GLEW_OK)
+			throw GL::GLException((const char*)glewGetErrorString(err));
 
 #else
 		// creating a display & a window
@@ -278,15 +281,15 @@ public:
 	~Impl() {
 		glDeleteFramebuffers(1, &hFrameBuffer);
 
-#ifdef BEATMUP_PLATFORM_WINDOWS
-		wglDeleteContext(hglrc);
-		DestroyWindow(hwnd);
-#elif BEATMUP_PLATFORM_ANDROID
+#ifdef BEATMUP_OPENGLVERSION_GLES
 		if (eglSurface != EGL_NO_SURFACE && eglSurface != eglDefaultSurface)
 			eglDestroySurface(eglDisplay, eglSurface);
 		eglDestroySurface(eglDisplay, eglDefaultSurface);
 		eglDestroyContext(eglDisplay, eglContext);
 		eglTerminate(eglDisplay);
+#elif BEATMUP_PLATFORM_WINDOWS
+		wglDeleteContext(hglrc);
+		DestroyWindow(hwnd);
 #else
 		glXDestroyContext(xDisplay, glxContext);
 		glXDestroyPbuffer(xDisplay, glxPbuffer);
@@ -443,7 +446,8 @@ public:
 #else
 				GL_RED,
 #endif
-				GL_RG, GL_RGB, GL_RGBA
+				0, // not used
+				GL_RGB, GL_RGBA
 			};
 			glTexImage2D(
 				GL_TEXTURE_2D, 0, formats[bitmap.getNumberOfChannels()],

@@ -11,14 +11,11 @@
 
 namespace Beatmup {
 
-	template<typename T> inline void swap(T& a, T& b) {
-		T _;
-		_ = a; a = b; b = _;
-	}
-
 	template<typename T> inline void order(T& a, T& b) {
-		if (a > b)
-			swap<T>(a, b);
+		if (a > b) {
+			T _;
+			_ = a; a = b; b = _;
+        }
 	}
 	
 
