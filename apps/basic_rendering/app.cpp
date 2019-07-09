@@ -13,7 +13,6 @@
 #include <ctime>
 
 #define SHADERCODE(X) \
-	"#version 130\n" \
 	"#beatmup_input_image image;\n" #X
 
 int main(int argc, char* argv[]) {
@@ -22,7 +21,7 @@ int main(int argc, char* argv[]) {
 	Beatmup::SceneRenderer renderer;
 	Beatmup::InternalBitmap fecamp(env, "images/fecamp.bmp");
 	Beatmup::InternalBitmap bg(env, "images/bg.bmp");
-	Beatmup::InternalBitmap output(env, Beatmup::PixelFormat::TripleByte, 4000, 4000);
+	Beatmup::InternalBitmap output(env, Beatmup::PixelFormat::QuadByte, 1024, 1024);
 
 	Beatmup::InternalBitmap bitmap1 (env, Beatmup::PixelFormat::SingleByte,  fecamp.getWidth(), fecamp.getHeight());
 	Beatmup::InternalBitmap bitmap3 (env, Beatmup::PixelFormat::TripleByte,  fecamp.getWidth(), fecamp.getHeight());
@@ -56,7 +55,7 @@ int main(int argc, char* argv[]) {
 		float gray(vec2 pos) {
 			vec4 clr = texture2D(image, pos);
 			return 0.333 * (clr.r + clr.g + clr.b);
-		};
+		}
 		void main() {
 			gl_FragColor = vec4(
 				gray(texCoord + vec2(0.01, 0.01)),
@@ -142,6 +141,6 @@ int main(int argc, char* argv[]) {
 		// Second run is faster: it has the shaders compiled and all the bitmap data ready in the GPU memory.
 
 	// save output
-	output.saveBmp("output.bmp");
+	output.saveBmp("output_basic.bmp");
 	return 0;
 }

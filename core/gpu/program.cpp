@@ -54,6 +54,7 @@ FragmentShader::FragmentShader(const GraphicPipeline& gpu) : Shader(gpu, GL_FRAG
 }
 
 
+#ifndef BEATMUP_OPENGLVERSION_GLES20
 AtomicCounter::AtomicCounter(const GraphicPipeline& gpu) {
 	glGenBuffers(1, &handle);
 	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, handle);
@@ -76,6 +77,7 @@ void AtomicCounter::set(unsigned int value) {
 	glUnmapBuffer(GL_ATOMIC_COUNTER_BUFFER);
 	GL::GLException::check("setting atomic counter value");
 }
+#endif
 
 
 AbstractProgram::AbstractProgram(const GraphicPipeline& gpu) {
@@ -112,6 +114,7 @@ void AbstractProgram::enable(const GraphicPipeline& gpu) {
 }
 
 
+#ifndef BEATMUP_OPENGLVERSION_GLES20
 Chunk* AbstractProgram::getBinary() const {
 	GLsizei length;
 	glGetProgramiv(handle, GL_PROGRAM_BINARY_LENGTH, &length);
@@ -130,6 +133,7 @@ void AbstractProgram::loadBinary(const Chunk& binary) {
 	glProgramBinary(handle, *(binary.at<GLenum>(0)), binary.at<GLenum>(1), binary.size() - sizeof(GLenum));
 	GL::GLException::check("loading program binary");
 }
+#endif
 
 
 glhandle AbstractProgram::getUniformLocation(const char* name) {
@@ -239,10 +243,12 @@ void AbstractProgram::bindImage(GraphicPipeline& gpu, GL::TextureHandler& image,
 }
 
 
+#ifndef BEATMUP_OPENGLVERSION_GLES20
 void AbstractProgram::bindAtomicCounter(GraphicPipeline& gpu, AtomicCounter& counter, int unit) {
 	glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, unit, counter.handle);
 	GL::GLException::check("binding atomic counter");
 }
+#endif
 
 
 Program::Program(const GraphicPipeline& gpu) : AbstractProgram(gpu) {}

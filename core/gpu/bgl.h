@@ -4,31 +4,30 @@
 
 #pragma once
 
-#if BEATMUP_PLATFORM_WINDOWS
+#ifdef BEATMUP_OPENGLVERSION_GLES
+	#include <EGL/egl.h>
+	#include <EGL/eglext.h>
+  #ifdef BEATMUP_OPENGLVERSION_GLES31
+    #include <GLES3/gl31.h>
+    #include <GLES3/gl3ext.h>
+	#include <GLES2/gl2ext.h>
+  #elif BEATMUP_OPENGLVERSION_GLES20
+    #include <GLES2/gl2.h>
+    #include <GLES2/gl2ext.h>
+  #else
+	#error OpenGL ES version is not specified
+  #endif
+    #define BGL_TEXTURE_TARGET GL_TEXTURE_EXTERNAL_OES
+  #ifdef BEATMUP_PLATFORM_ANDROID
+	#include <android/native_window_jni.h>
+  #endif
+#elif BEATMUP_PLATFORM_WINDOWS
 	#include <windows.h>
 	#undef min
 	#undef max
 	#include <gl/glew.h>
 	#include <gl/wglew.h>
 	#define BGL_TEXTURE_TARGET GL_TEXTURE_2D
-
-#elif BEATMUP_PLATFORM_ANDROID
-	#include <EGL/egl.h>
-	#include <EGL/eglext.h>
-#ifdef BEATMUP_OPENGLVERSION_GLES31
-    #include <GLES3/gl31.h>
-    #include <GLES3/gl3ext.h>
-	#include <GLES2/gl2ext.h>
-	#define BGL_TEXTURE_TARGET GL_TEXTURE_EXTERNAL_OES
-#elif BEATMUP_OPENGLVERSION_GLES20
-    #include <GLES2/gl2.h>
-    #include <GLES2/gl2ext.h>
-	#define BGL_TEXTURE_TARGET GL_TEXTURE_EXTERNAL_OES
-#else
-	#error OpenGL ES version is not specified
-#endif
-	#include <android/native_window_jni.h>
-
 #else
 	#include <X11/Xlib.h>
 	#include <GL/glxew.h>

@@ -62,6 +62,6 @@ int main(int argc, char* argv[]) {
 	std::cout << "Time: " << time << " ms" << std::endl;
 
 	// saving output
-	output.saveBmp("output.bmp");
+	output.saveBmp("output_floodfill.bmp");
 	return 0;
 }
