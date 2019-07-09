@@ -9,7 +9,14 @@
 namespace Beatmup {
 	class BmpFile {
 	private:
-		typedef struct __attribute__((packed)) {
+#ifdef _MSC_VER
+#pragma pack(push,1)
+#endif
+		typedef struct
+#ifndef _MSC_VER
+		__attribute__((packed))
+#endif
+		{
 			uint8_t magic[2];
 			uint32_t size;
 			uint16_t reserved[2];
@@ -23,6 +30,9 @@ namespace Beatmup {
 			int32_t  hdpi, vdpi;
 			uint32_t numImportantColors;
 		} Header;
+#ifdef _MSC_VER
+#pragma pack(pop)
+#endif
 
 		static const Header BMP_HEADER_REFERENCE;
 
