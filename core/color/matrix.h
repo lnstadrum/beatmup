@@ -16,21 +16,25 @@ namespace Beatmup {
 			*/
 			union {
 				pixfloat elem[4][4];
-				struct {
-					pixfloat4 rows[4];
-				};
-				struct {
-					pixfloat4
-#ifdef BEATMUP_CHANNEL_ORDER_ARGB
-						a, r, g, b;
-#elif BEATMUP_CHANNEL_ORDER_BGRA
-						b, g, r, a;
-#else
-						r, g, b, a;
-#endif
-				};
+				pixfloat4 rows[4];
 			};
-
+#ifdef BEATMUP_CHANNEL_ORDER_ARGB
+			inline pixfloat4& a() { return rows[0]; }
+			inline pixfloat4& r() { return rows[1]; }
+			inline pixfloat4& g() { return rows[2]; }
+			inline pixfloat4& b() { return rows[3]; }
+#elif BEATMUP_CHANNEL_ORDER_BGRA
+			inline pixfloat4& b() { return rows[0]; }
+			inline pixfloat4& g() { return rows[1]; }
+			inline pixfloat4& r() { return rows[2]; }
+			inline pixfloat4& a() { return rows[3]; }
+#else // RGBA
+			inline pixfloat4& r() { return rows[0]; }
+			inline pixfloat4& g() { return rows[1]; }
+			inline pixfloat4& b() { return rows[2]; }
+			inline pixfloat4& a() { return rows[3]; }
+#endif
+          
 			Matrix();
 			pixfloat4& operator[](int);
 			pixfloat4 operator[](int) const;
