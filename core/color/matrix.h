@@ -16,7 +16,9 @@ namespace Beatmup {
 			*/
 			union {
 				pixfloat elem[4][4];
-				pixfloat4 rows[4];
+				struct {
+					pixfloat4 rows[4];
+				};
 			};
 #ifdef BEATMUP_CHANNEL_ORDER_ARGB
 			inline pixfloat4& a() { return rows[0]; }
