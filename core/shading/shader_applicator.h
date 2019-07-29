@@ -1,20 +1,20 @@
 /*
-	Lightweight task applying a layer shader to a bitmap
+	Lightweight task applying an image shader to a bitmap
 */
 #pragma once
 #include "../gpu/gpu_task.h"
 #include "../bitmap/abstract_bitmap.h"
 #include "../geometry.h"
-#include "layer_shader.h"
+#include "image_shader.h"
 
 namespace Beatmup {
 
 	/**
-		A task applying a layer shader to a bitmap
+		A task applying an image shader to a bitmap
 	*/
 	class ShaderApplicator : public GpuTask {
 	private:
-		LayerShader* shader;
+		ImageShader* shader;
 		AbstractBitmap *input, *output;
 		AffineMapping mapping;
 
@@ -26,10 +26,10 @@ namespace Beatmup {
 		ShaderApplicator();
 		void setInputBitmap(AbstractBitmap* bitmap);
 		void setOutputBitmap(AbstractBitmap* bitmap);
-		void setShader(LayerShader* shader);
+		void setShader(ImageShader* shader);
 
 		AbstractBitmap* getInputBitmap() const { return input; }
 		AbstractBitmap* getOutputBitmap() const { return output; }
-		LayerShader* getLayerShader() const { return shader; }
+		ImageShader* getShader() const { return shader; }
 	};
 }

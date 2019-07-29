@@ -101,6 +101,8 @@ namespace Beatmup {
 				\param safe			if `true` check if the target variable exists before assigning
 			*/
 			void setInteger(const char* name, const int value, bool safe = false);
+			void setInteger(const std::string& name, const int value, bool safe = false)
+              { setInteger(name.c_str(), value, safe); }
 
 			/**
 				Assignes a value to a specified floating poitn variable in the program
@@ -109,14 +111,30 @@ namespace Beatmup {
 				\param safe			if `true` check if the target variable exists before assigning
 			*/
 			void setFloat(const char* name, const float value, bool safe = false);
-
+			void setFloat(const std::string& name, const float value, bool safe = false)
+              { setFloat(name.c_str(), value, safe); }
 
 			void setVector2(const char* name, const float x, const float y);
 			void setVector3(const char* name, const float x, const float y, const float z);
 			void setVector4(const char* name, const float x, const float y, const float z, const float w);
-			void setMatrix2(const char* name, const Matrix2& mat);		
+
+			void setVector2(const std::string& name, const float x, const float y)
+              { setVector2(name.c_str(), x, y); }
+			void setVector3(const std::string& name, const float x, const float y, const float z)
+              { setVector3(name.c_str(), x, y, z); }
+			void setVector4(const std::string& name, const float x, const float y, const float z, const float w)
+              { setVector4(name.c_str(), x, y, z, w); }
+          	
+			void setMatrix2(const char* name, const Matrix2& mat);
 			void setMatrix3(const char* name, const Matrix2& mat, const Point& pos);
 			void setMatrix3(const char* name, const AffineMapping& mapping);
+
+			void setMatrix2(const std::string&  name, const Matrix2& mat)
+              { setMatrix2(name.c_str(), mat); }
+			void setMatrix3(const std::string& name, const Matrix2& mat, const Point& pos)
+              { setMatrix3(name.c_str(), mat, pos); }
+			void setMatrix3(const std::string& name, const AffineMapping& mapping)
+              { setMatrix3(name.c_str(), mapping); }
 
 			void bindSampler(GraphicPipeline& gpu, GL::TextureHandler& image, const char* uniformId);
 			void bindImage(GraphicPipeline& gpu, GL::TextureHandler& image, const char* uniformId, bool read, bool write);

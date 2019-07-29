@@ -300,7 +300,7 @@ void Scene::BitmapLayer::render(RenderingContext& context) {
 
 		AffineMapping arMapping(context.getMapping() * mapping * bitmapMapping);
 		arMapping.matrix.scale(1.0f, invAr);
-		context.getProgram().setMatrix3("modelview", arMapping);
+		context.getProgram().setMatrix3(RenderingPrograms::MODELVIEW_MATRIX_ID, arMapping);
 		context.blend();
 	}
 }
@@ -325,7 +325,7 @@ void Scene::CustomMaskedBitmapLayer::configure(RenderingContext& context, GL::Te
 	arImgMapping.matrix.scale(1.0f, invAr);
 	arMaskMapping.matrix.scale(1.0f, invAr);
 	context.getProgram().setVector4("bgColor", bgColor.r, bgColor.g, bgColor.b, bgColor.a);
-	context.getProgram().setMatrix3("modelview", context.getMapping());
+	context.getProgram().setMatrix3(RenderingPrograms::MODELVIEW_MATRIX_ID, context.getMapping());
 	context.getProgram().setMatrix3("invImgMapping", arImgMapping.getInverse() * arMaskMapping);
 	context.getProgram().setMatrix3("maskMapping", arMaskMapping);
 }
@@ -437,12 +437,12 @@ bool Scene::ShapedBitmapLayer::testPoint(float x, float y) const {
 
 Scene::ShadedBitmapLayer::ShadedBitmapLayer() :
 	BitmapLayer(Type::ShadedBitmapLayer),
-	layerShader(nullptr)
+	shader(nullptr)
 {}
 
 
 void Scene::ShadedBitmapLayer::render(RenderingContext& context) {
-	if (!layerShader)
+	if (!shader)
 		return;
 	GL::TextureHandler* content = BitmapLayer::resolveContent(context);
 
@@ -451,7 +451,6 @@ void Scene::ShadedBitmapLayer::render(RenderingContext& context) {
 	else
 		invAr = 0;
 
-	layerShader->prepare(context.getGpu(), content, context.getMapping());
-
+	shader->prepare(context.getGpu(), content, context.getMapping());
 	context.blend();
 }
