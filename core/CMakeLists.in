@@ -55,12 +55,13 @@ set(BEATMUP_SOURCES
     ${BEATMUP_SRC_DIR}/masking/region_filling.cpp
     ${BEATMUP_SRC_DIR}/pipelining/custom_pipeline.cpp
     ${BEATMUP_SRC_DIR}/pipelining/multitask.cpp
-    ${BEATMUP_SRC_DIR}/scene/layer_shader.cpp
+    ${BEATMUP_SRC_DIR}/pyramids/decomposition.cpp
     ${BEATMUP_SRC_DIR}/scene/renderer.cpp
     ${BEATMUP_SRC_DIR}/scene/rendering_context.cpp
     ${BEATMUP_SRC_DIR}/scene/rendering_programs.cpp
     ${BEATMUP_SRC_DIR}/scene/scene.cpp
-    ${BEATMUP_SRC_DIR}/scene/shader_applicator.cpp
+    ${BEATMUP_SRC_DIR}/shading/image_shader.cpp
+    ${BEATMUP_SRC_DIR}/shading/shader_applicator.cpp
     ${BEATMUP_SRC_DIR}/utils/bmp_file.cpp
     ${BEATMUP_SRC_DIR}/utils/chunkfile.cpp
     ${BEATMUP_SRC_DIR}/utils/image_resolution.cpp
@@ -136,14 +137,14 @@ elseif(USE_EGL)
 		set(USE_BRCM_LIBS YES)
 		set(EGL_LIBRARY "/opt/vc/lib/libbrcmEGL.so")
 		message("EGL binaries are found; we are likely running a Raspberry Pi")
-  	else()
+	else()
 		find_library(EGL_LIBRARY   EGL)
 		if (NOT EGL_LIBRARY)
 			set(USE_PKGCONFIG YES)
 			message(WARNING "Unable to find EGL lib. Trying with PkgConfig...")
 			find_package(PkgConfig)
 			pkg_check_modules(EGL REQUIRED egl)
-  		endif()
+		endif()
 	endif()
 	
 	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DBEATMUP_OPENGLVERSION_GLES")

@@ -4,6 +4,7 @@
 
 #define STRINGIFY(A) #A
 
+const std::string Beatmup::RenderingPrograms::MODELVIEW_MATRIX_ID = "modelview";
 
 static const char
 	*VERTEX_SHADER_BLEND = BEATMUP_SHADER_CODE(
@@ -436,7 +437,7 @@ void RenderingPrograms::paveBackground(GraphicPipeline* gpu, GL::TextureHandler&
 	backend->setupVertexAttributes(*currentGlProgram, (float)gpu->getOutputResolution().getWidth() / content.getWidth(), (float)gpu->getOutputResolution().getHeight() / content.getHeight());
 
 	AffineMapping id;
-	currentGlProgram->setMatrix3("modelview", id);
+	currentGlProgram->setMatrix3(MODELVIEW_MATRIX_ID, id);
 	currentGlProgram->setVector4("modulationColor", 1.0f, 1.0f, 1.0f, 1.0f);
 	gpu->bind(content, 0, true);
 	currentGlProgram->setInteger("image", 0);

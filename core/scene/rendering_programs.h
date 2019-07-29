@@ -32,6 +32,10 @@ namespace Beatmup {
 			CUSTOM                  //!< using a user-defined program with a shared vertex shader
 		};
 
+		static const std::string
+			MODELVIEW_MATRIX_ID;    //!< Modelview matrix (mapping input geometry to output) shader variable name.
+			
+
 
 		/**
 			\brief Select and enable a common program.

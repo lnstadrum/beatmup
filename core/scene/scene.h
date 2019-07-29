@@ -9,7 +9,7 @@
 #include "../bitmap/pixel_arithmetic.h"
 #include "../geometry.h"
 #include "../utils/lockable_object.h"
-#include "layer_shader.h"
+#include "../shading/image_shader.h"
 
 #include <string>
 #include <vector>
@@ -261,13 +261,13 @@ namespace Beatmup {
 			friend class Scene;
 			friend class SceneRenderer;
 		private:
-			LayerShader* layerShader;
+			ImageShader* shader;
 		protected:
 			ShadedBitmapLayer();
 			void render(RenderingContext& context);
 		public:
-			inline LayerShader* getLayerShader() const { return layerShader; }
-			inline void setLayerShader(LayerShader* layerShader) { this->layerShader = layerShader; }
+			inline ImageShader* getLayerShader() const { return shader; }
+			inline void setLayerShader(ImageShader* shader) { this->shader = shader; }
 		};
 
 		Scene();

@@ -1,5 +1,5 @@
 /*
-	A thread-safe wrapping of GLSL program
+    A GLSL program to process images
 */
 #pragma once
 #include "../gpu/variables_bundle.h"
@@ -9,6 +9,7 @@
 
 #include <mutex>
 #include <string>
+#include <map>
 
 namespace Beatmup {
 	namespace GL {
@@ -18,22 +19,22 @@ namespace Beatmup {
 	}
 
 	/**
-		A GLSL shading program used in a layer to render things.
+		A GLSL program to process images
 	*/
-	class LayerShader : public GL::VariablesBundle {
-		LayerShader(const LayerShader&) = delete;			//!< disabling copying constructor
+	class ImageShader : public GL::VariablesBundle {
+		ImageShader(const ImageShader&) = delete;			//!< disabling copying constructor
 
 	private:
 		Environment& env;
 		GL::Program* program;
 		GL::FragmentShader* fragmentShader;
+		std::string sourceCode;                             //!< last passed fragment shader source code
 		GL::TextureHandler::TextureFormat inputFormat;		//!< last used input texture format; when changed, the shader is recompiled
-		std::string sourceCode;								//!< last passed fragment shader source code
-		bool fragmentShaderReady;							//!< if `true`, shader is ready to go
+		bool fragmentShaderReady;                           //!< if `true`, shader is ready to go
 
 	public:
-		LayerShader(Environment& env);
-		~LayerShader();
+		ImageShader(Environment& env);
+		~ImageShader();
 
 		/**
 			Passes new source code to the fragment shader.
@@ -44,15 +45,23 @@ namespace Beatmup {
 		/**
 			\internal
 			\brief Conducts required preparations for the blending. Compiles shaders and links the rendering program if not yet.
-			\param gpu			Graphic pipeline instance
-			\param image		Image to blend, may be null
+			\param gpu        Graphic pipeline instance
+			\param image      Main input image
+            \param mapping    Geometric transformation to apply when filling output
 		*/
 		void prepare(GraphicPipeline& gpu, GL::TextureHandler* image, const AffineMapping& mapping);
 		
 		/**
-			A preprocessor directive for the fragment shader code to be replaced by an appropriate sampler (ordinary or extension)
+			\brief Apply the shader to produce an image.
+			\param gpu      A graphic pipeline instance
 		*/
-		static const std::string BEATMUP_INPUT_IMAGE_PREPROCESSOR_DIRECTIVE;
+		void process(GraphicPipeline& gpu, AbstractBitmap& output);
+
+		/**
+			A virtual input image type replaced at shader compile time by ordinary texture
+			or OES texture sampler depending on the inputs bound.
+        */
+		static const std::string INPUT_IMAGE_DECL_TYPE;
 
 		/**
 			Expection thrown if no shader source is provided
