@@ -128,7 +128,7 @@ namespace Beatmup {
 		/**
 			Returns the bitmap resolution within ImageResolution object
 		*/
-		const ImageResolution getImageResolution() const;
+		const ImageResolution getSize() const;
 
 		Environment& getEnvironment() const;
 

@@ -29,7 +29,7 @@ void BitmapConverter::setBitmaps(AbstractBitmap* input, AbstractBitmap* output) 
 
 
 ThreadIndex BitmapConverter::maxAllowedThreads() const {
-	return AbstractTask::validThreadCount((int)(output->getImageResolution().numPixels() / MIN_PIXEL_COUNT_PER_THREAD));
+	return AbstractTask::validThreadCount((int)(output->getSize().numPixels() / MIN_PIXEL_COUNT_PER_THREAD));
 }
 
 
@@ -42,7 +42,7 @@ AbstractTask::ExecutionTarget BitmapConverter::getExecutionTarget() const {
 void BitmapConverter::beforeProcessing(ThreadIndex threadCount, GraphicPipeline* gpu) {
 	NullTaskInput::check(input, "input bitmap");
 	NullTaskInput::check(output, "output bitmap");
-	if (input->getImageResolution() != output->getImageResolution())
+	if (input->getSize() != output->getSize())
 		BEATMUP_ERROR("Input and output bitmap must be of the same size.");
 	input->lockPixels(ProcessingTarget::CPU);
 	output->lockPixels(ProcessingTarget::CPU);
@@ -186,11 +186,11 @@ void BitmapConverter::convert(AbstractBitmap& input, AbstractBitmap& output) {
 	me.setBitmaps(&input, &output);
 
 	if (input.getEnvironment().isManagingThread()) {
-		if (input.getImageResolution() != output.getImageResolution())
+		if (input.getSize() != output.getSize())
 			BEATMUP_ERROR("Input and output bitmap must be of the same size.");
 
 		// the bitmaps are assumed locked in this case
-		me.doConvert(0, 0, input.getImageResolution().numPixels());
+		me.doConvert(0, 0, input.getSize().numPixels());
 
 	}
 	else
