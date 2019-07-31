@@ -470,7 +470,7 @@ public:
 
 		// setting up main controls
 		glViewport(0, 0, bitmap.getWidth(), bitmap.getHeight());
-		outputResolution = bitmap.getImageResolution();
+		outputResolution = bitmap.getSize();
 		glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);

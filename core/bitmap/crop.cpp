@@ -95,10 +95,10 @@ void Crop::setOutputOrigin(IntPoint pos) {
 bool Crop::isFit() const {
 	if (!input || !output)
 		return false;
-	if (!input->getImageResolution().clientRect().isInside(cropRect.A))
+	if (!input->getSize().clientRect().isInside(cropRect.A))
 		return false;
 	IntPoint corner = cropRect.B - cropRect.A - 1 + outOrigin;
-	if (!output->getImageResolution().clientRect().isInside(corner))
+	if (!output->getSize().clientRect().isInside(corner))
 		return false;
 	return true;
 }
@@ -107,7 +107,7 @@ bool Crop::isFit() const {
 AbstractBitmap* Crop::run(AbstractBitmap& bitmap, IntRectangle clipRect) {
 	AbstractBitmap* out = new InternalBitmap(bitmap.getEnvironment(), bitmap.getPixelFormat(), clipRect.width(), clipRect.height());
 	// after byte-aligning out must be zeroed (not very optimal...)
-	if (out->getImageResolution().numPixels() != clipRect.getArea())
+	if (out->getSize().numPixels() != clipRect.getArea())
 		out->zero();
 	Crop clip;
 	clip.setInput(&bitmap);

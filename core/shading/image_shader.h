@@ -58,8 +58,8 @@ namespace Beatmup {
 		void process(GraphicPipeline& gpu, AbstractBitmap& output);
 
 		/**
-			A virtual input image type replaced at shader compile time by ordinary texture
-			or OES texture sampler depending on the inputs bound.
+			A virtual input image type defined at shader compile time by ordinary texture
+			or OES texture sampler depending on the input bound.
         */
 		static const std::string INPUT_IMAGE_DECL_TYPE;
 
