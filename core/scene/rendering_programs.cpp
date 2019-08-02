@@ -2,12 +2,10 @@
 #include "gpu/pipeline.h"
 #include "../gpu/bgl.h"
 
-#define STRINGIFY(A) #A
-
 const std::string Beatmup::RenderingPrograms::MODELVIEW_MATRIX_ID = "modelview";
 
 static const char
-	*VERTEX_SHADER_BLEND = BEATMUP_SHADER_CODE(
+	*VERTEX_SHADER_BLEND = BEATMUP_SHADER_CODE_V(
 		attribute vec2 inVertex;
 		attribute vec2 inTexCoord;
 		uniform mat3 modelview;
@@ -26,7 +24,7 @@ static const char
 	),
 
 
-	*VERTEX_SHADER_BLENDMASK = BEATMUP_SHADER_CODE(
+	*VERTEX_SHADER_BLENDMASK = BEATMUP_SHADER_CODE_V(
 		attribute vec2 inVertex;
 		attribute vec2 inTexCoord;
 		uniform mat3 modelview;		// model plane in pixels -> output in pixels
@@ -49,7 +47,7 @@ static const char
 	),
 
 
-	*FRAGMENT_SHADER_BLEND = STRINGIFY(
+	*FRAGMENT_SHADER_BLEND = BEATMUP_SHADER_CODE(
 		uniform mediump vec4 modulationColor;
 		varying mediump vec2 texCoord;
 		void main() {
@@ -58,7 +56,7 @@ static const char
 	),
 
 
-	*FRAGMENT_SHADER_BLENDMASK = STRINGIFY(
+	*FRAGMENT_SHADER_BLENDMASK = BEATMUP_SHADER_CODE(
 		uniform highp sampler2D mask;
 		uniform highp sampler2D maskLookup;
 		uniform highp float blockSize;
@@ -69,7 +67,7 @@ static const char
 		varying highp vec2 maskCoord;
 	)
 #ifdef BEATMUP_OPENGLVERSION_GLES20
-	STRINGIFY(
+	BEATMUP_SHADER_CODE(
 		void main() {
 			highp float o = mod(maskCoord.x, blockSize);
 			highp float a = 0.0;
@@ -82,7 +80,7 @@ static const char
 		}
 	),
 #else
-	STRINGIFY(
+	BEATMUP_SHADER_CODE(
 		void main() {
 			highp float o = mod(maskCoord.x, blockSize);
 			highp float a = 0.0;
@@ -97,7 +95,7 @@ static const char
 #endif
 
 
-	*FRAGMENT_SHADER_BLENDMASK_8BIT = STRINGIFY(
+	*FRAGMENT_SHADER_BLENDMASK_8BIT = BEATMUP_SHADER_CODE(
 		uniform highp sampler2D mask;
 		uniform mediump vec4 modulationColor;
 		uniform mediump vec4 bgColor;
@@ -105,7 +103,7 @@ static const char
 		varying highp vec2 maskCoord;
 	)
 #ifdef BEATMUP_OPENGLVERSION_GLES20
-	STRINGIFY(
+	BEATMUP_SHADER_CODE(
 		void main() {
 			highp float a = 0.0;
 			if (texCoord.x >= 0.0 && texCoord.y >= 0.0 && texCoord.x < 1.0 && texCoord.y < 1.0)
@@ -114,7 +112,7 @@ static const char
 		}
 	),
 #else
-	STRINGIFY(
+	BEATMUP_SHADER_CODE(
 		void main() {
 			highp float a = 0.0;
 			if (texCoord.x >= 0.0 && texCoord.y >= 0.0 && texCoord.x < 1.0 && texCoord.y < 1.0)
@@ -125,7 +123,7 @@ static const char
 #endif
 
 
-	*FRAGMENT_SHADER_BLENDSHAPE = STRINGIFY(
+	*FRAGMENT_SHADER_BLENDSHAPE = BEATMUP_SHADER_CODE(
 		varying mediump vec2 texCoord;
 		varying mediump vec2 maskCoord;
 		uniform highp vec2 borderProfile;

@@ -251,7 +251,7 @@ std::vector<std::string> Ops::ImageInput::generateCode(GraphicPipeline& gpu, Chu
 	Storage::CodeGenerator gen;
 	gen("outp", getOutputType(), size, 1, "writeonly", Storage::CodeGenerator::Access::STORING);
 
-	std::vector<std::string> code(1, BEATMUP_SHADER_CODE(
+	std::vector<std::string> code(1, BEATMUP_SHADER_CODE_V(
 		layout(local_size_x = 1, local_size_y = 1) in;
 		layout(binding = 0) uniform highp sampler2D inputImage;
 		$OUT$
@@ -393,7 +393,7 @@ Storage* Probe::allocateOutput(int outputIndex) const {
 
 
 std::vector<std::string> Probe::generateCode(GraphicPipeline& gpu, ChunkFile& data) {
-	std::vector<std::string> code(1, BEATMUP_SHADER_CODE(
+	std::vector<std::string> code(1, BEATMUP_SHADER_CODE_V(
 		layout(local_size_x = 1, local_size_y = 1) in;
 		$IN$
 		layout(binding = 1, rgba32f) uniform highp writeonly image2D outp;

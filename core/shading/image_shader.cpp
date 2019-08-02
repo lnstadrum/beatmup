@@ -84,10 +84,12 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* image, const
 			case GL::TextureHandler::TextureFormat::Rx32f:
 			case GL::TextureHandler::TextureFormat::RGBx32f:
 			case GL::TextureHandler::TextureFormat::RGBAx32f:
-				code = "#define " + INPUT_IMAGE_DECL_TYPE + " uniform sampler2D\n" + sourceCode;
+				code = BEATMUP_SHADER_HEADER_VERSION 
+                    "#define " + INPUT_IMAGE_DECL_TYPE + " uniform sampler2D\n" + sourceCode;
 				break;
 			case GL::TextureHandler::TextureFormat::OES_Ext:
-				code = "#extension GL_OES_EGL_image_external : require\n"
+				code = BEATMUP_SHADER_HEADER_VERSION
+                    "#extension GL_OES_EGL_image_external : require\n"
 					"#define " + INPUT_IMAGE_DECL_TYPE + " uniform samplerExternalOES\n" + sourceCode;
 				break;
 			default:
