@@ -12,8 +12,6 @@
 #include <iostream>
 #include <ctime>
 
-#define SHADERCODE(X) \
-	"beatmupInputImage image;\n" #X
 
 int main(int argc, char* argv[]) {
 	Beatmup::Environment env;
@@ -36,7 +34,8 @@ int main(int argc, char* argv[]) {
 
 	// setting up a radial image distortion shader
 	Beatmup::ImageShader distortShader(env);
-	distortShader.setSourceCode(SHADERCODE(
+	distortShader.setSourceCode(BEATMUP_SHADER_CODE(
+        beatmupInputImage image;
 		varying highp vec2 texCoord;
 		vec2 distort(vec2 xy) {
 			vec2 r = xy - vec2(0.5, 0.5);
@@ -50,7 +49,8 @@ int main(int argc, char* argv[]) {
 
 	// setting up a color channel shifting shader
 	Beatmup::ImageShader grayShiftShader(env);
-	grayShiftShader.setSourceCode(SHADERCODE(
+	grayShiftShader.setSourceCode(BEATMUP_SHADER_CODE(
+        beatmupInputImage image;
 		varying highp vec2 texCoord;
 		float gray(vec2 pos) {
 			vec4 clr = texture2D(image, pos);
@@ -68,7 +68,8 @@ int main(int argc, char* argv[]) {
 
 	// setting up a recoloring shader (applying a random matrix to RGB triplets)
 	Beatmup::ImageShader recolorShader(env);
-	recolorShader.setSourceCode(SHADERCODE(
+	recolorShader.setSourceCode(BEATMUP_SHADER_CODE(
+        beatmupInputImage image;
 		varying highp vec2 texCoord;
 		uniform mediump mat3 matrix;
 		void main() {
