@@ -68,17 +68,6 @@ private:
 	}
 
 
-	void bindExtSampler(GL::TextureHandler& handler, int unit) {
-		glActiveTexture(GL_TEXTURE0 + unit);
-		glBindTexture(BGL_TEXTURE_TARGET, handler.textureHandle);
-		glTexParameteri(BGL_TEXTURE_TARGET, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(BGL_TEXTURE_TARGET, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-#ifdef BEATMUP_DEBUG
-		GL::GLException::check("binding EXT texture");
-#endif
-	}
-
-
 public:
 	Impl(GraphicPipeline& front) : onScreen(false), front(front)
 	{
@@ -357,15 +346,6 @@ public:
 	}
 
 
-	void bindSampler(GL::TextureHandler& handler, int unit) {
-		// setting up a new texture or taking an existing one
-		glActiveTexture(GL_TEXTURE0 + unit);
-		useTexture(handler);
-		handler.prepare(front);
-		GL::GLException::check("binding sampler");
-	}
-
-
 	/**
 		Binds a texture handle to an image unit
 		\param[in] bitmap		The texture handler
@@ -390,7 +370,7 @@ public:
 	}
 
 
-	void bind(GL::TextureHandler& texture, int unit, bool repeat) {
+	void bind(GL::TextureHandler& texture, size_t unit, bool repeat) {
 		switch (texture.getTextureFormat()) {
 		case GL::TextureHandler::TextureFormat::Rx8:
 		case GL::TextureHandler::TextureFormat::RGBx8:
@@ -398,14 +378,19 @@ public:
 		case GL::TextureHandler::TextureFormat::Rx32f:
 		case GL::TextureHandler::TextureFormat::RGBx32f:
 		case GL::TextureHandler::TextureFormat::RGBAx32f:
-			bindSampler(texture, unit);
+			glActiveTexture(GL_TEXTURE0 + unit);
+			useTexture(texture);
+			texture.prepare(front);
 			break;
 		case GL::TextureHandler::TextureFormat::OES_Ext:
-			bindExtSampler(texture, unit);
+			glActiveTexture(GL_TEXTURE0 + unit);
+			glBindTexture(BGL_TEXTURE_TARGET, texture.textureHandle);
+			glTexParameteri(BGL_TEXTURE_TARGET, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameteri(BGL_TEXTURE_TARGET, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			break;
 		}
 
-		if (repeat) {
+		if (repeat) {	
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		}
@@ -429,7 +414,7 @@ public:
 		}
 	}
 
-	void setOutput(AbstractBitmap& bitmap) {
+	void bindOutput(AbstractBitmap& bitmap) {
 		if (bitmap.isMask())
 			throw GL::GLException("Mask bitmaps can not be used as output");
 
@@ -485,7 +470,7 @@ public:
 	}
 
 
-	void resetOutput() {
+	void unbindOutput() {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport(0, 0, displayResolution.getWidth(), displayResolution.getHeight());
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -617,12 +602,12 @@ void GraphicPipeline::swapBuffers() {
 }
 
 
-void GraphicPipeline::bind(GL::TextureHandler& texture, int unit, bool repeat) {
-	impl->bind(texture, unit, repeat);
+void GraphicPipeline::bind(GL::TextureHandler& texture, size_t texUnit, bool repeat) {
+	impl->bind(texture, texUnit, repeat);
 }
 
 
-void GraphicPipeline::bind(GL::TextureHandler& texture, int imageUnit, bool read, bool write) {
+void GraphicPipeline::bind(GL::TextureHandler& texture, size_t imageUnit, bool read, bool write) {
 	impl->bindImage(texture, imageUnit, read, write);
 }
 
@@ -632,13 +617,13 @@ void GraphicPipeline::setInterpolation(const Interpolation interpolation) {
 }
 
 
-void GraphicPipeline::setOutput(AbstractBitmap& output) {
-	impl->setOutput(output);
+void GraphicPipeline::bindOutput(AbstractBitmap& output) {
+	impl->bindOutput(output);
 }
 
 
-void GraphicPipeline::resetOutput() {
-	impl->resetOutput();
+void GraphicPipeline::unbindOutput() {
+	impl->unbindOutput();
 }
 
 

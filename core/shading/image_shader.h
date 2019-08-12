@@ -11,6 +11,7 @@
 #include <string>
 #include <map>
 
+
 namespace Beatmup {
 	namespace GL {
 		class Program;
@@ -42,26 +43,37 @@ namespace Beatmup {
 		*/
 		void setSourceCode(const char* sourceCode);
 
+		void setSourceCode(const std::string& sourceCode) {
+			setSourceCode(sourceCode.c_str());
+		}
+
 		/**
-			\internal
 			\brief Conducts required preparations for the blending. Compiles shaders and links the rendering program if not yet.
 			\param gpu        Graphic pipeline instance
-			\param image      Main input image
-            \param mapping    Geometric transformation to apply when filling output
+			\param input      Shader input image (optional)
+			\param output     Image to write shader output to (optional)
+			\param mapping    Geometric transformation to apply when filling output
 		*/
-		void prepare(GraphicPipeline& gpu, GL::TextureHandler* image, const AffineMapping& mapping);
+		void prepare(GraphicPipeline& gpu, GL::TextureHandler* input, AbstractBitmap* output, const AffineMapping& mapping);
 		
 		/**
 			\brief Apply the shader to produce an image.
-			\param gpu      A graphic pipeline instance
+			\param gpu      A graphic pipeline instance		
 		*/
-		void process(GraphicPipeline& gpu, AbstractBitmap& output);
+		void process(GraphicPipeline& gpu);
 
 		/**
 			A virtual input image type defined at shader compile time by ordinary texture
 			or OES texture sampler depending on the input bound.
         */
 		static const std::string INPUT_IMAGE_DECL_TYPE;
+
+		/**
+			Shader variable name referring to the input image.
+        */      
+		static const std::string INPUT_IMAGE_ID;
+      
+        static const std::string CODE_HEAD;
 
 		/**
 			Expection thrown if no shader source is provided

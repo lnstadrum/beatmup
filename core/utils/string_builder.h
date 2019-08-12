@@ -27,6 +27,11 @@ namespace Beatmup {
 			str.append(append);
 			return *this;
 		}
+      
+		StringBuilder& operator()(const char* append) {
+			str.append(append);
+			return *this;
+		}
 
 
 		template<const int BUF_SIZE = 256> StringBuilder& printf(const char* format, ...) {
@@ -51,4 +56,25 @@ namespace Beatmup {
 
 		void dump(std::string filename);
 	};
+
+    /**
+        StringBuilder with an encorporated container
+    */
+    class String : public StringBuilder {
+    private:
+        std::string str;
+    public:
+        String(): StringBuilder(str) {}
+        String(const std::string& content): StringBuilder(str) {
+            str = content;
+        }
+        
+        StringBuilder& operator =(const std::string& content) {
+            str = content;
+        }
+      
+        operator std::string&() {
+            return str;
+        }
+    };
 }

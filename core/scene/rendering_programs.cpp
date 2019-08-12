@@ -2,7 +2,18 @@
 #include "gpu/pipeline.h"
 #include "../gpu/bgl.h"
 
-const std::string Beatmup::RenderingPrograms::MODELVIEW_MATRIX_ID = "modelview";
+const std::string
+	Beatmup::RenderingPrograms::MODELVIEW_MATRIX_ID    = "modelview",
+	Beatmup::RenderingPrograms::TEXTURE_COORDINATES_ID = "texCoord",
+	Beatmup::RenderingPrograms::DECLARE_TEXTURE_COORDINATES_IN_FRAG = "varying highp vec2 texCoord;\n";
+
+
+enum TextureUnits {
+    IMAGE = 0,
+    MASK,
+    MASK_LOOKUP
+};
+
 
 static const char
 	*VERTEX_SHADER_BLEND = BEATMUP_SHADER_CODE_V(
@@ -225,7 +236,7 @@ public:
 
 
 	void bindMaskLookup(PixelFormat format) {
-		glActiveTexture(GL_TEXTURE0 + MASK_LOOKUP_TEXTURE_UNIT);
+		glActiveTexture(GL_TEXTURE0 + TextureUnits::MASK_LOOKUP);
 
 		if (!maskLookupsSet) {
 			// masked blending lookup textures initialization
@@ -372,6 +383,15 @@ void RenderingPrograms::enableProgram(GraphicPipeline* gpu, Program program) {
 	currentGlProgram = &glProgram;
 	glProgram.enable(*gpu);
 	backend->setupVertexAttributes(glProgram);
+	glProgram.setInteger("image", TextureUnits::IMAGE);
+	switch (program) {
+	case Program::MASKED_BLEND:
+	case Program::MASKED_BLEND_EXT:
+		glProgram.setInteger("maskLookup", TextureUnits::MASK_LOOKUP);
+	case Program::MASKED_8BIT_BLEND:
+	case Program::MASKED_8BIT_BLEND_EXT:
+		glProgram.setInteger("mask", TextureUnits::MASK);
+	}
 	maskSetUp = false;
 }
 
@@ -381,6 +401,7 @@ void RenderingPrograms::enableProgram(GraphicPipeline* gpu, GL::Program& program
 	currentGlProgram = &program;
 	program.enable(*gpu);
 	backend->setupVertexAttributes(program);
+	program.setInteger("image", TextureUnits::IMAGE);
 	maskSetUp = false;
 }
 
@@ -393,11 +414,9 @@ GL::Program& RenderingPrograms::getCurrentProgram() {
 
 void RenderingPrograms::bindMask(GraphicPipeline* gpu, AbstractBitmap& mask) {
 	GL::Program& program = getCurrentProgram();
-	gpu->bind(mask, MASK_TEXTURE_UNIT, false);
-	program.setInteger("mask", MASK_TEXTURE_UNIT);
+	gpu->bind(mask, TextureUnits::MASK, false);
 	if (mask.getBitsPerPixel() < 8) {
 		backend->bindMaskLookup(mask.getPixelFormat());
-		program.setInteger("maskLookup", MASK_LOOKUP_TEXTURE_UNIT);
 		program.setFloat("blockSize", 8.0f / mask.getBitsPerPixel() / mask.getWidth());
 		program.setFloat("pixOffset", 0.5f / mask.getWidth());
 	}
@@ -434,11 +453,9 @@ void RenderingPrograms::paveBackground(GraphicPipeline* gpu, GL::TextureHandler&
 	// setting texture coords, bitmap size and updating buffer data in GPU
 	backend->setupVertexAttributes(*currentGlProgram, (float)gpu->getOutputResolution().getWidth() / content.getWidth(), (float)gpu->getOutputResolution().getHeight() / content.getHeight());
 
-	AffineMapping id;
-	currentGlProgram->setMatrix3(MODELVIEW_MATRIX_ID, id);
+	currentGlProgram->setMatrix3(MODELVIEW_MATRIX_ID, AffineMapping::IDENTITY);
 	currentGlProgram->setVector4("modulationColor", 1.0f, 1.0f, 1.0f, 1.0f);
 	gpu->bind(content, 0, true);
-	currentGlProgram->setInteger("image", 0);
 	blend(onScreen);
 }
 

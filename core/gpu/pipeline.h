@@ -53,19 +53,19 @@ namespace Beatmup {
 
 
 		/**
-			Plugs a texture handler to the pipeline output
+			Binds a texture handler to the pipeline output
 		*/
-		void setOutput(AbstractBitmap&);
+		void bindOutput(AbstractBitmap&);
 
 		/**
 			Unbinds a bitmap from output and switches to screen
 		*/
-		void resetOutput();
+		void unbindOutput();
 		
 		ImageResolution getOutputResolution() const;
 
-		void bind(GL::TextureHandler& texture, int unit, bool repeat);
-		void bind(GL::TextureHandler& texture, int imageUnit, bool read, bool write);
+		void bind(GL::TextureHandler& texture, size_t texUnit, bool repeat);
+		void bind(GL::TextureHandler& texture, size_t imageUnit, bool read, bool write);
 
 		void setInterpolation(const Interpolation interpolation);
 

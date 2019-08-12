@@ -1,13 +1,18 @@
 #include "image_shader.h"
 #include "../gpu/program.h"
 #include "../gpu/bgl.h"
-
 #include "../debug.h"
+
 
 using namespace Beatmup;
 
 
-const std::string ImageShader::INPUT_IMAGE_DECL_TYPE = "beatmupInputImage";
+const std::string 
+    ImageShader::INPUT_IMAGE_DECL_TYPE = "beatmupInputImage",
+    ImageShader::INPUT_IMAGE_ID        = "image",
+    ImageShader::CODE_HEAD =
+        INPUT_IMAGE_DECL_TYPE + " " + INPUT_IMAGE_ID +";\n" +
+        RenderingPrograms::DECLARE_TEXTURE_COORDINATES_IN_FRAG;
 
 
 bool str_replace(std::string& str, const std::string& from, const std::string& to) {
@@ -58,13 +63,13 @@ void ImageShader::setSourceCode(const char* sourceCode) {
 }
 
 
-void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* image, const AffineMapping& mapping) {
+void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, AbstractBitmap* output, const AffineMapping& mapping) {
 	LockGuard lock(this);
 	if (sourceCode.empty())
 		throw NoSource();
 
 	// check input format input
-	if (image->getTextureFormat() != inputFormat)
+	if (input->getTextureFormat() != inputFormat)
 		fragmentShaderReady = false;
 
 	// destroy fragment shader if not up to date
@@ -76,8 +81,8 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* image, const
 	// compile fragment shader if not up to date
 	if (!fragmentShader) {
 		std::string code;
-		if (image) {
-			switch (inputFormat = image->getTextureFormat()) {
+		if (input) {
+			switch (inputFormat = input->getTextureFormat()) {
 			case GL::TextureHandler::TextureFormat::Rx8:
 			case GL::TextureHandler::TextureFormat::RGBx8:
 			case GL::TextureHandler::TextureFormat::RGBAx8:
@@ -112,25 +117,25 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* image, const
 
 	// enable program
 	gpu.getRenderingPrograms().enableProgram(&gpu, *program);
+  
+    // bind output
+    if (output)
+        gpu.bindOutput(*output);
 
 	// bind input
-	if (image) {
-		gpu.bind(*image, 0, false);
-		program->setInteger("image", 0);
-	}
+	if (input) {
+		gpu.bind(*input, 0, false);
+    }
+		// Binding order matters: texture unit 0 is used for input now.
 
 	// set up mapping
-	AffineMapping arMapping(mapping);
-	if (image)
-		arMapping.matrix.scale(1.0f, image->getInvAspectRatio());
-	program->setMatrix3(RenderingPrograms::MODELVIEW_MATRIX_ID, arMapping);
+	program->setMatrix3(RenderingPrograms::MODELVIEW_MATRIX_ID, mapping);
 
 	// apply bundle
 	apply(*program);
 }
 
 
-void ImageShader::process(GraphicPipeline& gpu, AbstractBitmap& output) {
-	gpu.setOutput(output);
+void ImageShader::process(GraphicPipeline& gpu) {
 	gpu.getRenderingPrograms().blend(false);
 }
