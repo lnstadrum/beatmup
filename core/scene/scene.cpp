@@ -273,7 +273,7 @@ GL::TextureHandler* Scene::BitmapLayer::resolveContent(RenderingContext& context
 void Scene::BitmapLayer::configure(RenderingContext& context, GL::TextureHandler* content) {
 	if (content) {
 		invAr = content->getInvAspectRatio();
-		context.getProgram().bindSampler(context.getGpu(), *content, "image");
+		context.getProgram().bindSampler(context.getGpu(), *content, "image", TextureParam::INTERP_LINEAR);
 	}
 	else
 		invAr = 0;

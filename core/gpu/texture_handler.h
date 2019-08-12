@@ -8,6 +8,15 @@
 namespace Beatmup {
 	class GraphicPipeline;
 
+	/**
+		Parameters of binding a texture to a texture unit on GPU.
+	*/
+  	enum TextureParam {
+		INTERP_NEAREST = 0,    //!< nearest neighbor pixel interpolation
+		INTERP_LINEAR = 1,     //!< bilinear pixel interpolation
+		REPEAT = 2             //!< wrapping the texture by repeating instead of clamping to edge
+	};
+
 	namespace GL {
 		class TextureHandler : public Beatmup::Object {
 			friend class ::Beatmup::GraphicPipeline;

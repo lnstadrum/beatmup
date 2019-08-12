@@ -27,11 +27,6 @@ namespace Beatmup {
 		GraphicPipeline(const GraphicPipeline&) = delete;				//!< disabling copy constructor
 
 	public:
-		enum class Interpolation {
-			NEAREST,
-			LINEAR
-		};
-
 		enum class Limit {
 			LOCAL_GROUPS_X,
 			LOCAL_GROUPS_Y,
@@ -64,10 +59,8 @@ namespace Beatmup {
 		
 		ImageResolution getOutputResolution() const;
 
-		void bind(GL::TextureHandler& texture, size_t texUnit, bool repeat);
+		void bind(GL::TextureHandler& texture, size_t texUnit, const TextureParam param);
 		void bind(GL::TextureHandler& texture, size_t imageUnit, bool read, bool write);
-
-		void setInterpolation(const Interpolation interpolation);
 
 		void fetchPixels(AbstractBitmap& bitmap);
 

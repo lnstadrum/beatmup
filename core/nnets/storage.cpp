@@ -114,7 +114,7 @@ void Storage::bind(GraphicPipeline& gpu, GL::ComputeProgram& program, int unit, 
 		break;
 
 	case Type::TEXTURE_REFERENCE:
-		gpu.bind(*textureReference, unit, false);
+		gpu.bind(*textureReference, unit, TextureParam::INTERP_LINEAR);
 		break;
 	}
 }
