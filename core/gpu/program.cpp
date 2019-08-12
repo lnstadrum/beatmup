@@ -225,12 +225,12 @@ void AbstractProgram::setMatrix3(const char* name, const AffineMapping& mapping)
 }
 
 
-void AbstractProgram::bindSampler(GraphicPipeline& gpu, GL::TextureHandler& image, const char* uniformId) {
+void AbstractProgram::bindSampler(GraphicPipeline& gpu, GL::TextureHandler& image, const char* uniformId, bool repeat) {
 	glhandle uniform = getUniformLocation(uniformId);
 	GLint unit;
 	glGetUniformiv(getHandle(), uniform, &unit);
 	GL::GLException::check("binding sampler in program");
-	gpu.bind(image, unit, false);
+	gpu.bind(image, unit, repeat);
 }
 
 

@@ -103,7 +103,7 @@ bool SceneRenderer::getOutputPixelsFetching() const {
 Scene::Layer* SceneRenderer::pickLayer(float x, float y, bool normalized) const {
 	if (scene == nullptr)
 		return nullptr;
-	// mapping to [0..1]² domain first
+	// mapping to [0..1]^2 domain first
 	if (normalized) {
 		y *= resolution.getAspectRatio();
 	}
@@ -149,9 +149,9 @@ bool SceneRenderer::doRender(GraphicPipeline& gpu, TaskThread& thread) {
 
 	// setting output
 	if (output)
-		gpu.setOutput(*output);
+		gpu.bindOutput(*output);
 	else {
-		gpu.resetOutput();
+		gpu.unbindOutput();
 	}
 
 	RenderingContext context(gpu, eventListener,

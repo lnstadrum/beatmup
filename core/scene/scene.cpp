@@ -273,8 +273,7 @@ GL::TextureHandler* Scene::BitmapLayer::resolveContent(RenderingContext& context
 void Scene::BitmapLayer::configure(RenderingContext& context, GL::TextureHandler* content) {
 	if (content) {
 		invAr = content->getInvAspectRatio();
-		context.getGpu().bind(*content, 0, false);
-		context.getProgram().setInteger("image", 0);
+		context.getProgram().bindSampler(context.getGpu(), *content, "image");
 	}
 	else
 		invAr = 0;
@@ -451,6 +450,10 @@ void Scene::ShadedBitmapLayer::render(RenderingContext& context) {
 	else
 		invAr = 0;
 
-	shader->prepare(context.getGpu(), content, context.getMapping());
+	AffineMapping arMapping(context.getMapping());
+	if (content)
+		arMapping.matrix.scale(1.0f, invAr);
+
+	shader->prepare(context.getGpu(), content, nullptr, arMapping);
 	context.blend();
 }

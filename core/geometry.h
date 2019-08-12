@@ -492,6 +492,8 @@ namespace Beatmup {
 			this->a21 = a21;
 			this->a22 = a22;
 		}
+      
+        static const CustomMatrix2 IDENTITY;
 	};
 
 	
@@ -588,5 +590,7 @@ namespace Beatmup {
 		bool isPointInside(const Point& point) const;
 		bool isPointInside(float x, float y) const;
 		bool isPointInside(float x, float y, float width, float height) const;
+      
+        static const AffineMapping IDENTITY;
 	};
 }

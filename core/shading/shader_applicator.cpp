@@ -4,10 +4,9 @@
 
 using namespace Beatmup;
 
-bool ShaderApplicator::processOnGPU(GraphicPipeline &gpu, TaskThread &thread) {
-	AffineMapping id;
-	shader->prepare(gpu, input, id);
-	shader->process(gpu, *output);
+bool ShaderApplicator::processOnGPU(GraphicPipeline &gpu, TaskThread &thread) {	
+	shader->prepare(gpu, input, output, AffineMapping::IDENTITY);
+	shader->process(gpu);
 }
 
 

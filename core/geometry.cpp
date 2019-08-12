@@ -5,6 +5,9 @@ using namespace Beatmup;
 
 template<> const Point Point::ZERO = Point(0, 0);
 template<> const IntPoint IntPoint::ZERO = IntPoint(0, 0);
+template<> const Matrix2 Matrix2::IDENTITY(1,1);
+
+const AffineMapping AffineMapping::IDENTITY(Matrix2::IDENTITY, Point::ZERO);
 
 
 AffineMapping::AffineMapping() {}
