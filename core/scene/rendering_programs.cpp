@@ -414,7 +414,7 @@ GL::Program& RenderingPrograms::getCurrentProgram() {
 
 void RenderingPrograms::bindMask(GraphicPipeline* gpu, AbstractBitmap& mask) {
 	GL::Program& program = getCurrentProgram();
-	gpu->bind(mask, TextureUnits::MASK, false);
+	gpu->bind(mask, TextureUnits::MASK, TextureParam::INTERP_NEAREST);
 	if (mask.getBitsPerPixel() < 8) {
 		backend->bindMaskLookup(mask.getPixelFormat());
 		program.setFloat("blockSize", 8.0f / mask.getBitsPerPixel() / mask.getWidth());
@@ -455,7 +455,7 @@ void RenderingPrograms::paveBackground(GraphicPipeline* gpu, GL::TextureHandler&
 
 	currentGlProgram->setMatrix3(MODELVIEW_MATRIX_ID, AffineMapping::IDENTITY);
 	currentGlProgram->setVector4("modulationColor", 1.0f, 1.0f, 1.0f, 1.0f);
-	gpu->bind(content, 0, true);
+	gpu->bind(content, 0, TextureParam::REPEAT);
 	blend(onScreen);
 }
 

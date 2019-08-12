@@ -137,7 +137,7 @@ namespace Beatmup {
 			void setMatrix3(const std::string& name, const AffineMapping& mapping)
               { setMatrix3(name.c_str(), mapping); }
 
-			void bindSampler(GraphicPipeline& gpu, GL::TextureHandler& image, const char* uniformId, bool repeat = false);
+			void bindSampler(GraphicPipeline& gpu, GL::TextureHandler& image, const char* uniformId, TextureParam param);
 			void bindImage(GraphicPipeline& gpu, GL::TextureHandler& image, const char* uniformId, bool read, bool write);
 
 #ifndef BEATMUP_OPENGLVERSION_GLES20

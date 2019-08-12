@@ -124,7 +124,7 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, Abstr
 
 	// bind input
 	if (input) {
-		gpu.bind(*input, 0, false);
+		gpu.bind(*input, 0, TextureParam::INTERP_LINEAR);
     }
 		// Binding order matters: texture unit 0 is used for input now.
 

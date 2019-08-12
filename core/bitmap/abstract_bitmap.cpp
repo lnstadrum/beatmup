@@ -82,9 +82,6 @@ void AbstractBitmap::prepare(GraphicPipeline& gpu) {
 			getData(0, 0));
 #endif
 		GL::GLException::check("allocating texture image");
-
-		// floating point texture linear interpolation is unupported by GL ES
-		gpu.setInterpolation(isFloat() ? GraphicPipeline::Interpolation::NEAREST : GraphicPipeline::Interpolation::LINEAR);
 	}
 
 	upToDate[ProcessingTarget::GPU] = true;

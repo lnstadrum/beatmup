@@ -370,7 +370,7 @@ public:
 	}
 
 
-	void bind(GL::TextureHandler& texture, size_t unit, bool repeat) {
+	void bind(GL::TextureHandler& texture, size_t unit, const TextureParam param) {
 		switch (texture.getTextureFormat()) {
 		case GL::TextureHandler::TextureFormat::Rx8:
 		case GL::TextureHandler::TextureFormat::RGBx8:
@@ -381,7 +381,16 @@ public:
 			glActiveTexture(GL_TEXTURE0 + unit);
 			useTexture(texture);
 			texture.prepare(front);
+			if (param & TextureParam::INTERP_LINEAR) {
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			}
+			else {
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			}
 			break;
+
 		case GL::TextureHandler::TextureFormat::OES_Ext:
 			glActiveTexture(GL_TEXTURE0 + unit);
 			glBindTexture(BGL_TEXTURE_TARGET, texture.textureHandle);
@@ -390,7 +399,7 @@ public:
 			break;
 		}
 
-		if (repeat) {	
+		if (param & TextureParam::REPEAT) {	
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		}
@@ -400,19 +409,6 @@ public:
 		}
 	}
 
-
-	void setInterpolation(const GraphicPipeline::Interpolation interpolation) {
-		switch (interpolation) {
-		case GraphicPipeline::Interpolation::NEAREST:
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			break;
-		case GraphicPipeline::Interpolation::LINEAR:
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			break;
-		}
-	}
 
 	void bindOutput(AbstractBitmap& bitmap) {
 		if (bitmap.isMask())
@@ -444,11 +440,7 @@ public:
 			GL::GLException::check("allocating output texture image");
 		}
 
-		setInterpolation(Interpolation::LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, handle, 0);
-
 		GLuint err = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		if (err != GL_FRAMEBUFFER_COMPLETE)
 			throw GL::GLException("framebuffer incomplete", err);
@@ -602,18 +594,13 @@ void GraphicPipeline::swapBuffers() {
 }
 
 
-void GraphicPipeline::bind(GL::TextureHandler& texture, size_t texUnit, bool repeat) {
-	impl->bind(texture, texUnit, repeat);
+void GraphicPipeline::bind(GL::TextureHandler& texture, size_t texUnit, const TextureParam param) {
+	impl->bind(texture, texUnit, param);
 }
 
 
 void GraphicPipeline::bind(GL::TextureHandler& texture, size_t imageUnit, bool read, bool write) {
 	impl->bindImage(texture, imageUnit, read, write);
-}
-
-
-void GraphicPipeline::setInterpolation(const Interpolation interpolation) {
-	impl->setInterpolation(interpolation);
 }
 
 
