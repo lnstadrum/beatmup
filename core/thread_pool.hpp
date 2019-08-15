@@ -3,6 +3,7 @@
 */
 #pragma once
 #include "parallelism.h"
+#include <deque>
 
 using namespace Beatmup;
 
@@ -93,43 +94,43 @@ private:
     inline void managingThreadFunc(TaskThreadImpl& thread) {
         eventListener.threadCreated(myIndex);
 
-        // acquire this mutex now
-        std::unique_lock<std::mutex> lock(mainAccess);
-
-        // acquire these mutexes later
-        std::unique_lock<std::mutex> taskDropLock(taskDropAccess, std::defer_lock);
+        // locks
+        std::unique_lock<std::mutex> lock(jobsAccess, std::defer_lock);
         std::unique_lock<std::mutex> workersLock(workersAccess, std::defer_lock);
 
-        while (!thread.terminateFlag) {
-
-            // wait while a task is got
-            while (!task && !thread.terminateFlag)
-                mainCvar.wait(lock);
+		while (!thread.terminateFlag) {
+			// wait while a task is got
+			lock.lock();
+			while (jobs.empty() && !thread.terminateFlag)
+				mainCvar.wait(lock);
 
             if (thread.terminateFlag) {
                 lock.unlock();
                 break;
             }
 
-            // init
-            if (task) {
+            // fetch a task
+            if (!jobs.empty()) {
+				currentJob = jobs.front();
                 syncHits = 0;
                 syncPointCtr = 0;
                 abortExternally = abortInternally = false;
                 failFlag = false;
-                currentWorkerCount = remainingWorkers = std::min(task->maxAllowedThreads(), threadCount);
+                currentWorkerCount = remainingWorkers = std::min(currentJob.task->maxAllowedThreads(), threadCount);
             }
+			else
+				currentJob.task = nullptr;
+
+			// release queue access
+			lock.unlock();
 
             // test execution mode
             AbstractTask::ExecutionTarget exTarget;
-            TaskExecutionMode exMode = taskMode;
             bool useGpuForCurrentTask = false;
-            if (task) {
-                exTarget = task->getExecutionTarget();
+            if (currentJob.task) {
+                exTarget = currentJob.task->getExecutionTarget();
 
-                // only the pool "0" may use GPU!
                 if (exTarget != AbstractTask::ExecutionTarget::doNotUseGPU && myIndex == 0) {
-
                     // test GPU if not yet
                     if (!isGpuTested) {
                         try {
@@ -137,7 +138,7 @@ private:
                         }
                         catch (const Exception& ex) {
                             eventListener.gpuInitFail(myIndex, ex);
-                            gpu = NULL;
+                            gpu = nullptr;
                         }
                         isGpuTested = true;
                     }
@@ -145,33 +146,33 @@ private:
                     useGpuForCurrentTask = (gpu != NULL);
                     if (useGpuForCurrentTask)
                         gpu->lock();
-                }
+				}
 
                 // if GPU is required and not available, report
                 if (!useGpuForCurrentTask && exTarget == AbstractTask::ExecutionTarget::useGPU) {
                     Beatmup::Exception noGpuException(
-                            myIndex == 0 ?
-                            "A task requires GPU, but GPU init is failed" :
-                            "A task requiring GPU may only be run in the first pool"
-                    );
-                    eventListener.taskFail(myIndex, *task, noGpuException);
+						myIndex == 0 ?
+						"A task requires GPU, but GPU init is failed" :
+						"A task requiring GPU may only be run in the main pool"
+					);
+                    eventListener.taskFail(myIndex, *currentJob.task, noGpuException);
                     failFlag = true;
                 }
                 else
                     // run beforeProcessing
                     try {
-                        task->beforeProcessing(currentWorkerCount, useGpuForCurrentTask ? gpu : NULL);
+                        currentJob.task->beforeProcessing(currentWorkerCount, useGpuForCurrentTask ? gpu : nullptr);
                     }
                     catch (const Exception& ex) {
-                        eventListener.taskFail(myIndex, *task, ex);
+                        eventListener.taskFail(myIndex, *currentJob.task, ex);
                         failFlag = true;
                     }
 
                 // drop the task if failed
                 if (failFlag) {
-                    taskDropLock.lock();
-                    task = NULL;
-                    taskDropLock.unlock();
+                    lock.lock();
+                    jobs.pop_front();
+                    lock.unlock();
                 }
             }
 
@@ -195,22 +196,22 @@ private:
             workersCvar.notify_all();	// go!
 
             // do the job
-            try {
-                do {
-                    bool result = useGpuForCurrentTask ? task->processOnGPU(*gpu, thread) : task->process(thread);
-                    if (!result) {
-                        // if stopped, set the flag and notify other workers if they're waiting for synchro
-                        abortInternally = true;
-                        synchroCvar.notify_all();
-                    }
-				} while (exMode == TaskExecutionMode::PERSISTENT && !abortInternally && !abortExternally);
-            }
-            catch (const Exception& ex) {
-                eventListener.taskFail(myIndex, *task, ex);
-                synchroCvar.notify_all();
-                failFlag = true;
-            }
-
+			if (currentJob.task)
+				try {
+					do {
+                	    bool result = useGpuForCurrentTask ? currentJob.task->processOnGPU(*gpu, thread) : currentJob.task->process(thread);
+            	        if (!result) {
+							// if stopped, set the flag and notify other workers if they're waiting for synchro
+							abortInternally = true;
+							synchroCvar.notify_all();
+						}
+					} while (currentJob.mode == TaskExecutionMode::PERSISTENT && !abortInternally && !abortExternally);
+				}
+				catch (const Exception& ex) {
+					eventListener.taskFail(myIndex, *currentJob.task, ex);
+					synchroCvar.notify_all();
+					failFlag = true;
+				}
 
             // finalizing
             workersLock.lock();
@@ -219,15 +220,14 @@ private:
             remainingWorkers--;
 
             // call afterProcessing if no more threads are working
-            if (remainingWorkers == 0) {
+            if (currentJob.task && remainingWorkers == 0)
                 try {
-                    task->afterProcessing(currentWorkerCount, abortExternally);
+                    currentJob.task->afterProcessing(currentWorkerCount, abortExternally);
                 }
                 catch (const Exception& ex) {
-                    eventListener.taskFail(myIndex, *task, ex);
+                    eventListener.taskFail(myIndex, *currentJob.task, ex);
                     failFlag = true;
                 }
-            }
 
             // wait until all the workers stop
             while (remainingWorkers > 0)
@@ -241,19 +241,19 @@ private:
             // call taskDone, ask if want to repeat
             bool internalRepeatFlag = false;
             if (!failFlag)
-                internalRepeatFlag = eventListener.taskDone(myIndex, *task, abortExternally);
+                internalRepeatFlag = eventListener.taskDone(myIndex, *currentJob.task, abortExternally);
 
             // drop the task
-            taskDropLock.lock();
+            lock.lock();
             if (!(repeatFlag || internalRepeatFlag) || failFlag) {
-                task = NULL;
+                jobs.pop_front();
 
                 // send a signal to threads waiting for the task to finish
                 mainCvar.notify_all();
             }
 
             repeatFlag = false;
-            taskDropLock.unlock();
+            lock.unlock();
         }
         eventListener.threadTerminating(myIndex);
 
@@ -285,23 +285,22 @@ private:
             }
 
             // do the job
-            TaskExecutionMode exMode = taskMode;
-
+            JobContext job = currentJob;
             lock.unlock();
             thread.syncPointIdx = 0;
 
             /* UNLOCKED SECTION */
             try {
                 do {
-                    if (!task->process(thread)) {
+                    if (!job.task->process(thread)) {
                         // if stopped, set the flag and notify other workers if they're waiting for synchro
                         abortInternally = true;
                         synchroCvar.notify_all();
                     }
-				} while (exMode == TaskExecutionMode::PERSISTENT && !abortInternally && !abortExternally);
+				} while (job.mode == TaskExecutionMode::PERSISTENT && !abortInternally && !abortExternally);
             }
             catch (const Exception& ex) {
-                eventListener.taskFail(myIndex, *task, ex);
+                eventListener.taskFail(myIndex, *job.task, ex);
                 synchroCvar.notify_all();
                 failFlag = true;
             }
@@ -315,10 +314,10 @@ private:
             // call afterProcessing if no more threads are working
             if (remainingWorkers == 0) {
                 try {
-                    task->afterProcessing(currentWorkerCount, abortExternally);
+                    job.task->afterProcessing(currentWorkerCount, abortExternally);
                 }
                 catch (const Exception& ex) {
-                    eventListener.taskFail(myIndex, *task, ex);
+                    eventListener.taskFail(myIndex, *job.task, ex);
                     failFlag = true;
                 }
             }
@@ -351,12 +350,19 @@ private:
         }
     }
 
+	typedef struct {
+		Job id;
+		AbstractTask* task;
+		TaskExecutionMode mode;
+	} JobContext;
+
     TaskThreadImpl** workers;		//!< workers instances
 
     GraphicPipeline* gpu;			//!< THE graphic pipeline to run tasks on GPU
 
-    AbstractTask* task;				//!< current task
-    TaskExecutionMode taskMode;     //!< execution mode of the current task
+    std::deque<JobContext> jobs;    //!< jobs queue
+	JobContext currentJob;
+	Job jobCounter;
 
     ThreadIndex threadCount;	    //!< actual number of workers
 
@@ -365,18 +371,17 @@ private:
             remainingWorkers,		//!< number of workers performing the current task right now
             syncHits;				//!< number of workers reached current synchronization point
 
-    unsigned int syncPointCtr;	//!< current synchronization point index
+    unsigned int syncPointCtr;      //!< current synchronization point index
 
     std::condition_variable
-            synchroCvar,			//!< conditional variable controlling workers synchronization within a task
-            mainCvar,				//!< conditional variable controlling task execution
-            workersCvar;			//!< conditional variable controlling global workers synchronization
+            synchroCvar,			//!< workers synchronization control within the current task
+            mainCvar,				//!< external access control to the managing thread
+            workersCvar;			//!< workers lifecycle access control
 
     std::mutex
-            synchro,				//!< mutex controlling workers synchronization
-            workersAccess,			//!< access to workers
-            taskDropAccess,			//!< access to task drop action (after a task is executed, it is dropped if no repeat required)
-            mainAccess;				//!< main access control to the task execution state
+            synchro,				//!< workers synchronization control within the current task
+            workersAccess,			//!< workers lifecycle access control
+            jobsAccess;             //!< jobs queue access control
 
     bool
             isGpuTested,			//!< if `true`, there was an attempt to warm up the GPU
@@ -393,10 +398,11 @@ public:
 
     inline ThreadPool(const PoolIndex index, const ThreadIndex limitThreadCount, EventListener& listener) :
             myIndex(index),
+			jobCounter(1),
             threadCount(limitThreadCount),
-            failFlag(false), abortExternally(false), abortInternally(false), repeatFlag(false), task(NULL),
+            failFlag(false), abortExternally(false), abortInternally(false), repeatFlag(false),
             currentWorkerCount(0), remainingWorkers(0), syncHits(0), syncPointCtr(0),
-            gpu(NULL), isGpuTested(false),
+            gpu(nullptr), isGpuTested(false),
             eventListener(listener)
     {
         workers = new TaskThreadImpl*[threadCount];
@@ -413,9 +419,9 @@ public:
     inline void resize(ThreadIndex newThreadCount) {
         if (newThreadCount == threadCount)
             return;
-        std::unique_lock<std::mutex> lock(mainAccess);
+        std::unique_lock<std::mutex> lock(jobsAccess);
         // wait for task, if any
-        while (task)
+        while (!jobs.empty())
             mainCvar.wait(lock);
 
         // remove unnecessary threads, if any
@@ -452,7 +458,7 @@ public:
         synchroCvar.notify_all();
         mainCvar.notify_all();
         workersCvar.notify_all();
-        // no waitForTask here!
+        // no wait here!
         for (ThreadIndex t = 0; t < threadCount; t++) {
             workers[t]->internalThread.join();
             delete workers[t];
@@ -462,72 +468,128 @@ public:
 
 
     /**
-        Initiates new task execution. If there is a task running, blocks until it is finished.
+        Adds a new task to the jobs queue.
     */
-    inline void startTask(AbstractTask& task, const TaskExecutionMode mode) {
-        // finish current task, if any
-        std::unique_lock<std::mutex> lock(mainAccess);
-        while (this->task)
-            mainCvar.wait(lock);
-
-        // set new task
-        this->task = &task;
-        this->taskMode = mode;
-        repeatFlag = false;
+    inline Job submitTask(AbstractTask& task, const TaskExecutionMode mode) {
+        std::unique_lock<std::mutex> lock(jobsAccess);
+		const Job job = jobCounter++;
 
         // check mode
 #ifdef BEATMUP_DISABLE_GPU
         if (task.getExecutionMode() == AbstractTask::ExecutionTarget::useGPU)
-            BEATMUP_ERROR("GPU is not available");
+            BEATMUP_ERROR("GPU is not available");	
 #endif
+
+        // set new task
+		jobs.emplace_back(JobContext{job, &task, mode});
 
         lock.unlock();
         mainCvar.notify_all();
+		return job;
     }
 
 
     /**
-        Initiates task repetition or new run. If there is another task running, blocks until it is finished.
-        \param task				the task
-        \param abortCurrent		if `true` and the same task is currently running, abort signal is sent
+        Ensures a given task executed at least once.
+        \param task            The task
+        \param abortCurrent    if `true` and the task is currently running, abort signal is sent.
     */
-    inline void repeatTask(AbstractTask& task, bool abortCurrent) {
-        // acquiring task drop access
-        std::unique_lock<std::mutex> dropLock(taskDropAccess);
-        if (this->task == &task) {
-            // the task is running now, just ask to repeat it
+    inline Job repeatTask(AbstractTask& task, bool abortCurrent) {
+        std::lock_guard<std::mutex> lock(jobsAccess);
+		// check if the rask is running now, ask for repeat if it is
+        if (!jobs.empty() && jobs.front().task == &task) {
             repeatFlag = true;
             if (abortCurrent)
                 abortExternally = true;
-            dropLock.unlock();
+			return jobs.front().id;
         }
-        else {
-            // the task is not running, set it
-            dropLock.unlock();
-            startTask(task, taskMode);
-        }
+
+		//check whether it is in the queue
+		for (const JobContext& _ : jobs)
+			if (_.task == &task)
+				return _.id;
+
+		// otherwise submit the task
+		const Job job = jobCounter++;
+		jobs.emplace_back(JobContext{
+			job,
+			&task,
+			TaskExecutionMode::NORMAL
+		});
+		return job;
     }
 
 
     /**
-        Blocks until current task is running, if any
+        Blocks until a given job finishes if not yet.
     */
-    inline void waitForTask(bool abort = false) {
-        std::unique_lock<std::mutex> lock(mainAccess);
-        if (!task) {
-            lock.unlock();
-            return;
-        }
-        if (abort)
-            abortExternally = true;
-        while (task)
-            mainCvar.wait(lock);
-        lock.unlock();
+    inline void waitForJob(Job job) {
+		std::unique_lock<std::mutex> lock(jobsAccess);
+		while (true) {
+			// check if the job is in the queue
+			bool found = false;
+			for (const JobContext& _ : jobs)
+				if (_.id == job) {
+					found = true;
+					break;
+				}
+			// if not, done
+			if (!found) {
+				lock.unlock();
+				return;
+			}
+
+			// otherwise wait a round and check again
+			mainCvar.wait(lock);
+		}
     }
 
 
-	inline bool busy() const {
-		return this->task != nullptr;
+	/**
+		Aborts a given submitted job.
+		\return `true` if the job was interrupted while running.
+	*/
+	bool abortJob(Job job) {
+		std::unique_lock<std::mutex> lock(jobsAccess);
+
+		// check if the rask is running now, abort if it is
+        if (!jobs.empty() && jobs.front().id == job) {
+            abortExternally = true;
+			while (!jobs.empty() && jobs.front().id == job);
+				mainCvar.wait(lock);
+			lock.unlock();
+			return true;
+        }
+
+		for (auto it = jobs.begin(); it != jobs.end(); it++)
+			if (it->id == job) {
+				jobs.erase(it);
+				lock.unlock();
+				return false;
+			}
+
+		lock.unlock();
+		return false;
+	}
+
+
+	/**
+		Blocks until all the submitted jobs are executed.
+	*/
+	void wait() {
+		std::unique_lock<std::mutex> lock(jobsAccess);
+		while (!jobs.empty())
+			mainCvar.wait(lock);
+		lock.unlock();
+	}
+
+
+	/**
+		Checks whether the pool has jobs.
+	*/
+	inline bool busy() {
+		std::lock_guard<std::mutex> lock(jobsAccess);
+		return !jobs.empty();
 	}
 
 
