@@ -12,7 +12,7 @@
 namespace Beatmup {
 	typedef unsigned char PoolIndex;					//!< number of tread pools or a pool index
 	typedef unsigned char ThreadIndex;					//!< number of threads / thread index
-
+	typedef unsigned int Job;
 	
 	static const ThreadIndex MAX_THREAD_INDEX = 255;	//!< maximum possible thread index value
 

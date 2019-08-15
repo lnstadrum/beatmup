@@ -101,7 +101,7 @@ namespace Beatmup {
 		float performTask(AbstractTask& task, const PoolIndex pool = DEFAULT_POOL);
 
 		/**
-			Start new task or unblocking demand for repetition.
+			Ensures a given task executed at least once.
 			\param task				The task
 			\param abortCurrent		if `true` and the same task is currently running, the abort signal is sent.
 		 	\param pool				A thread pool to run the task in
@@ -109,33 +109,47 @@ namespace Beatmup {
 		void repeatTask(AbstractTask& task, bool abortCurrent, const PoolIndex pool = DEFAULT_POOL);
 
 		/**
-		 	Starts a new task.
+		 	Adds a new task to the jobs queue.
 		 	\param task				The task
 		 	\param pool				A thread pool to run the task in
 		 */
-		void startTask(AbstractTask& task, const PoolIndex pool = DEFAULT_POOL);
+		Job submitTask(AbstractTask& task, const PoolIndex pool = DEFAULT_POOL);
 
 		/**
-		 	Starts a new persistent task.
+		 	Adds a new persistent task to the jobs queue.
 			Persistent task is repeated until it decides itself to quit.
 		 	\param task				The task
 		 	\param pool				A thread pool to run the task in
 		 */
-		void startPersistentTask(AbstractTask& task, const PoolIndex pool = DEFAULT_POOL);
+		Job submitPersistentTask(AbstractTask& task, const PoolIndex pool = DEFAULT_POOL);
 
 		/**
-			Wait until the current task in a given thread pool finishes, if any.
-			\param abort		If `true`, abort signal is sent to the task.
-		 	\param pool			The thread pool
+			Wait until a given job finishes.
+			\param job          The job
+			\param pool         Pool index
 		*/
-		void waitForTask(bool abort, const PoolIndex pool = DEFAULT_POOL);
+		void waitForJob(Job job, const PoolIndex pool = DEFAULT_POOL);
+
+		/**
+			Aborts a given submitted job.
+			\param job     The job
+			\param pool    Pool index
+			\return `true` if the job was interrupted while running.
+		*/
+		bool abortJob(Job job, const PoolIndex pool = DEFAULT_POOL);
+
+		/**
+			Blocks until all the submitted jobs are executed.
+			\param pool    Pool index
+		*/
+		void wait(const PoolIndex pool = DEFAULT_POOL);
 
 		/**
 			Queries whether a given thread pool is busy with a task.
 			\param pool			The thread pool to query
 			\return `true` if the thread pool is running a task, `false` otherwise
 		*/
-		bool busy(const PoolIndex pool = DEFAULT_POOL) const;
+		bool busy(const PoolIndex pool = DEFAULT_POOL);
 
 		/**
 			\returns maximum number of working threads per task in a given pool.

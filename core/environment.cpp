@@ -339,8 +339,8 @@ public:
 	float performTask(PoolIndex pool, AbstractTask& task) {
 		assertPoolIndex(pool);
 		auto startTime = std::chrono::high_resolution_clock::now();
-		threadPools[pool]->startTask(task, ThreadPool::TaskExecutionMode::NORMAL);
-		threadPools[pool]->waitForTask();
+		Job job = threadPools[pool]->submitTask(task, ThreadPool::TaskExecutionMode::NORMAL);
+		threadPools[pool]->waitForJob(job);
 		auto endTime = std::chrono::high_resolution_clock::now();
 		return std::chrono::duration<float, std::milli>(endTime - startTime).count();
 	}
@@ -352,25 +352,37 @@ public:
 	}
 
 
-	void startTask(const PoolIndex pool, AbstractTask& task) {
+	Job submitTask(const PoolIndex pool, AbstractTask& task) {
 		assertPoolIndex(pool);
-		threadPools[pool]->startTask(task, ThreadPool::TaskExecutionMode::NORMAL);
+		return threadPools[pool]->submitTask(task, ThreadPool::TaskExecutionMode::NORMAL);
 	}
 
 
-	void startPersistentTask(const PoolIndex pool, AbstractTask& task) {
+	Job submitPersistentTask(const PoolIndex pool, AbstractTask& task) {
 		assertPoolIndex(pool);
-		threadPools[pool]->startTask(task, ThreadPool::TaskExecutionMode::PERSISTENT);
+		return threadPools[pool]->submitTask(task, ThreadPool::TaskExecutionMode::PERSISTENT);
 	}
 
 
-	void waitForTask(PoolIndex pool, bool abort) {
+	void waitForJob(const PoolIndex pool, Job job) {
 		assertPoolIndex(pool);
-		threadPools[pool]->waitForTask(abort);
+		threadPools[pool]->waitForJob(job);
 	}
 
 
-	bool busy(PoolIndex pool) const {
+	bool abortJob(const PoolIndex pool, Job job) {
+		assertPoolIndex(pool);
+		return threadPools[pool]->abortJob(job);
+	}
+
+
+	void wait(const PoolIndex pool) {
+		assertPoolIndex(pool);
+		threadPools[pool]->wait();
+	}
+
+
+	bool busy(const PoolIndex pool) {
 		assertPoolIndex(pool);
 		return threadPools[pool]->busy();
 	}
@@ -390,7 +402,7 @@ public:
 
 	const memchunk allocateMemory(msize size) {
 		std::lock_guard<std::mutex> lock(memAccess);
-		chunks[chunkCounter] = { size, 0, NULL, false };
+		chunks[chunkCounter] = { size, 0, nullptr, false };
 		chunks[chunkCounter].data = allocateWithSwapping(size);
 		return chunkCounter++;
 	}
@@ -399,7 +411,7 @@ public:
 	const pixptr acquireMemory(memchunk chunk) {
 		std::lock_guard<std::mutex> lock(memAccess);
 		if (!chunks.count(chunk))
-			return NULL;
+			return nullptr;
 		// unswapping
 		ChunkState& C = chunks[chunk];
 		if (C.swapping == ChunkSwappingState::ON_DISK) {
@@ -500,19 +512,27 @@ void Environment::repeatTask(AbstractTask& task, bool abortCurrent, const PoolIn
 	return impl->repeatTask(pool, task, abortCurrent);
 }
 
-void Environment::startTask(AbstractTask& task, const PoolIndex pool) {
-	impl->startTask(pool, task);
+Job Environment::submitTask(AbstractTask& task, const PoolIndex pool) {
+	return impl->submitTask(pool, task);
 }
 
-void Environment::startPersistentTask(AbstractTask& task, const PoolIndex pool) {
-	impl->startPersistentTask(pool, task);
+Job Environment::submitPersistentTask(AbstractTask& task, const PoolIndex pool) {
+	return impl->submitPersistentTask(pool, task);
 }
 
-void Environment::waitForTask(bool abort, const PoolIndex pool) {
-	return impl->waitForTask(pool, abort);
+void Environment::waitForJob(Job job, const PoolIndex pool) {
+	impl->waitForJob(pool, job);
 }
 
-bool Environment::busy(const PoolIndex pool) const {
+bool Environment::abortJob(Job job, const PoolIndex pool) {
+	return impl->abortJob(pool, job);
+}
+
+void Environment::wait(const PoolIndex pool) {
+	impl->wait(pool);
+}
+
+bool Environment::busy(const PoolIndex pool) {
 	return impl->busy(pool);
 }
 
@@ -587,7 +607,6 @@ msize Environment::getTotalRam() {
 void Environment::warmUpGpu() {
 	if (!isGpuReady()) {
 		GpuTask task;
-		startTask(task);
-		waitForTask(false);
+		performTask(task);
 	}
 }
