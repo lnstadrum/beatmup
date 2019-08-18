@@ -164,9 +164,10 @@ Scene::Layer* Scene::getLayer(float x, float y, unsigned int recursionDepth) con
 				if (result)
 					return result;
 			}
-			else
+			else {
 				if (layers[i]->testPoint(x, y))
 					return layers[i];
+			}
 	return nullptr;
 }
 

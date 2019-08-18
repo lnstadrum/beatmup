@@ -549,7 +549,7 @@ public:
 		// check if the rask is running now, abort if it is
         if (!jobs.empty() && jobs.front().id == job) {
             abortExternally = true;
-			while (!jobs.empty() && jobs.front().id == job);
+			while (!jobs.empty() && jobs.front().id == job)
 				mainCvar.wait(lock);
 			lock.unlock();
 			return true;
