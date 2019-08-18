@@ -82,7 +82,7 @@ public:
 			break;
 
 		default:
-			BEATMUP_ERROR("Unsupported pixel format");
+			throw RuntimeError("Unsupported pixel format");
 		}
 		bitmap = new Gdiplus::Bitmap(width, height, pf);
 		size.X = size.Y = 0;
@@ -97,7 +97,7 @@ public:
 			case PixelFormat24bppRGB: return TripleByte;
 			case PixelFormat32bppARGB: return QuadByte;
 		}
-		BEATMUP_ERROR("Unsupported pixel format: %d", bitmap->GetPixelFormat());
+		throw RuntimeError("Unsupported pixel format");
 	}
 
 
@@ -135,11 +135,11 @@ public:
 		CLSID clsid;
 		if (wcsstr(filename, L".jpg") || wcsstr(filename, L".jpeg")) {
 			if (GetEncoderClsid(L"image/jpeg", &clsid) < 0)
-				throw Beatmup::Exception("Unable to get encoder class id");
+				throw Beatmup::RuntimeError("Unable to get encoder class id");
 		}
 		else if (wcsstr(filename, L".png")) {
 			if (GetEncoderClsid(L"image/png", &clsid) < 0)
-				throw Beatmup::Exception("Unable to get encoder class id");
+				throw Beatmup::RuntimeError("Unable to get encoder class id");
 		}
 		bitmap->Save(filename, &clsid);
 	}

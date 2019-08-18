@@ -193,14 +193,14 @@ void BitmapBinaryOperation::beforeProcessing(ThreadIndex threadCount, GraphicPip
 	NullTaskInput::check(op1, "operand 1 bitmap");
 	NullTaskInput::check(op2, "operand 2 bitmap");
 	NullTaskInput::check(output, "output bitmap");
-	Exception::check(op1->getPixelFormat() == op2->getPixelFormat(), "operands pixel formats do not match");
-	Exception::check(op1->getPixelFormat() == output->getPixelFormat(), "output pixel format does not match operands pixel format");
-	Exception::check(op1Origin.x + cropWidth  <= op1->getWidth(),  "operand 1 width exceeded");
-	Exception::check(op1Origin.y + cropHeight <= op1->getHeight(), "operand 1 height exceeded");
-	Exception::check(op2Origin.x + cropWidth  <= op2->getWidth(),  "operand 2 width exceeded");
-	Exception::check(op2Origin.y + cropHeight <= op2->getHeight(), "operand 2 height exceeded");
-	Exception::check(outputOrigin.x + cropWidth  <= output->getWidth(),  "operand 1 width exceeded");
-	Exception::check(outputOrigin.y + cropHeight <= output->getHeight(), "operand 1 height exceeded");
+	RuntimeError::check(op1->getPixelFormat() == op2->getPixelFormat(), "operands pixel formats do not match");
+	RuntimeError::check(op1->getPixelFormat() == output->getPixelFormat(), "output pixel format does not match operands pixel format");
+	RuntimeError::check(op1Origin.x + cropWidth  <= op1->getWidth(),  "operand 1 width exceeded");
+	RuntimeError::check(op1Origin.y + cropHeight <= op1->getHeight(), "operand 1 height exceeded");
+	RuntimeError::check(op2Origin.x + cropWidth  <= op2->getWidth(),  "operand 2 width exceeded");
+	RuntimeError::check(op2Origin.y + cropHeight <= op2->getHeight(), "operand 2 height exceeded");
+	RuntimeError::check(outputOrigin.x + cropWidth  <= output->getWidth(),  "operand 1 width exceeded");
+	RuntimeError::check(outputOrigin.y + cropHeight <= output->getHeight(), "operand 1 height exceeded");
 
 	op1->lockPixels(ProcessingTarget::CPU);
 	if (op2 != op1)

@@ -63,10 +63,8 @@ BitmapPtr BitmapTools::makeCopy(AbstractBitmap& source) {
 
 
 BitmapPtr BitmapTools::chessboard(int width, int height, int cellSize, PixelFormat pixelFormat) {
-	if (cellSize <= 0)
-		BEATMUP_ERROR("Chessboard cell size must be positive");
-	if (!AbstractBitmap::isMask(pixelFormat))
-		BEATMUP_ERROR("Mask pixel formats are supported");
+	RuntimeError::check(cellSize > 0, "Chessboard cell size must be positive");
+	RuntimeError::check(AbstractBitmap::isMask(pixelFormat), "Mask pixel formats are supported only");
 	BitmapPtr chess = new Beatmup::InternalBitmap(env, pixelFormat, width, height);
 	chess->lockPixels(ProcessingTarget::CPU);
 	switch (pixelFormat) {

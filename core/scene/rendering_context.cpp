@@ -28,10 +28,7 @@ void RenderingContext::lockBitmap(BitmapPtr bitmap) {
 
 
 void RenderingContext::unlockBitmap(BitmapPtr bitmap) {
-#ifdef BEATMUP_DEBUG
-	if (lockedBitmaps.count(bitmap) == 0)
-		BEATMUP_ERROR("Bitmap is not locked");
-#endif
+	BEATMUP_ASSERT_DEBUG(lockedBitmaps.count(bitmap) != 0);
 	int refs = --lockedBitmaps[bitmap];
 	if (refs == 0) {
 		bitmap->unlockPixels();

@@ -153,7 +153,7 @@ void FloodFill::setBorderPostprocessing(BorderMorphology operation, float holdRa
 
 
 const IntegerContour2D& FloodFill::getContour(int contourIndex) const {
-	if (contourIndex < 0 || contours.size() <= contourIndex)
-		BEATMUP_ERROR("Bad contour index, or the contours computation was not enabled");
+	RuntimeError::check(contourIndex >= 0 && contourIndex < contours.size(),
+		"Contour index is out of range. Contours computation may have been disabled.");
 	return *contours[contourIndex];
 }

@@ -369,8 +369,7 @@ bool Scene::MaskedBitmapLayer::testPoint(float x, float y) const {
 	if (!bitmap && source == ImageSource::BITMAP)
 		return false;
 	if (mask) {
-		if (!mask->isUpToDate(CPU))
-			BEATMUP_ERROR("CPU version of the mask is out of date.");
+		RuntimeError::check(mask->isUpToDate(CPU), "Mask is out of date on CPU.");
 		const Point p = (mapping * maskMapping).getInverse(x, y);
 		int
 			w = floorf_fast(mask->getWidth() * p.x),

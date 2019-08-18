@@ -18,10 +18,20 @@ namespace Beatmup {
 	class Exception : public std::exception {
 	private:
 		std::string message;
+	protected:
+		Exception(const char* message, ...);
 	public:
-		Exception(const char * message, ...);
 		const char* what() const NOEXCEPT{ return message.c_str(); }
-		static void check(bool condition, const char* message);
+	};
+  
+	class RuntimeError : public Exception {
+	public:
+		RuntimeError(const char* message): Exception(message) {}
+		RuntimeError(const std::string& message): Exception(message.c_str()) {}
+		inline static void check(const bool condition, const char* message) {
+			if (!condition)
+				throw RuntimeError(message);
+        }
 	};
 
 	class IOError : public Exception {
@@ -29,7 +39,7 @@ namespace Beatmup {
 		std::string filename;
 	public:
 		IOError(const std::string& filename, const char * message):
-			Exception("File access error: %s\n%s", filename.c_str(), message),
+			Exception("Cannot access %s:\n%s", filename.c_str(), message),
 			filename(filename) { }
 		const std::string& getFilename() const { return filename; }
 	};
@@ -38,7 +48,11 @@ namespace Beatmup {
 	public:
 		NullTaskInput(const char* which) :
 			Exception("Task input is not set: %s", which) {}
-		static void check(void* pointer, const char* which);
+
+		inline static void check(void* pointer, const char* which) {
+			if (!pointer)
+				throw NullTaskInput(which);
+		}
 	};
 
 	/**
@@ -59,12 +73,17 @@ namespace Beatmup {
 		static void insanity(const char* message);
 	};
 
+	class DebugAssertion : public Exception {
+	private:
+		DebugAssertion(const char* message) : Exception(message) {}
+	public:
+		static void check(bool condition, const char* message, ...);
+	};
 }
 
-#define BEATMUP_ERROR(...) throw Beatmup::Exception(__VA_ARGS__)
 
 #ifdef BEATMUP_DEBUG
-#define BEATMUP_ASSERT_DEBUG(C) { if (!(C)) throw Beatmup::Exception("Debug assertion failed: " #C); }
+#define BEATMUP_ASSERT_DEBUG(C) Beatmup::DebugAssertion::check((C), "Debug assertion failed.\n" #C);
 #else
 #define BEATMUP_ASSERT_DEBUG(C)
 #endif

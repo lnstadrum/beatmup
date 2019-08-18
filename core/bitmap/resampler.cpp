@@ -39,8 +39,7 @@ ThreadIndex BitmapResampler::maxAllowedThreads() const {
 void BitmapResampler::beforeProcessing(ThreadIndex threadCount, GraphicPipeline* gpu) {
 	NullTaskInput::check(input, "input bitmap");
 	NullTaskInput::check(output, "output bitmap");
-	if (input == output)
-		BEATMUP_ERROR("input = output");
+	RuntimeError::check(input != output, "input and output is the same bitmap");
 	srcRect.normalize();
 	srcRect.limit(IntRectangle(0, 0, input->getWidth() - 1, input->getHeight() - 1));
 	destRect.normalize();

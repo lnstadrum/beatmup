@@ -218,7 +218,7 @@ bool SceneRenderer::processOnGPU(GraphicPipeline& gpu, TaskThread& thread) {
 
 
 bool SceneRenderer::process(TaskThread& thread) {
-	BEATMUP_ERROR("GPU is required for rendering");
+	throw RuntimeError("GPU is required for rendering");
 	return true;
 }
 

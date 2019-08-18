@@ -2,6 +2,7 @@
 #include "../basic_types.h"
 #include "../gpu/pipeline.h"
 #include "../gpu/bgl.h"
+#include "../debug.h"
 #include <mutex>
 
 using namespace Beatmup;
@@ -41,7 +42,7 @@ TextureHandler::TextureHandler() :
 
 TextureHandler::~TextureHandler() {
 	if (hasValidHandle())
-		BEATMUP_ERROR("Destroying texture handler still having a valid handle");
+		BEATMUP_DEBUG_E("Destroying texture handler still having a valid handle");
 }
 
 

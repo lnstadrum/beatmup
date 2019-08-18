@@ -3,6 +3,7 @@
 #include "bitmap_access.h"
 #include "processing.h"
 #include "crop.h"
+#include "../debug.h"
 #include <cstring>
 
 using namespace Beatmup;
@@ -54,13 +55,14 @@ void Crop::beforeProcessing(ThreadIndex threadCount, GraphicPipeline* gpu) {
 	NullTaskInput::check(input, "input bitmap");
 	NullTaskInput::check(output, "output bitmap");
 	cropRect.normalize();
-	if (!isFit())
-		BEATMUP_ERROR("Crop rectangle does not fit bitmaps: ((%d,%d),(%d,%d)) from %d x %d to put at (%d,%d) in %d x %d.",
-			cropRect.A.x, cropRect.B.x, cropRect.A.y, cropRect.B.y,
-			input->getWidth(), input->getHeight(),
-			outOrigin.x, outOrigin.y,
-			output->getWidth(), output->getHeight()
-		);
+	if (!isFit()) {
+		BEATMUP_DEBUG_E("Crop rectangle does not fit to bitmaps: ((%d,%d),(%d,%d)) from %d x %d to put at (%d,%d) in %d x %d.",
+				cropRect.A.x, cropRect.B.x, cropRect.A.y, cropRect.B.y,
+				input->getWidth(), input->getHeight(),
+				outOrigin.x, outOrigin.y,
+				output->getWidth(), output->getHeight());
+		throw RuntimeError("Crop rectangle does not fit to bitmaps");
+    }
 	input->lockPixels(ProcessingTarget::CPU);
 	output->lockPixels(ProcessingTarget::CPU);
 }

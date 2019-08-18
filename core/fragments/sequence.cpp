@@ -1,5 +1,6 @@
 #include "sequence.h"
 #include "../exception.h"
+#include "../debug.h"
 #include <algorithm>
 
 using namespace Beatmup::Fragments;
@@ -8,12 +9,12 @@ using namespace Beatmup::Fragments;
 void consistencyTest(const std::vector<FragmentPtr>& fragments) {
 	int index = 0;
 	for (auto it : fragments) {
-		if (it.length <= 0)
-			BEATMUP_ERROR("Non-positive length in fragment %d: %d", index, it.length);
-		if (it.offset < 0)
-			BEATMUP_ERROR("Negative offset in fragment %d: %d", index, it.offset);
-		if (it.length + it.offset > it.fragment->getSampleCount())
-			BEATMUP_ERROR("Out-of-range mapping of fragment %d: %d", index, it.fragment->getSampleCount());
+		Beatmup::DebugAssertion::check(it.length > 0,
+			"Non-positive length in fragment %d: %d", index, it.length);
+		Beatmup::DebugAssertion::check(it.offset >= 0,
+			"Negative offset in fragment %d: %d", index, it.offset);
+		Beatmup::DebugAssertion::check(it.length + it.offset <= it.fragment->getSampleCount(),
+			"Out-of-range mapping of fragment %d: %d", index, it.fragment->getSampleCount());
 		index++;
 	}
 }
@@ -26,7 +27,7 @@ Sequence::Sequence() {
 
 Sequence::~Sequence() {
 	if (pointers.size() > 0)
-		BEATMUP_ERROR("Deleting pointed sequence");
+		BEATMUP_DEBUG_E("Deleting pointed sequence");
 }
 
 

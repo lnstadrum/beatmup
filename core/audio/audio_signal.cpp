@@ -45,7 +45,7 @@ AudioSignal* AudioSignal::loadWAV(Environment& env, const char* filename) {
 	// open file
 	std::ifstream file(filename, std::ifstream::in | std::ifstream::binary);
 	if (!file.is_open())
-		BEATMUP_ERROR("Unable to access file %s", filename);
+		throw IOError(filename, "Unable to open for reading");
 
 	// read header
 	WAV::WAVHeader header;
@@ -81,7 +81,7 @@ AudioSignal* AudioSignal::loadWAV(Environment& env, const char* filename) {
 	Writer pointer(*signal, 0);
 	while (pointer.hasData() && !file.eof()) {
 		if (file.fail())
-			BEATMUP_ERROR("Fail when reading %s", filename);
+			throw IOError(filename, "Failed while reading");
 		void* data;
 		int length = pointer.acquireBuffer(data);		
 		file.read((char*)data, length * header.numChannels * AUDIO_SAMPLE_SIZE[format]);
@@ -97,7 +97,7 @@ void AudioSignal::saveWAV(const char* filename) {
 	// open file
 	std::ofstream file(filename, std::ofstream::out | std::ofstream::binary | std::ofstream::trunc);
 	if (!file.is_open())
-		BEATMUP_ERROR("Unable to access file %s", filename);
+		throw IOError(filename, "Unable to open for writing");
 
 	// init and write header
 	unsigned char sampleSize = AUDIO_SAMPLE_SIZE[format];
@@ -109,7 +109,7 @@ void AudioSignal::saveWAV(const char* filename) {
 	Reader pointer(*this, 0);
 	while (pointer.hasData() && !file.eof()) {
 		if (file.fail())
-			BEATMUP_ERROR("Fail when writing %s", filename);
+			throw IOError(filename, "Failed while writing");
 		const void* data;
 		int length = pointer.acquireBuffer(data);
 		file.write((const char*)data, length * channelCount * sampleSize);

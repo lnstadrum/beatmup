@@ -110,7 +110,7 @@ public:
 		int numConfigs;
 		if (!eglChooseConfig(eglDisplay, configAttributes, &eglConfig, 1, &numConfigs))
 			throw GL::GLException("EGL: bad configuration", eglGetError());
-		DEBUG_I("Number of EGL configs got: %d", numConfigs);
+		BEATMUP_DEBUG_I("Number of EGL configs got: %d", numConfigs);
 
 		// Step 6 - Create a context.
 		EGLint contextAttributes[] = {
@@ -564,7 +564,7 @@ public:
 
 
 GraphicPipeline::GraphicPipeline(): renderingPrograms(this) {
-	DEBUG_I("GRAPHIC PIPELINE INITIALIZATION");
+	BEATMUP_DEBUG_I("GRAPHIC PIPELINE INITIALIZATION");
 	impl = new Impl(*this);
 }
 
