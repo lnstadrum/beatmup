@@ -24,11 +24,10 @@ ThreadIndex Filters::PixelwiseFilter::maxAllowedThreads() const {
 void Filters::PixelwiseFilter::beforeProcessing(ThreadIndex threadCount, GraphicPipeline* gpu) {
 	NullTaskInput::check(inputBitmap, "input bitmap");
 	NullTaskInput::check(outputBitmap, "output bitmap");
-	if (
-		inputBitmap->getWidth() != outputBitmap->getWidth() ||
-		inputBitmap->getHeight() > outputBitmap->getHeight()
-	)
-		BEATMUP_ERROR("Incompatible input and output bitmaps sizes");
+	RuntimeError::check(
+		inputBitmap->getWidth() == outputBitmap->getWidth() &&
+		inputBitmap->getHeight() <= outputBitmap->getHeight(),
+		"Incompatible input and output bitmaps sizes");
 	inputBitmap->lockPixels(gpu ? ProcessingTarget::GPU : ProcessingTarget::CPU);
 	if (inputBitmap != outputBitmap)
 		outputBitmap->lockPixels(gpu ? ProcessingTarget::GPU : ProcessingTarget::CPU);

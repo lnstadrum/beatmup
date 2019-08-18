@@ -86,7 +86,7 @@ void BmpFile::load(void* pixels, const uint32_t pixelsSizeInBytes) {
 	const msize
 		rowSize = ceili(header.width * header.bpp, 8),
 		rowAlign = ceili(rowSize, 4) * 4 - rowSize;
-	Exception::check(pixelsSizeInBytes >= rowSize * header.height,
+	RuntimeError::check(pixelsSizeInBytes >= rowSize * header.height,
 		"Cannot fit BMP file to a pixel buffer");
 	char pad[3];
 	in.seekg(header.offset, std::ios_base::beg);

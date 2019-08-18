@@ -67,7 +67,7 @@ void HarmonicSource::render(TaskThread& thread, psample* buffer, const dtime buf
             break;
 
         default:
-            BEATMUP_ERROR("Unsupported sample format: %d", sampleFormat);
+            Insanity::insanity("Unsupported sample format");
     }
     time += bufferLength;
 }

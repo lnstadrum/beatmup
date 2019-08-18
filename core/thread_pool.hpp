@@ -150,7 +150,7 @@ private:
 
                 // if GPU is required and not available, report
                 if (!useGpuForCurrentTask && exTarget == AbstractTask::ExecutionTarget::useGPU) {
-                    Beatmup::Exception noGpuException(
+                    Beatmup::RuntimeError noGpuException(
 						myIndex == 0 ?
 						"A task requires GPU, but GPU init is failed" :
 						"A task requiring GPU may only be run in the main pool"
@@ -474,12 +474,6 @@ public:
         std::unique_lock<std::mutex> lock(jobsAccess);
 		const Job job = jobCounter++;
 
-        // check mode
-#ifdef BEATMUP_DISABLE_GPU
-        if (task.getExecutionMode() == AbstractTask::ExecutionTarget::useGPU)
-            BEATMUP_ERROR("GPU is not available");	
-#endif
-
         // set new task
 		jobs.emplace_back(JobContext{job, &task, mode});
 
@@ -598,8 +592,7 @@ public:
     */
     inline static ThreadIndex hardwareConcurrency() {
         unsigned int N = std::thread::hardware_concurrency();
-        if (N <= 0)
-            BEATMUP_ERROR("Unable to determine hardware concurrency capabilities (got %d).", N);
+        RuntimeError::check(N > 0, "Unable to determine hardware concurrency capabilities.");
         return N > MAX_THREAD_INDEX ? MAX_THREAD_INDEX : (ThreadIndex)N;
     }
 

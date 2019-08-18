@@ -78,8 +78,7 @@ public:
 
     TaskHolder* getTask(int index) {
         std::lock_guard<std::mutex> lock(tasksAccess);
-        if (index < 0 || tasks.size() <= index)
-            throw Exception("Task index out of range", index);
+        BEATMUP_ASSERT_DEBUG(0 <= index && index < tasks.size());
         return tasks[index];
     }
 
@@ -101,7 +100,7 @@ public:
         std::lock_guard<std::mutex> lock(tasksAccess);
 		const auto& nextHolder = std::find(tasks.cbegin(), tasks.cend(), succeedingHoder);
 		if (nextHolder == tasks.cend())
-            throw Exception("Reference task holder is not found in the task list");
+            throw RuntimeError("Reference task holder is not found in the task list");
         measured = false;
 		tasks.insert(nextHolder - 1, newbie);
     }

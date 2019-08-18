@@ -60,8 +60,7 @@ void Filters::ColorMatrix::setAllowIntegerApproximations(bool allow) {
 
 
 void Filters::ColorMatrix::setCoefficients(int outChannel, float add, float inR, float inG, float inB, float inA) {
-	if (outChannel < 0 || outChannel > 3)
-		BEATMUP_ERROR("Wrong output channel index: %d", outChannel);
+	RuntimeError::check(outChannel >= 0 && outChannel <= 3, "Invalid output channel index");
 	this->add.val[outChannel] = add;
 	matrix[outChannel][CHANNELS_4.R] = inR;
 	matrix[outChannel][CHANNELS_4.G] = inG;

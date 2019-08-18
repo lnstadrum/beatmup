@@ -57,7 +57,7 @@ msize getAvailableDiskSpace() {
 #else
 	struct statfs data;
 	if (fstatfs(0, &data) < 0)
-		BEATMUP_ERROR("Unable to get available disk space");
+		throw RuntimeError("Unable to get available disk space");
 	return (msize)data.f_bsize * data.f_bfree;
 #endif
 }
@@ -192,14 +192,14 @@ private:
 			file = fopen(fileName, operation == SwappingOperation::SWAP ? "wb" : "rb");
 #endif
 			if (!file)
-				BEATMUP_ERROR("Unable to access swap file %s for %s", fileName, operation == SwappingOperation::SWAP ? "swapping" : "unswapping");
+				throw IOError(fileName, operation == SwappingOperation::SWAP ? "Cannot swap into" : "Cannot swap from");
 
 			// swapping data on disk
 			if (operation == SwappingOperation::SWAP) {
 #ifdef BEATMUP_DEBUG
 				if (C.swapping != ChunkSwappingState::AVAILABLE)
 					throw InternalMemoryManagementError("Trying to swap a chunk in a wrong state", chunk);
-				DEBUG_I("Swapping %lu Kbytes to %s", C.size / 1024, fileName);
+				BEATMUP_DEBUG_I("Swapping %lu Kbytes to %s", C.size / 1024, fileName);
 #endif
 				fwrite(C.data, C.size, 1, file);
 				free(C.data);
@@ -211,7 +211,7 @@ private:
 #ifdef BEATMUP_DEBUG
 				if (C.swapping != ChunkSwappingState::ON_DISK)
 					throw InternalMemoryManagementError("Trying to unswap a chunk in a wrong state", chunk);
-				DEBUG_I("Unswapping %lu Kbytes from %s", C.size / 1024, fileName);
+				BEATMUP_DEBUG_I("Unswapping %lu Kbytes from %s", C.size / 1024, fileName);
 #endif
 				C.data = allocateWithSwapping(C.size);
 				fread(C.data, C.size, 1, file);
@@ -261,9 +261,8 @@ protected:
 
 
 	inline pixptr allocateWithSwapping(msize howMuch) {
-#ifdef BEATMUP_DEBUG
-		DEBUG_I("Allocating %lu Kbytes (%lu MB free)...", howMuch / 1024, getAvailableMemory() / 1048576);
-#endif
+		BEATMUP_DEBUG_I("Allocating %lu Kbytes (%lu MB free)...", howMuch / 1024, getAvailableMemory() / 1048576);
+
 		while (true) {
 			msize avail = getAvailableMemory();
 			if (avail >= howMuch + memToKeepFree)
@@ -291,7 +290,7 @@ protected:
 			else if (C.swapping == ChunkSwappingState::ON_DISK)
 				swapChunk(chunk, SwappingOperation::CLEAR);
 			else if (C.swapping != ChunkSwappingState::SOMEWHERE)
-				BEATMUP_ERROR("Unimplemented memory disposing operation for specified swapping state");
+				throw RuntimeError("Unimplemented memory disposing operation for specified swapping state");
 			removeChunkFromSwappables(chunk);
 			chunks.erase(chunk);
 		}
@@ -300,11 +299,6 @@ protected:
 	}
 
 
-	void assertPoolIndex(PoolIndex pool) const {
-		if (pool >= numThreadPools)
-			BEATMUP_ERROR("Bad pool index: %d", pool);
-	}
-
 public:
 	Environment::EventListener* eventListener;	//!< an event listener
 
@@ -312,7 +306,7 @@ public:
 		optimalThreadCount(std::max<ThreadIndex>(1, ThreadPool::hardwareConcurrency() / numThreadPools)),
 		numThreadPools(numThreadPools),
 		chunkCounter(1),
-		eventListener(NULL),
+		eventListener(nullptr),
 		threadPoolEventListener(*this),
 		memToKeepFree(0),
 		swapEnabled(swapFilePrefix && swapFileSuffix),
@@ -337,7 +331,7 @@ public:
 
 
 	float performTask(PoolIndex pool, AbstractTask& task) {
-		assertPoolIndex(pool);
+		BEATMUP_ASSERT_DEBUG(pool < numThreadPools);
 		auto startTime = std::chrono::high_resolution_clock::now();
 		Job job = threadPools[pool]->submitTask(task, ThreadPool::TaskExecutionMode::NORMAL);
 		threadPools[pool]->waitForJob(job);
@@ -347,55 +341,55 @@ public:
 
 
 	void repeatTask(PoolIndex pool, AbstractTask& task, bool abortCurrent) {
-		assertPoolIndex(pool);
+		BEATMUP_ASSERT_DEBUG(pool < numThreadPools);
 		threadPools[pool]->repeatTask(task, abortCurrent);
 	}
 
 
 	Job submitTask(const PoolIndex pool, AbstractTask& task) {
-		assertPoolIndex(pool);
+		BEATMUP_ASSERT_DEBUG(pool < numThreadPools);
 		return threadPools[pool]->submitTask(task, ThreadPool::TaskExecutionMode::NORMAL);
 	}
 
 
 	Job submitPersistentTask(const PoolIndex pool, AbstractTask& task) {
-		assertPoolIndex(pool);
+		BEATMUP_ASSERT_DEBUG(pool < numThreadPools);
 		return threadPools[pool]->submitTask(task, ThreadPool::TaskExecutionMode::PERSISTENT);
 	}
 
 
 	void waitForJob(const PoolIndex pool, Job job) {
-		assertPoolIndex(pool);
+		BEATMUP_ASSERT_DEBUG(pool < numThreadPools);
 		threadPools[pool]->waitForJob(job);
 	}
 
 
 	bool abortJob(const PoolIndex pool, Job job) {
-		assertPoolIndex(pool);
+		BEATMUP_ASSERT_DEBUG(pool < numThreadPools);
 		return threadPools[pool]->abortJob(job);
 	}
 
 
 	void wait(const PoolIndex pool) {
-		assertPoolIndex(pool);
+		BEATMUP_ASSERT_DEBUG(pool < numThreadPools);
 		threadPools[pool]->wait();
 	}
 
 
 	bool busy(const PoolIndex pool) {
-		assertPoolIndex(pool);
+		BEATMUP_ASSERT_DEBUG(pool < numThreadPools);
 		return threadPools[pool]->busy();
 	}
 
 
 	const ThreadIndex maxAllowedWorkerCount(PoolIndex pool) const {
-		assertPoolIndex(pool);
+		BEATMUP_ASSERT_DEBUG(pool < numThreadPools);
 		return threadPools[pool]->getThreadCount();
 	}
 
 
 	void limitWorkerCount(PoolIndex pool, ThreadIndex maxValue) {
-		assertPoolIndex(pool);
+		BEATMUP_ASSERT_DEBUG(pool < numThreadPools);
 		threadPools[pool]->resize(maxValue);
 	}
 
@@ -418,13 +412,13 @@ public:
 			C.data = (pixptr)allocateWithSwapping(C.size);
 			swapChunk(chunk, SwappingOperation::UNSWAP);
 			C.swapping = ChunkSwappingState::AVAILABLE;
-		} else
-			if (C.swapping == ChunkSwappingState::SOMEWHERE) {
-				C.data = (pixptr)allocateWithSwapping(C.size);
-				C.swapping = ChunkSwappingState::AVAILABLE;
-			} else
-				if (C.swapping != ChunkSwappingState::AVAILABLE)
-					BEATMUP_ERROR("Unimplemented memory reallocating operation for specified swapping state");
+		}
+		else if (C.swapping == ChunkSwappingState::SOMEWHERE) {
+			C.data = (pixptr)allocateWithSwapping(C.size);
+			C.swapping = ChunkSwappingState::AVAILABLE;
+		}
+		else if (C.swapping != ChunkSwappingState::AVAILABLE)
+			throw RuntimeError("Unimplemented memory reallocating operation for specified swapping state");
 		C.lockCounter++;
 		removeChunkFromSwappables(chunk);
 		return C.data;

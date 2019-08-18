@@ -21,8 +21,8 @@ namespace Beatmup {
 
 		MaskScanner(const AbstractBitmap& bitmap) {
 #ifdef BEATMUP_DEBUG
-			if (bitmap.getBitsPerPixel() != num_bits)
-				BEATMUP_ERROR("Invalid mask bitmap scanner");
+			DebugAssertion::check(bitmap.getBitsPerPixel() == num_bits,
+				"Invalid mask bitmap scanner");
 #endif
 			width = bitmap.getWidth();
 			height = bitmap.getHeight();
@@ -127,8 +127,8 @@ namespace Beatmup {
 		*/
 		inline void goTo(int x, int y) {
 #ifdef BEATMUP_DEBUG
-			if (x < 0 || y < 0 || x >= this->width || y >= this->height)
-				BEATMUP_ERROR("Coordinates outside of image: %d %d (width=%d, height=%d)", x, y, this->width, this->height);
+			DebugAssertion::check(x >= 0 && y >= 0 && x < this->width && y < this->height,
+				"Coordinates outside of image: %d %d (width=%d, height=%d)", x, y, this->width, this->height);
 #endif
 			msize n = (this->width*y + x);
 			this->ptr = this->data + n / pointsPerByte,
@@ -302,8 +302,8 @@ namespace Beatmup {
 		*/
 		inline void goTo(int x, int y) {
 #ifdef BEATMUP_DEBUG
-			if (x < 0 || y < 0 || x >= width || y >= height)
-				BEATMUP_ERROR("Coordinates outside of image: %d %d (width=%d, height=%d)", x, y, width, height);
+			DebugAssertion::check(x >= 0 && y >= 0 && x < width && y < height,
+				"Coordinates outside of image: %d %d (width=%d, height=%d)", x, y, width, height);
 #endif
 			ptr = data + (width*y + x);
 		}

@@ -89,8 +89,7 @@ namespace Beatmup {
 		*/
 		inline void goTo(int x, int y) {
 #ifdef BEATMUP_DEBUG
-			if (x < 0 || y < 0 || x >= width || y >= height)
-				BEATMUP_ERROR("Coordinates outside of image: %d %d (width=%d, height=%d)", x, y, width, height);
+			DebugAssertion::check(x >= 0 && y >= 0 && x < width && y < height, "Coordinates outside of image: %d %d (width=%d, height=%d)", x, y, width, height);
 #endif
 			ptr = data + num_channels*(width*y + x);
 		}
@@ -111,8 +110,10 @@ namespace Beatmup {
 
 		CustomBitmapScanner(const AbstractBitmap& bitmap, int x = 0, int y = 0) {
 #ifdef BEATMUP_DEBUG
-			if (bitmap.getBitsPerPixel() != 8* num_channels * sizeof(pixel))
-				BEATMUP_ERROR("Invalid bitmap scanner");
+			DebugAssertion::check(
+				bitmap.getBitsPerPixel() == 8* num_channels * sizeof(pixel),
+				"Invalid bitmap scanner"
+            );
 #endif
 			width = bitmap.getWidth();
 			height = bitmap.getHeight();

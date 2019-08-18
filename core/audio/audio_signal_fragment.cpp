@@ -289,8 +289,8 @@ template<typename sample> void AudioSignalFragment::measureDynamics(int time0, i
 		mode == AudioSignal::Meter::MeasuringMode::approximateUsingLookup ||
 		mode == AudioSignal::Meter::MeasuringMode::preciseUsingLookupAndSamples;
 
-	if (useLookup && !plot.lookup.isReady())
-		BEATMUP_ERROR("Dynamics lookup is not ready");
+	if (useLookup)
+		RuntimeError::check(plot.lookup.isReady(), "Dynamics lookup is not ready");
 
 	const void* sampleData = NULL;
 

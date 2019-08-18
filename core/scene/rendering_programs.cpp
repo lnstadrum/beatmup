@@ -407,7 +407,8 @@ void RenderingPrograms::enableProgram(GraphicPipeline* gpu, GL::Program& program
 
 
 GL::Program& RenderingPrograms::getCurrentProgram() {
-	Beatmup::Exception::check(currentGlProgram != nullptr, "No current program");
+	if (!currentGlProgram)
+		RuntimeError("No current program");
 	return *currentGlProgram;
 }
 
@@ -427,7 +428,7 @@ void RenderingPrograms::bindMask(GraphicPipeline* gpu, AbstractBitmap& mask) {
 void RenderingPrograms::blend(bool onScreen) {
 #ifdef BEATMUP_DEBUG
 	if (currentProgram == Program::MASKED_BLEND || currentProgram == Program::MASKED_BLEND_EXT)
-		Beatmup::Exception::check(maskSetUp, "Mask was not set up in masked blending");
+		DebugAssertion::check(maskSetUp, "Mask was not set up in masked blending");
 #endif
 
 	getCurrentProgram().setInteger("flipVertically", onScreen ? 0 : 1);
