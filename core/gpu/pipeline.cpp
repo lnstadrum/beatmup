@@ -238,13 +238,13 @@ public:
 		const char
 			*vendor   = (char*)glGetString(GL_VENDOR),
 			*renderer = (char*)glGetString(GL_RENDERER);
-		DEBUG_I("__________________________________________________________");
-		DEBUG_I("Beatmup GL startup: %s / %s", renderer, vendor);
-		DEBUG_I(" - Max workgroups: %d, %d, %d", glLimits.maxWorkGroupCount[0], glLimits.maxWorkGroupCount[1], glLimits.maxWorkGroupCount[2]);
-		DEBUG_I(" - Max local groups: %d, %d, %d / %d", glLimits.maxWorkGroupSize[0], glLimits.maxWorkGroupSize[1], glLimits.maxWorkGroupSize[2],
+		BEATMUP_DEBUG_I("__________________________________________________________");
+		BEATMUP_DEBUG_I("Beatmup GL startup: %s / %s", renderer, vendor);
+		BEATMUP_DEBUG_I(" - Max workgroups: %d, %d, %d", glLimits.maxWorkGroupCount[0], glLimits.maxWorkGroupCount[1], glLimits.maxWorkGroupCount[2]);
+		BEATMUP_DEBUG_I(" - Max local groups: %d, %d, %d / %d", glLimits.maxWorkGroupSize[0], glLimits.maxWorkGroupSize[1], glLimits.maxWorkGroupSize[2],
 			glLimits.maxTotalWorkGroupSize);
-		DEBUG_I(" - Shared memory: %d KB", glLimits.maxSharedMemSize / 1024);
-		DEBUG_I("__________________________________________________________");
+		BEATMUP_DEBUG_I(" - Shared memory: %lu KB", glLimits.maxSharedMemSize / 1024);
+		BEATMUP_DEBUG_I("__________________________________________________________");
 #endif
 #else
 		glLimits.maxWorkGroupCount[0] = glLimits.maxWorkGroupCount[1] = glLimits.maxWorkGroupCount[2] = 0;
