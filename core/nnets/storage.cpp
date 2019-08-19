@@ -72,8 +72,7 @@ Storage::Storage(GL::StorageBuffer* buffer):
 	size(buffer->getWidth(), buffer->getHeight(), buffer->getDepth() * sizeof(float)),
 	buffer(buffer)
 {
-	if (buffer->getEntrySize() != sizeof(float))
-		throw Exception("Unsupported buffer type");
+	RuntimeError::check(buffer->getEntrySize() == sizeof(float), "Unsupported buffer type");
 }
 
 

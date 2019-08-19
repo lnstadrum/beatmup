@@ -243,7 +243,7 @@ public:
 		BEATMUP_DEBUG_I(" - Max workgroups: %d, %d, %d", glLimits.maxWorkGroupCount[0], glLimits.maxWorkGroupCount[1], glLimits.maxWorkGroupCount[2]);
 		BEATMUP_DEBUG_I(" - Max local groups: %d, %d, %d / %d", glLimits.maxWorkGroupSize[0], glLimits.maxWorkGroupSize[1], glLimits.maxWorkGroupSize[2],
 			glLimits.maxTotalWorkGroupSize);
-		BEATMUP_DEBUG_I(" - Shared memory: %lu KB", glLimits.maxSharedMemSize / 1024);
+		BEATMUP_DEBUG_I(" - Shared memory: %u KB", glLimits.maxSharedMemSize / 1024);
 		BEATMUP_DEBUG_I("__________________________________________________________");
 #endif
 #else

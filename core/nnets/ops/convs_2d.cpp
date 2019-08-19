@@ -611,7 +611,7 @@ std::vector<std::string> Convolution2D::generateCode(GraphicPipeline& gpu, Chunk
 	const int numSlices = getNumberOfSlices();
 	std::vector<std::string> code(numSlices);
 
-	DEBUG_I("-- %s : %d %d\n", getName().c_str(), kernelSize.volume() * outChannelsNum, numSlices);
+	BEATMUP_DEBUG_I("-- %s : %d %d\n", getName().c_str(), kernelSize.volume() * outChannelsNum, numSlices);
 
 	typedef float datatype;
 	const std::string
@@ -678,8 +678,7 @@ std::vector<std::string> Convolution2D::generateCode(GraphicPipeline& gpu, Chunk
 			sliceSize = slice[1] - slice[0];
 
 		if (depthwise) {
-			if (kernelSize[2] != 1)
-				throw Exception("Depthwise kernels must be of depth 1");
+			RuntimeError::check(kernelSize[2] == 1, "Depthwise kernels must be of depth 1");
 			
 			if (mode == ComputingMode::ARRAYS) {
 				renderDepthwiseArrayBased(gpu, sliceIdx, computeCodeBuild, dataCodeBuild, kernels, biases);
@@ -693,8 +692,7 @@ std::vector<std::string> Convolution2D::generateCode(GraphicPipeline& gpu, Chunk
 		}
 
 		else {
-			if (kernelSize[2] != inputSize.getDepth())
-				throw Exception("Input and kernel depth mismatch");
+			RuntimeError::check(kernelSize[2] == inputSize.getDepth(), "Input and kernel depth mismatch");
 
 			if (kernelSize[0] == 1 && kernelSize[1] == 1) {
 				renderPointwise(gpu, computeCodeBuild, dataCodeBuild);

@@ -3,6 +3,7 @@
 */
 #pragma once
 #include "parallelism.h"
+#include "debug.h"
 #include <deque>
 
 using namespace Beatmup;
@@ -110,12 +111,13 @@ private:
             }
 
             // fetch a task
+			syncHits = 0;
+			syncPointCtr = 0;
+			abortExternally = abortInternally = false;
+			failFlag = false;
+			repeatFlag = false;
             if (!jobs.empty()) {
 				currentJob = jobs.front();
-                syncHits = 0;
-                syncPointCtr = 0;
-                abortExternally = abortInternally = false;
-                failFlag = false;
                 currentWorkerCount = remainingWorkers = std::min(currentJob.task->maxAllowedThreads(), threadCount);
             }
 			else
@@ -252,7 +254,6 @@ private:
                 mainCvar.notify_all();
             }
 
-            repeatFlag = false;
             lock.unlock();
         }
         eventListener.threadTerminating(myIndex);
@@ -500,8 +501,9 @@ public:
 
 		//check whether it is in the queue
 		for (const JobContext& _ : jobs)
-			if (_.task == &task)
+			if (_.task == &task) {
 				return _.id;
+			}
 
 		// otherwise submit the task
 		const Job job = jobCounter++;
@@ -510,6 +512,7 @@ public:
 			&task,
 			TaskExecutionMode::NORMAL
 		});
+		mainCvar.notify_all();
 		return job;
     }
 

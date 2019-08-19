@@ -199,7 +199,7 @@ private:
 #ifdef BEATMUP_DEBUG
 				if (C.swapping != ChunkSwappingState::AVAILABLE)
 					throw InternalMemoryManagementError("Trying to swap a chunk in a wrong state", chunk);
-				BEATMUP_DEBUG_I("Swapping %lu Kbytes to %s", C.size / 1024, fileName);
+				BEATMUP_DEBUG_I("Swapping %u Kbytes to %s", C.size / 1024, fileName);
 #endif
 				fwrite(C.data, C.size, 1, file);
 				free(C.data);
@@ -211,7 +211,7 @@ private:
 #ifdef BEATMUP_DEBUG
 				if (C.swapping != ChunkSwappingState::ON_DISK)
 					throw InternalMemoryManagementError("Trying to unswap a chunk in a wrong state", chunk);
-				BEATMUP_DEBUG_I("Unswapping %lu Kbytes from %s", C.size / 1024, fileName);
+				BEATMUP_DEBUG_I("Unswapping %u Kbytes from %s", C.size / 1024, fileName);
 #endif
 				C.data = allocateWithSwapping(C.size);
 				fread(C.data, C.size, 1, file);
@@ -261,7 +261,7 @@ protected:
 
 
 	inline pixptr allocateWithSwapping(msize howMuch) {
-		BEATMUP_DEBUG_I("Allocating %lu Kbytes (%lu MB free)...", howMuch / 1024, getAvailableMemory() / 1048576);
+		BEATMUP_DEBUG_I("Allocating %u Kbytes (%u MB free)...", howMuch / 1024, getAvailableMemory() / 1048576);
 
 		while (true) {
 			msize avail = getAvailableMemory();
