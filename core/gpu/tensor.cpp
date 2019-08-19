@@ -1,4 +1,4 @@
-#include "tensor.h"
+ #include "tensor.h"
 #include "bgl.h"
 
 #ifdef BEATMUP_OPENGLVERSION_GLES20
@@ -16,8 +16,7 @@ Tensor::Tensor(Environment& env, const int width, const int height, const int sc
 	env(env),
 	allocated(false)
 {
-	if (scalarDepth % 4 != 0 || depth <= 0 )
-		throw Exception("Unsupported scalar depth %d. Must be a positive factor of 4.", scalarDepth);
+	RuntimeError::check(scalarDepth % 4 == 0 && depth > 0, "Unsupported scalar depth. Must be a positive factor of 4.");
 }
 
 
@@ -27,8 +26,7 @@ Tensor::Tensor(Environment& env, GraphicPipeline& gpu, const int unpackedWidth, 
 	env(env),
 	allocated(true)
 {
-	if (unpackedWidth % 4 != 0)
-		throw Exception("Unsupported unpacked width %d. Must be a positive factor of 4.", unpackedWidth);
+	RuntimeError::check(unpackedWidth % 4 == 0, "Unsupported unpacked width. Must be a positive factor of 4.");
 	
 	glActiveTexture(GL_TEXTURE0);
 	glGenTextures(1, &textureHandle);
@@ -72,15 +70,11 @@ void Tensor::prepare(GraphicPipeline& gpu) {
 void Tensor::load(GraphicPipeline& gpu, int channel, const AbstractBitmap& bitmap) {
 	BEATMUP_ASSERT_DEBUG(arrayTexture);
 #ifdef BEATMUP_DEBUG
-	if (channel < 0 || depth <= channel)
-		throw Exception("Bad channel index %d for a 3D tensor of depth %d", channel, depth);
-	if (bitmap.getPixelFormat() != PixelFormat::QuadFloat)
-		throw Exception("Only 4-channel floating point bitmaps might be supplied to tensor");
-	if (bitmap.getWidth() != getWidth() || bitmap.getHeight() != getHeight())
-		throw Exception("Bitmap size (%dx%d) does not match tensor size (%dx%d)",
-			bitmap.getWidth(), bitmap.getHeight(), getWidth(), getHeight());
+	DebugAssertion::check(channel >= 0 && channel < depth, "Bad channel index %d for a 3D tensor of depth %d", channel, depth);
+	DebugAssertion::check(bitmap.getPixelFormat() == PixelFormat::QuadFloat, "Only 4-channel floating point bitmaps might be supplied to tensor");
+	DebugAssertion::check(bitmap.getWidth() == getWidth() && bitmap.getHeight() == getHeight(), "Bitmap size (%dx%d) does not match tensor size (%dx%d)",
+        bitmap.getWidth(), bitmap.getHeight(), getWidth(), getHeight());
 #endif
-
 	glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, channel, width, height, 1,
 		GL::TEXTUREHANDLER_INTERNALFORMATS[format], GL_FLOAT, bitmap.getData(0, 0));
 

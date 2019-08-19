@@ -71,6 +71,7 @@ namespace Beatmup {
         
         StringBuilder& operator =(const std::string& content) {
             str = content;
+			return *this;
         }
       
         operator std::string&() {

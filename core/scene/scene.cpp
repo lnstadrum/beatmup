@@ -186,7 +186,7 @@ int Scene::getLayerCount() const {
 
 
 bool Scene::resolveMapping(const Layer& layer, AffineMapping& mapping) const {
-	for (size_t i = layers.size() - 1; i >= 0; i--) {
+	for (int i = (int)layers.size() - 1; i >= 0; i--) {
 		if (&layer == layers[i]) {
 			mapping = layer.getMapping();
 			return true;

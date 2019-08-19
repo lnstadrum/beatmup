@@ -1,6 +1,7 @@
 #include "storage_buffer.h"
 #include "bgl.h"
 #include "recycle_bin.h"
+#include "../exception.h"
 
 using namespace Beatmup;
 using namespace GL;
@@ -52,7 +53,7 @@ void StorageBuffer::fetch(GraphicPipeline& gpu, void* data, size_t limit) {
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 	GLException::check("reading storage buffer");
 	if (!okay)
-		Exception("Buffer data not available");
+		throw RuntimeError("Buffer data not available");
 }
 
 
