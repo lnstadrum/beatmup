@@ -9,34 +9,31 @@
 #include "pixel_arithmetic.h"
 
 namespace Beatmup {
-	class BitmapTools : public Object {
-	private:
-		Environment& env;
-
-	public:
-		BitmapTools(Environment& env);
-
-		const Environment& getEnvironment() const;
-	
+	namespace BitmapTools {
 		/**
 			\brief Makes a copy of a bitmap with a specified pixel format
 		*/
-		BitmapPtr makeCopy(AbstractBitmap& source, PixelFormat newPixelFormat);
+		AbstractBitmap* makeCopy(AbstractBitmap& source, PixelFormat newPixelFormat);
 		
 		/**
 			\brief Makes a copy of a bitmap
 		*/
-		BitmapPtr makeCopy(AbstractBitmap& source);
+		AbstractBitmap* makeCopy(AbstractBitmap& source);
 
 		/**
 			Generates a chessboard
 		*/
-		BitmapPtr chessboard(int width, int height, int cellSize, PixelFormat pixelFormat = BinaryMask);
+		AbstractBitmap* chessboard(Environment& env, int width, int height, int cellSize, PixelFormat pixelFormat = BinaryMask);
 				
 		/**
 			Makes a bitmap area opaque
 		*/
-		static void makeOpaque(AbstractBitmap&, IntRectangle);
+		void makeOpaque(AbstractBitmap&, IntRectangle);
+
+		/**
+			Computes the pixelwise inverse of a bitmap
+		*/
+		void invert(AbstractBitmap& input, AbstractBitmap& output);
 
 
 		/**
@@ -49,6 +46,5 @@ namespace Beatmup {
 		 */
 		IntPoint scanlineSearch(AbstractBitmap& source, pixint4 val, const IntPoint& startFrom);
 		IntPoint scanlineSearch(AbstractBitmap& source, pixfloat4 val, const IntPoint& startFrom);
-	};
-
+	}
 }

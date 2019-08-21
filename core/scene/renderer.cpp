@@ -61,7 +61,7 @@ void SceneRenderer::setOutput(AbstractBitmap& output) {
 
 
 void SceneRenderer::resetOutput() {
-	this->output = NULL;
+	this->output = nullptr;
 }
 
 	
@@ -126,7 +126,7 @@ void SceneRenderer::beforeProcessing(ThreadIndex threadCount, GraphicPipeline* g
 		eventListener->onRenderingStart();
 		
 	// reset camera frame
-	cameraFrame = NULL;
+	cameraFrame = nullptr;
 
 	// locking the output
 	if (output) {
@@ -163,7 +163,6 @@ bool SceneRenderer::doRender(GraphicPipeline& gpu, TaskThread& thread) {
 		context.lockBitmap(background);
 		gpu.getRenderingPrograms().paveBackground(&gpu, *background, output == nullptr);
 	}
-
 
 	// compute initial mapping
 	resolution = gpu.getOutputResolution();
