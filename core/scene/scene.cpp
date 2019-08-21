@@ -226,14 +226,14 @@ bool Scene::Layer::testPoint(float x, float y) const {
 }
 
 Scene::Layer* Scene::Layer::getChild(float, float, unsigned int) const {
-	return NULL;
+	return nullptr;
 }
 
 
 Scene::SceneLayer::SceneLayer(const Scene& scene) : Layer(Type::SceneLayer), scene(scene) {}
 
 bool Scene::SceneLayer::testPoint(float x, float y) const {
-	return getChild(x, y) != NULL;
+	return getChild(x, y) != nullptr;
 }
 
 Scene::Layer* Scene::SceneLayer::getChild(float x, float y, unsigned int recursionDepth) const {

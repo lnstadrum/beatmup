@@ -500,7 +500,7 @@ public:
 
 		bool buffered = false;
 #ifdef BEATMUP_OPENGLVERSION_GLES20
-		// according to GL ES 2.0 spec, only two format/type pairs may be read from GPU memory directly; otherwise we need a buffer
+		// according to GL ES 2.0 spec, only one format/type pair may be read from GPU memory directly; otherwise we need a buffer
 		if (bitmap.getPixelFormat() != QuadByte) {
 			GLint format, type;
 			glGetIntegerv(GL_IMPLEMENTATION_COLOR_READ_FORMAT, &format);

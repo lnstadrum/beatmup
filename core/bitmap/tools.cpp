@@ -32,12 +32,6 @@ public:
 	}
 };
 
-BitmapTools::BitmapTools(Environment& env) : env(env)
-{}
-
-const Environment& BitmapTools::getEnvironment() const {
-	return env;
-}
 
 template<class writer> inline void renderChessboard(writer out, int width, int height, int cellSize) {
 	for (int y = 0; y < height; y++)
@@ -48,21 +42,21 @@ template<class writer> inline void renderChessboard(writer out, int width, int h
 }
 
 
-BitmapPtr BitmapTools::makeCopy(AbstractBitmap& source, PixelFormat newPixelFormat) {
-	BitmapPtr dest = new Beatmup::InternalBitmap(env, newPixelFormat, source.getWidth(), source.getHeight());
+AbstractBitmap* BitmapTools::makeCopy(AbstractBitmap& source, PixelFormat newPixelFormat) {
+	AbstractBitmap* copy = new Beatmup::InternalBitmap(source.getEnvironment(), newPixelFormat, source.getWidth(), source.getHeight());
 	BitmapConverter converter;
-	converter.setBitmaps(&source, dest);
-	env.performTask(converter);
-	return dest;
+	converter.setBitmaps(&source, copy);
+	source.getEnvironment().performTask(converter);
+	return copy;
 }
 
 
-BitmapPtr BitmapTools::makeCopy(AbstractBitmap& source) {
+AbstractBitmap* BitmapTools::makeCopy(AbstractBitmap& source) {
 	return makeCopy(source, source.getPixelFormat());
 }
 
 
-BitmapPtr BitmapTools::chessboard(int width, int height, int cellSize, PixelFormat pixelFormat) {
+AbstractBitmap* BitmapTools::chessboard(Environment& env, int width, int height, int cellSize, PixelFormat pixelFormat) {
 	RuntimeError::check(cellSize > 0, "Chessboard cell size must be positive");
 	RuntimeError::check(AbstractBitmap::isMask(pixelFormat), "Mask pixel formats are supported only");
 	BitmapPtr chess = new Beatmup::InternalBitmap(env, pixelFormat, width, height);
@@ -104,6 +98,45 @@ void BitmapTools::makeOpaque(AbstractBitmap& bitmap, IntRectangle area) {
 			for (int x = area.A.x; x <= area.B.x; ++x)
 				*(p += 4) = 255;
 		}
+}
+
+
+void BitmapTools::invert(AbstractBitmap& input, AbstractBitmap& output) {
+	RuntimeError::check(input.getWidth() == output.getWidth() && input.getHeight() <= output.getHeight(),
+		"Input size does not fit output size");
+	RuntimeError::check(input.getPixelFormat() == output.getPixelFormat(),
+		"Input/output pixel formats mismatch");
+
+	input.lockPixels(ProcessingTarget::CPU);
+	output.lockPixels(ProcessingTarget::CPU);
+
+	const size_t NPIX = input.getSize().numPixels();
+	if (input.isFloat()) {
+		pixfloat
+			*pi = (pixfloat*)input.getData(0, 0),
+			*po = (pixfloat*)output.getData(0, 0);
+		const pixfloat* STOP = pi + NPIX * AbstractBitmap::CHANNELS_PER_PIXEL[input.getPixelFormat()];
+		while (pi < STOP)
+			*(po++) = 1 - *(pi++);
+	}
+	else {
+		const size_t N = NPIX * AbstractBitmap::BITS_PER_PIXEL[input.getPixelFormat()] / 8;
+		// fast integer inverse
+		pixint_platform
+			*pi = (pixint_platform*)input.getData(0, 0),
+			*po = (pixint_platform*)output.getData(0, 0);
+		const pixint_platform* STOP = pi + N / sizeof(pixint_platform);
+		while (pi < STOP)
+			*(po++) = ~*(pi++);
+		// process remaining bytes
+		pixbyte
+			*ri = (pixbyte*)pi,
+			*ro = (pixbyte*)po;
+		for (int r = 0; r < N % sizeof(pixint_platform); ++r)
+			*(ro++) = ~*(ri++);
+	}
+	input.unlockPixels();
+	output.unlockPixels();
 }
 
 
