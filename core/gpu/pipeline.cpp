@@ -371,16 +371,29 @@ public:
 
 
 	void bind(GL::TextureHandler& texture, size_t unit, const TextureParam param) {
+        glActiveTexture(GL_TEXTURE0 + unit);
 		switch (texture.getTextureFormat()) {
 		case GL::TextureHandler::TextureFormat::Rx8:
 		case GL::TextureHandler::TextureFormat::RGBx8:
 		case GL::TextureHandler::TextureFormat::RGBAx8:
-		case GL::TextureHandler::TextureFormat::Rx32f:
+            useTexture(texture);
+            texture.prepare(front);
+            if (param & TextureParam::INTERP_LINEAR) {
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            }
+            else {
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            }
+            break;
+
+        case GL::TextureHandler::TextureFormat::Rx32f:
 		case GL::TextureHandler::TextureFormat::RGBx32f:
 		case GL::TextureHandler::TextureFormat::RGBAx32f:
-			glActiveTexture(GL_TEXTURE0 + unit);
 			useTexture(texture);
 			texture.prepare(front);
+#ifndef BEATMUP_OPENGLVERSION_GLES
 			if (param & TextureParam::INTERP_LINEAR) {
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -389,17 +402,21 @@ public:
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			}
+#else
+            // GLES only allows nearest interpolation for floating point texture
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+#endif
 			break;
 
 		case GL::TextureHandler::TextureFormat::OES_Ext:
-			glActiveTexture(GL_TEXTURE0 + unit);
 			glBindTexture(BGL_TEXTURE_TARGET, texture.textureHandle);
 			glTexParameteri(BGL_TEXTURE_TARGET, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			glTexParameteri(BGL_TEXTURE_TARGET, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			break;
 		}
 
-		if (param & TextureParam::REPEAT) {	
+		if (param & TextureParam::REPEAT) {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		}
@@ -407,6 +424,8 @@ public:
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		}
+
+		GL::GLException::check("applying texture parameter");
 	}
 
 
