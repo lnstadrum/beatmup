@@ -157,16 +157,16 @@ Scene::Layer& Scene::getLayer(int index) const {
 }
 
 Scene::Layer* Scene::getLayer(float x, float y, unsigned int recursionDepth) const {
-	for (int i = layers.size() - 1; i >= 0; --i)
-		if (!layers[i]->isPhantom())
-			if (layers[i]->getType() == Scene::Layer::Type::SceneLayer) {
-				Layer* result = layers[i]->getChild(x, y, recursionDepth + 1);
+    for (auto it = layers.crbegin(); it != layers.crend(); it++)
+		if (!(*it)->isPhantom())
+			if ((*it)->getType() == Scene::Layer::Type::SceneLayer) {
+				Layer* result = (*it)->getChild(x, y, recursionDepth + 1);
 				if (result)
 					return result;
 			}
 			else {
-				if (layers[i]->testPoint(x, y))
-					return layers[i];
+				if ((*it)->testPoint(x, y))
+					return *it;
 			}
 	return nullptr;
 }
@@ -175,7 +175,7 @@ Scene::Layer* Scene::getLayer(float x, float y, unsigned int recursionDepth) con
 int Scene::getLayerIndex(const Layer& layer) const {
 	for (size_t i = 0; i < layers.size(); ++i)
 		if (layers[i] == &layer)
-			return i;
+			return (int)i;
 	return -1;
 }
 
@@ -186,15 +186,15 @@ int Scene::getLayerCount() const {
 
 
 bool Scene::resolveMapping(const Layer& layer, AffineMapping& mapping) const {
-	for (int i = (int)layers.size() - 1; i >= 0; i--) {
-		if (&layer == layers[i]) {
+	for (auto it = layers.crbegin(); it != layers.crend(); it++) {
+		if (&layer == *it) {
 			mapping = layer.getMapping();
 			return true;
 		}
 
 		// scene containers are checked recursively
-		if (layers[i]->getType() == Scene::Layer::Type::SceneLayer) {
-			const SceneLayer& container = layers[i]->castTo<SceneLayer>();
+		if ((*it)->getType() == Scene::Layer::Type::SceneLayer) {
+			const SceneLayer& container = (*it)->castTo<SceneLayer>();
 			if (container.getScene().resolveMapping(layer, mapping)) {
 				mapping = container.getMapping() * mapping;
 				return true;
@@ -298,7 +298,7 @@ void Scene::BitmapLayer::render(RenderingContext& context) {
 
 		configure(context, content);
 
-		AffineMapping arMapping(context.getMapping() * mapping * bitmapMapping);
+		AffineMapping arMapping(context.getMapping() * bitmapMapping);
 		arMapping.matrix.scale(1.0f, invAr);
 		context.getProgram().setMatrix3(RenderingPrograms::MODELVIEW_MATRIX_ID, arMapping);
 		context.blend();
