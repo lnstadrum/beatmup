@@ -23,9 +23,17 @@ namespace Beatmup {
 
 	public:
 		/**
-			Creates an emtpy bitmap
+			Creates an empty bitmap
+			\param env            A Beatmup context
+			\param pixelFormat    Pixel format
+			\param width          Bitmap width in pixels
+			\param height         Bitmap height in pixels
+			\param allocate       If `true`, a storage is allocated in RAM. Othrewise the allocation is deferred
+			                      till the first use of the bitmap data by CPU. It is convenient to not allocate
+			                      if the bitmap is only used as a texture handler to store intremediate data when
+			                      processing on GPU.
 		*/
-		InternalBitmap(Environment& env, PixelFormat pixelFormat, int width, int height);
+		InternalBitmap(Environment& env, PixelFormat pixelFormat, int width, int height, bool allocate = true);
 
 		InternalBitmap(Environment& env, const std::string& filename);
 
