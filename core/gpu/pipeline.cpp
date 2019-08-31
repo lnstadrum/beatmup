@@ -454,7 +454,7 @@ public:
 				bitmap.getWidth(), bitmap.getHeight(),
 				0,
 				formats[bitmap.getNumberOfChannels()], GL::BITMAP_PIXELTYPES[bitmap.getPixelFormat()],
-				NULL
+				nullptr
 			);
 			GL::GLException::check("allocating output texture image");
 		}
