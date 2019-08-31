@@ -239,7 +239,7 @@ namespace Beatmup {
 	};
 
 	//!< lookup tables for masks values
-	extern int MASK_LUT_1_BIT[2], MASK_LUT_2_BITS[4], MASK_LUT_4_BITS[16];
+	extern const int MASK_LUT_1_BIT[2], MASK_LUT_2_BITS[4], MASK_LUT_4_BITS[16];
 
 	typedef LookupMaskScanner<1, MASK_LUT_1_BIT> BinaryMaskReader;
 	typedef LookupMaskScanner<2, MASK_LUT_2_BITS> QuaternaryMaskReader;

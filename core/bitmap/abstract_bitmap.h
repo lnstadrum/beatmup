@@ -49,7 +49,6 @@ namespace Beatmup {
 		*/
 		virtual void lockPixelData() = 0;
 
-
 		/**
 			Unlocks access to the memory buffer in CPU memory, containing pixel data
 		*/
@@ -59,13 +58,6 @@ namespace Beatmup {
 		static const char* PIXEL_FORMAT_NAMES[9];			//!< pixel format names
 		static const unsigned char CHANNELS_PER_PIXEL[9];	//!< number of channels for each pixel format
 		static const unsigned char BITS_PER_PIXEL[9];		//!< number of bits per pixel for each pixel format
-
-		class UnavailablePixelData : public Beatmup::Exception {
-		public:
-			UnavailablePixelData(AbstractBitmap& bitmap) :
-				Beatmup::Exception("Unable to lock pixel data for a bitmap [%s]. It needs to be fetched from GPU memory first.", bitmap.toString().c_str())
-			{}
-		};
 
 		const int getDepth() const { return 1; }
 

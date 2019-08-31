@@ -60,7 +60,7 @@ namespace Beatmup {
 			*/
 			virtual void taskFail(PoolIndex pool, AbstractTask& task, const std::exception& ex) = 0;
 
-			/**n
+			/**
 				Called when GPU intialization failed
 				\param ex		exception caught
 			*/
