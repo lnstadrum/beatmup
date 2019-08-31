@@ -5,16 +5,18 @@
 using namespace Beatmup;
 
 
-InternalBitmap::InternalBitmap(Environment& env, PixelFormat pixelFormat, int width, int height) :
+InternalBitmap::InternalBitmap(Environment& env, PixelFormat pixelFormat, int width, int height, bool allocate) :
 	AbstractBitmap(env),
 	pixelFormat(pixelFormat), width(width), height(height),
+	memory(0),
 	data(nullptr)
 {
 	if (getBitsPerPixel() < 8) {
 		int n = 8 / getBitsPerPixel();
 		this->width = ceili(width, n) * n;
 	}
-	memory = env.allocateMemory(getMemorySize());
+    if (allocate)
+		memory = env.allocateMemory(getMemorySize());
 }
 
 
@@ -54,7 +56,8 @@ InternalBitmap::InternalBitmap(Environment& env, const std::string& filename) :
 
 
 InternalBitmap::~InternalBitmap() {
-	env.freeMemory(memory);
+	if (memory)
+		env.freeMemory(memory);
 }
 
 
@@ -85,6 +88,8 @@ const pixptr InternalBitmap::getData(int x, int y) const {
 
 
 void InternalBitmap::lockPixelData() {
+	if (!memory)
+		memory = env.allocateMemory(getMemorySize());
 	if (!data)
 		data = env.acquireMemory(memory);
 }
@@ -110,6 +115,8 @@ void InternalBitmap::unlockPixels() {
 
 
 void InternalBitmap::saveBmp(const std::string& filename) {
+	if (!memory)
+		memory = env.allocateMemory(getMemorySize());
 	Environment::Mem mem(env, memory);
 	BmpFile::save(
 		mem(),
