@@ -7,6 +7,7 @@ scope Beatmup::Environment
 export
 ignore EventListener
 ignore setEventListener
+ignore getEventListener
 ignore Mem
 
 
@@ -38,8 +39,8 @@ structify Beatmup::CustomPoint getX getY
 
 cd lib
 
-set h-output-template   include/libbeatmup.h.template
-set cpp-output-template src/libbeatmup.cpp.template
+set backend-h-output-template include/libbeatmup.h.template
+set backend-c-output-template src/libbeatmup.cpp.template
 
-set h-output   include/libbeatmup.h
-set cpp-output src/libbeatmup.cpp
+set backend-h-output include/libbeatmup.h
+set backend-c-output src/libbeatmup.cpp
