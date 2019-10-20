@@ -10,37 +10,36 @@
 #endif
 typedef void* handle_t;
 
-typedef unsigned int memchunk_t;
-typedef enum {
-    doNotUseGPU = 0,
-    useGPUIfAvailable = 1,
-    useGPU = 2
-} execution_target_t;
+typedef unsigned char thread_index_t;
 typedef struct {
   unsigned int _1;
   unsigned int _2;
 } image_resolution_t;
+typedef enum {
+    CPU = 0,
+    GPU = 1
+} processing_target_t;
 typedef struct {
   int _1;
   int _2;
   int _3;
   int _4;
 } int_rectangle_t;
-typedef unsigned char pool_index_t;
 typedef struct {
   int _1;
   int _2;
 } int_point_t;
 typedef enum {
-    CPU = 0,
-    GPU = 1
-} processing_target_t;
-typedef unsigned int job_t;
+    doNotUseGPU = 0,
+    useGPUIfAvailable = 1,
+    useGPU = 2
+} execution_target_t;
 typedef enum {
     NONE = 0,
     ADD = 1,
     MULTIPLY = 2
 } operation_t;
+typedef unsigned char pool_index_t;
 typedef enum {
     SingleByte = 0,
     TripleByte = 1,
@@ -52,7 +51,8 @@ typedef enum {
     QuaternaryMask = 7,
     HexMask = 8
 } pixel_format_t;
-typedef unsigned char thread_index_t;
+typedef unsigned int memchunk_t;
+typedef unsigned int job_t;
 typedef uint8_t pixbyte_t;
 typedef uint32_t msize_t;
 typedef pixbyte_t * pixptrbyte_t;
@@ -82,7 +82,6 @@ const pixptr_t BeatmupEnvironmentAcquireMemory(handle_t, memchunk_t chunk);
 void BeatmupEnvironmentReleaseMemory(handle_t, memchunk_t chunk, bool unusedAnymore);
 void BeatmupEnvironmentFreeMemory(handle_t, memchunk_t chunk);
 msize_t BeatmupEnvironmentSwapOnDisk(handle_t, msize_t howMuch);
-handle_t BeatmupEnvironmentGetEventListener(handle_t);
 bool BeatmupEnvironmentIsGpuQueried(handle_t);
 bool BeatmupEnvironmentIsGpuReady(handle_t);
 bool BeatmupEnvironmentIsManagingThread(handle_t);

@@ -1,6 +1,6 @@
 #ifndef __LIBBEATMUP_INCLUDE_H__
 #define __LIBBEATMUP_INCLUDE_H__
-/* INCLUDES */
+## INCLUDES ##
 
 
 #ifdef BEATMUP_PLATFORM_64BIT_
@@ -10,13 +10,13 @@
 #endif
 typedef void* handle_t;
 
-/* TYPEDEFS */
+## TYPEDEFS ##
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* FUNCTIONS */
+## FUNCTIONS ##
 
 #ifdef __cplusplus
 }

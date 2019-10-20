@@ -1,17 +1,17 @@
 #include "../include/libbeatmup.h"
-#include "../../core/parallelism.h"
+#include "../../core/utils/image_resolution.h"
+#include "../../core/bitmap/operator.h"
 #include "../../core/basic_types.h"
+#include "../../core/bitmap/crop.h"
+#include "../../core/bitmap/converter.h"
+#include "../../core/parallelism.h"
 #include "../../core/environment.h"
-#include "../../core/gpu/recycle_bin.h"
-#include "../../core/geometry.h"
 #include "../../core/bitmap/resampler.h"
 #include "../../core/bitmap/abstract_bitmap.h"
-#include "../../core/bitmap/operator.h"
-#include "../../core/bitmap/converter.h"
-#include "../../core/utils/image_resolution.h"
 #include "../../core/bitmap/tools.h"
+#include "../../core/geometry.h"
+#include "../../core/gpu/recycle_bin.h"
 #include "../../core/bitmap/internal_bitmap.h"
-#include "../../core/bitmap/crop.h"
 
 
 void BeatmupEnvironmentCreate1(handle_t * handle) {
@@ -101,12 +101,6 @@ void BeatmupEnvironmentFreeMemory(handle_t handle, memchunk_t _chunk) {
 
 msize_t BeatmupEnvironmentSwapOnDisk(handle_t handle, msize_t _howMuch) {
     return static_cast<Beatmup::Environment*>(handle)->swapOnDisk(_howMuch);
-}
-
-
-handle_t BeatmupEnvironmentGetEventListener(handle_t handle) {
-    Beatmup::Environment::EventListener * result = static_cast<const Beatmup::Environment*>(handle)->getEventListener();
-    return static_cast<handle_t>(result);
 }
 
 
