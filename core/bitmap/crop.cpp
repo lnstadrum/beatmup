@@ -18,23 +18,23 @@ public:
 
 		// test if output origin and clip rect horizontal borders are byte-aligned and the pixel formats are identical
 		const bool mayCopy = (inputFormat == outputFormat) &&
-			(bpp >= 8 || (outOrigin.x % ppb == 0 && rect.A.x % ppb == 0 && rect.B.x % ppb == 0));
+			(bpp >= 8 || (outOrigin.x % ppb == 0 && rect.a.x % ppb == 0 && rect.b.x % ppb == 0));
 
 		if (mayCopy) {
 			// direct copying
 			const msize lineSizeBytes = bpp >= 8 ? rect.width() * bpp / 8 : rect.width() / ppb;
-			for (int y = rect.A.y; y < rect.B.y; ++y) {
-				out.goTo(outOrigin.x, outOrigin.y + y - rect.A.y);
-				in.goTo(rect.A.x, y);
+			for (int y = rect.a.y; y < rect.b.y; ++y) {
+				out.goTo(outOrigin.x, outOrigin.y + y - rect.a.y);
+				in.goTo(rect.a.x, y);
 				memcpy(*out, *in, lineSizeBytes);
 			}
 		}
 		else
 			// projecting
-			for (int y = rect.A.y; y < rect.B.y; ++y) {
-				out.goTo(outOrigin.x, outOrigin.y + y - rect.A.y);
-				in.goTo(rect.A.x, y);
-				for (int x = rect.A.x; x < rect.B.x; ++x, in++, out++)
+			for (int y = rect.a.y; y < rect.b.y; ++y) {
+				out.goTo(outOrigin.x, outOrigin.y + y - rect.a.y);
+				in.goTo(rect.a.x, y);
+				for (int x = rect.a.x; x < rect.b.x; ++x, in++, out++)
 					out = in();
 			}
 	}
@@ -57,7 +57,7 @@ void Crop::beforeProcessing(ThreadIndex threadCount, GraphicPipeline* gpu) {
 	cropRect.normalize();
 	if (!isFit()) {
 		BEATMUP_DEBUG_E("Crop rectangle does not fit to bitmaps: ((%d,%d),(%d,%d)) from %d x %d to put at (%d,%d) in %d x %d.",
-				cropRect.A.x, cropRect.B.x, cropRect.A.y, cropRect.B.y,
+				cropRect.a.x, cropRect.b.x, cropRect.a.y, cropRect.b.y,
 				input->getWidth(), input->getHeight(),
 				outOrigin.x, outOrigin.y,
 				output->getWidth(), output->getHeight());
@@ -97,9 +97,9 @@ void Crop::setOutputOrigin(IntPoint pos) {
 bool Crop::isFit() const {
 	if (!input || !output)
 		return false;
-	if (!input->getSize().clientRect().isInside(cropRect.A))
+	if (!input->getSize().clientRect().isInside(cropRect.a))
 		return false;
-	IntPoint corner = cropRect.B - cropRect.A - 1 + outOrigin;
+	IntPoint corner = cropRect.b - cropRect.a - 1 + outOrigin;
 	if (!output->getSize().clientRect().isInside(corner))
 		return false;
 	return true;

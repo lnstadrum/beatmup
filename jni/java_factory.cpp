@@ -67,7 +67,7 @@ void JavaFactory::setAffineMapping(JNIEnv* jenv, const Beatmup::AffineMapping& m
 jobject JavaFactory::makeIntRectangle(JNIEnv *jenv, const Beatmup::IntRectangle r) {
     initialize(jenv);
     jclass cls = jenv->FindClass("Beatmup/Geometry/IntRectangle");
-    jobject result = jenv->NewObject(cls, intRectangle.constructor, r.A.x, r.A.y, r.B.x, r.B.y);
+    jobject result = jenv->NewObject(cls, intRectangle.constructor, r.a.x, r.a.y, r.b.x, r.b.y);
     jenv->DeleteLocalRef(cls);
     return result;
 }

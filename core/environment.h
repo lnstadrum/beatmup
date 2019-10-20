@@ -6,6 +6,7 @@
 
 #include "basic_types.h"
 #include "parallelism.h"
+#include <exception>
 
 namespace Beatmup {
 	namespace GL {

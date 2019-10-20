@@ -1,0 +1,45 @@
+cd ..
+
+input core/basic_types.h
+input core/parallelism.h
+input core/environment.h
+scope Beatmup::Environment
+export
+ignore EventListener
+ignore setEventListener
+ignore Mem
+
+
+### core/bitmap
+input core/gpu/recycle_bin.h
+input core/bitmap/pixel_arithmetic.h
+input core/utils/image_resolution.h
+structify Beatmup::ImageResolution getWidth getHeight
+export-file core/bitmap/abstract_bitmap.h
+ignore Beatmup::AbstractBitmap::toString
+export-file core/bitmap/internal_bitmap.h
+export-file core/bitmap/converter.h
+export-file core/bitmap/crop.h
+export-file core/bitmap/operator.h
+export-file core/bitmap/resampler.h
+export-file core/bitmap/tools.h
+scope Beatmup::BitmapTools
+ignore scanlineSearch(Beatmup::AbstractBitmap &, Beatmup::pixfloat4, const Beatmup::IntPoint &)
+ignore scanlineSearch(Beatmup::AbstractBitmap &, Beatmup::pixint4, const Beatmup::IntPoint &)
+
+input core/geometry.h
+structify Beatmup::CustomRectangle getX1 getY1 getX2 getY2
+structify Beatmup::CustomPoint getX getY
+#export Beatmup::AffineMapping::invert
+#export Beatmup::AffineMapping::getInverse
+#export Beatmup::AffineMapping::setCenterPosition
+
+
+
+cd lib
+
+set h-output-template   include/libbeatmup.h.template
+set cpp-output-template src/libbeatmup.cpp.template
+
+set h-output   include/libbeatmup.h
+set cpp-output src/libbeatmup.cpp

@@ -5,6 +5,7 @@
 #pragma once
 #include "../parallelism.h"
 #include "../geometry.h"
+#include "abstract_bitmap.h"
 
 namespace Beatmup {
 

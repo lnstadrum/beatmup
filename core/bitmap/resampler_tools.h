@@ -22,16 +22,16 @@ namespace BitmapResamplingTools{
 				WD = dst.width() + 1, HD = dst.height() + 1;
 
 			typename in_t::pixtype buffa;
-			int X0, Y0, X1, Y1 = src.A.y;
+			int X0, Y0, X1, Y1 = src.a.y;
 
 			for (int y = tt.currentThread(); y < HD; y += tt.totalThreads()) {
-				out.goTo(dst.A.x, dst.A.y + y);
+				out.goTo(dst.a.x, dst.a.y + y);
 				Y0 = Y1;
-				Y1 = src.A.y + (y + 1) * HS / HD;
-				X1 = src.A.x;
+				Y1 = src.a.y + (y + 1) * HS / HD;
+				X1 = src.a.x;
 				for (int x = 0; x < WD; ++x) {
 					X0 = X1;
-					X1 = src.A.x + (x + 1) * WS / WD;
+					X1 = src.a.x + (x + 1) * WS / WD;
 					// source cycle
 					buffa.zero();
 					int Y = Y0;

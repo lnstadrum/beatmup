@@ -44,9 +44,9 @@ namespace Beatmup {
 
         int getCropWidth()  const { return cropWidth; }
         int getCropHeight() const { return cropHeight; }
-        const IntPoint& getOp1Origin() const    { return op1Origin; }
-        const IntPoint& getOp2Origin() const    { return op2Origin; }
-        const IntPoint& getOutputOrigin() const { return outputOrigin; }
+        const IntPoint getOp1Origin() const    { return op1Origin; }
+        const IntPoint getOp2Origin() const    { return op2Origin; }
+        const IntPoint getOutputOrigin() const { return outputOrigin; }
 
 		ThreadIndex maxAllowedThreads() const;
 	};

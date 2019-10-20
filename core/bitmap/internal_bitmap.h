@@ -35,7 +35,7 @@ namespace Beatmup {
 		*/
 		InternalBitmap(Environment& env, PixelFormat pixelFormat, int width, int height, bool allocate = true);
 
-		InternalBitmap(Environment& env, const std::string& filename);
+		InternalBitmap(Environment& env, const char* filename);
 
 		virtual ~InternalBitmap();
 
@@ -46,7 +46,7 @@ namespace Beatmup {
 		const pixptr getData(int x, int y) const;
 		void unlockPixels();
 
-		void saveBmp(const std::string& filename);
+		void saveBmp(const char* filename);
 	};
 
 }
