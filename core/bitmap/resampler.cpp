@@ -21,12 +21,12 @@ void BitmapResampler::setBitmaps(AbstractBitmap* input, AbstractBitmap* output) 
 }
 
 
-void BitmapResampler::setInputRect(IntRectangle& rect) {
+void BitmapResampler::setInputRect(const IntRectangle& rect) {
 	srcRect = rect;
 }
 
 
-void BitmapResampler::setOutputRect(IntRectangle& rect) {
+void BitmapResampler::setOutputRect(const IntRectangle& rect) {
 	destRect = rect;
 }
 

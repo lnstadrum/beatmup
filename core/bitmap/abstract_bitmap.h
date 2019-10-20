@@ -38,6 +38,8 @@ namespace Beatmup {
 		bool upToDate[2];									//!< bitmap up-to-date state on CPU and GPU
 
 	protected:
+		AbstractBitmap(Environment& env);
+
 		Environment& env;									//!< environment managing this bitmap
 
 		// overridden methods from TextureHandler
@@ -164,7 +166,6 @@ namespace Beatmup {
 		*/
 		std::string toString() const;
 
-		AbstractBitmap(Environment& env);
 		~AbstractBitmap();
 	};
 

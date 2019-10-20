@@ -20,7 +20,7 @@ InternalBitmap::InternalBitmap(Environment& env, PixelFormat pixelFormat, int wi
 }
 
 
-InternalBitmap::InternalBitmap(Environment& env, const std::string& filename) :
+InternalBitmap::InternalBitmap(Environment& env, const char* filename) :
 	AbstractBitmap(env),
 	data(nullptr)
 {
@@ -114,7 +114,7 @@ void InternalBitmap::unlockPixels() {
 }
 
 
-void InternalBitmap::saveBmp(const std::string& filename) {
+void InternalBitmap::saveBmp(const char* filename) {
 	if (!memory)
 		memory = env.allocateMemory(getMemorySize());
 	Environment::Mem mem(env, memory);

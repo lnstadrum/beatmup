@@ -64,7 +64,7 @@ bool FloodFill::process(TaskThread& thread) {
 	
 	std::vector<IntegerContour2D*> myContours;
 	IntRectangle bounds;
-	bounds.A = bounds.B = seeds[thread.currentThread()];
+	bounds.a = bounds.b = seeds[thread.currentThread()];
 
 	for (int n = thread.currentThread(); n < seeds.size(); n += thread.totalThreads())
 		if (!thread.isTaskAborted()) {
@@ -97,10 +97,10 @@ bool FloodFill::process(TaskThread& thread) {
 	// updating bounds and merging contours
 	{
 		std::lock_guard<std::mutex> lock(access);
-		if (bounds.A.x < this->bounds.A.x) this->bounds.A.x = bounds.A.x;
-		if (bounds.A.y < this->bounds.A.y) this->bounds.A.y = bounds.A.y;
-		if (bounds.B.x > this->bounds.B.x) this->bounds.B.x = bounds.B.x;
-		if (bounds.B.y > this->bounds.B.y) this->bounds.B.y = bounds.B.y;
+		if (bounds.a.x < this->bounds.a.x) this->bounds.a.x = bounds.a.x;
+		if (bounds.a.y < this->bounds.a.y) this->bounds.a.y = bounds.a.y;
+		if (bounds.b.x > this->bounds.b.x) this->bounds.b.x = bounds.b.x;
+		if (bounds.b.y > this->bounds.b.y) this->bounds.b.y = bounds.b.y;
 
 		if (computeContours) {
 			contours.reserve(contours.size() + myContours.size());
@@ -126,7 +126,7 @@ void FloodFill::beforeProcessing(ThreadIndex threadCount, GraphicPipeline* gpu) 
 		ignoredSeeds->zero();
 		ignoredSeeds->lockPixels(ProcessingTarget::CPU);
 	}
-	bounds.A = bounds.B = seeds[0];
+	bounds.a = bounds.b = seeds[0];
 }
 
 

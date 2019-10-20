@@ -23,8 +23,8 @@ namespace Beatmup {
 	public:
 		BitmapResampler();
 		void setBitmaps(AbstractBitmap* input, AbstractBitmap* output);
-		void setInputRect(IntRectangle& rect);
-		void setOutputRect(IntRectangle& rect);
+		void setInputRect(const IntRectangle& rect);
+		void setOutputRect(const IntRectangle& rect);
 		IntRectangle getInputRect() const { return srcRect; }
 		IntRectangle getOutputRect() const { return destRect; }
 

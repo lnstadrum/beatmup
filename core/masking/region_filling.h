@@ -102,14 +102,14 @@ namespace Beatmup {
 				if (onBorder) {
 					border.push_back(IntPoint(mx, my));
 
-					if (mx < bounds.A.x)
-						bounds.A.x = mx;
-					if (mx > bounds.B.x)
-						bounds.B.x = mx;
-					if (my < bounds.A.y)
-						bounds.A.y = my;
-					if (my > bounds.B.y)
-						bounds.B.y = my;
+					if (mx < bounds.a.x)
+						bounds.a.x = mx;
+					if (mx > bounds.b.x)
+						bounds.b.x = mx;
+					if (my < bounds.a.y)
+						bounds.a.y = my;
+					if (my > bounds.b.y)
+						bounds.b.y = my;
 				}
 			}
 		}

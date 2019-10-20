@@ -6,7 +6,6 @@
 
 #include <condition_variable>
 #include <thread>
-#include <exception>
 #include "basic_types.h"
 
 namespace Beatmup {

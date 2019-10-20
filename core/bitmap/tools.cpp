@@ -82,20 +82,20 @@ AbstractBitmap* BitmapTools::chessboard(Environment& env, int width, int height,
 void BitmapTools::makeOpaque(AbstractBitmap& bitmap, IntRectangle area) {
 	// floating-point bitmap
 	if (bitmap.getPixelFormat() == QuadFloat)
-		for (int y = area.A.y; y <= area.B.y; ++y) {
-			pixfloat* p = (pixfloat*)bitmap.getData(area.A.x, y);
+		for (int y = area.a.y; y <= area.b.y; ++y) {
+			pixfloat* p = (pixfloat*)bitmap.getData(area.a.x, y);
 			p += CHANNELS_4.A;
 			*p = 1.0f;
-			for (int x = area.A.x; x <= area.B.x; ++x)
+			for (int x = area.a.x; x <= area.b.x; ++x)
 				*(p += 4) = 1.0f;
 		}
 	// integer bitmap
 	else if (bitmap.getPixelFormat() == QuadByte)
-		for (int y = area.A.y; y <= area.B.y; ++y) {
-			pixbyte* p = bitmap.getData(area.A.x, y);
+		for (int y = area.a.y; y <= area.b.y; ++y) {
+			pixbyte* p = bitmap.getData(area.a.x, y);
 			p += CHANNELS_4.A;
 			*p = 255;
-			for (int x = area.A.x; x <= area.B.x; ++x)
+			for (int x = area.a.x; x <= area.b.x; ++x)
 				*(p += 4) = 255;
 		}
 }

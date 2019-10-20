@@ -61,7 +61,7 @@ const BmpFile::Header BmpFile::BMP_HEADER_REFERENCE = {
 static const uint32_t	BMP_32BIT_COMPRESSION = 3;	// "compression" header value for 32 bits bitmaps
 
 
-BmpFile::BmpFile(const std::string& filename) {
+BmpFile::BmpFile(const char* filename) {
 	// open file
 	in.open(filename, std::fstream::in | std::fstream::binary);
 	if (!in.good())
@@ -129,7 +129,7 @@ void BmpFile::save(
 	int32_t width,
 	int32_t height,
 	uint8_t bpp,
-	const std::string& filename
+	const char* filename
 ) {
 	// setup header
 	Header header = BMP_HEADER_REFERENCE;

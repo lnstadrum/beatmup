@@ -1,5 +1,5 @@
 /**
-	Rectangular area
+    Geometry datatypes and routines
 */
 
 #pragma once
@@ -25,6 +25,14 @@ namespace Beatmup {
 	template<typename numeric> class CustomPoint {
 	public:
 		numeric x, y;
+
+        inline numeric getX() const {
+            return x;
+        }
+
+        inline numeric getY() const {
+            return y;
+        }
 
 		inline bool operator==(const CustomPoint<numeric>& _) const {
 			return x == _.x && y == _.y;
@@ -54,9 +62,9 @@ namespace Beatmup {
 			return CustomPoint<numeric>(x / _, y / _);
 		}
 
-		inline void translate(numeric X, numeric Y) {
-			x += X;
-			y += Y;
+		inline void translate(numeric x, numeric y) {
+			this->x += x;
+			this->y += y;
 		}
 
 		inline CustomPoint<numeric>() { x = y = 0; }
@@ -98,111 +106,115 @@ namespace Beatmup {
 	*/
 	template<typename numeric> class CustomRectangle {
 	public:
-		CustomPoint<numeric> A, B;
+		CustomPoint<numeric> a, b;
 
-		CustomRectangle<numeric>() : A(0, 0), B(0, 0)
+		CustomRectangle<numeric>() : a(0, 0), b(0, 0)
 		{}
 
-		CustomRectangle<numeric>(CustomPoint<numeric> A, CustomPoint<numeric> B) : A(A), B(B)
+		CustomRectangle<numeric>(CustomPoint<numeric> a, CustomPoint<numeric> b) : a(a), b(b)
 		{}
 
-		CustomRectangle<numeric>(numeric x1, numeric y1, numeric x2, numeric y2) : A(CustomPoint<numeric>(x1, y1)), B(CustomPoint<numeric>(x2, y2))
+		CustomRectangle<numeric>(numeric x1, numeric y1, numeric x2, numeric y2) : a(CustomPoint<numeric>(x1, y1)), b(CustomPoint<numeric>(x2, y2))
 		{}
 
-		inline CustomRectangle<numeric> operator*(numeric X) const {
-			return CustomRectangle<numeric>(A * X, B * X);
+		inline CustomRectangle<numeric> operator*(numeric _) const {
+			return CustomRectangle<numeric>(_ * a, _ * b);
 		}
 
-		inline CustomRectangle<numeric> operator/(numeric X) const {
-			return CustomRectangle<numeric>(A / X, B / X);
+		inline CustomRectangle<numeric> operator/(numeric _) const {
+			return CustomRectangle<numeric>(a / _, b / _);
 		}
 
+        inline numeric getX1() const { return a.x; }
+        inline numeric getY1() const { return a.y; }
+        inline numeric getX2() const { return b.x; }
+        inline numeric getY2() const { return b.y; }
 
 		numeric width() const {
-			return B.x - A.x;
+			return b.x - a.x;
 		}
 
 		numeric height() const {
-			return B.y - A.y;
+			return b.y - a.y;
 		}
 		
 		/**
 			Computes the rectangle area
 		*/
 		numeric getArea() const {
-			return (B.x - A.x) * (B.y - A.y);
+			return (b.x - a.x) * (b.y - a.y);
 		}
 
 		/**
-			Filps corners coordinates guaranteeing that it has a non negative area, i.e. A <= B (componentwise)
+			Filps corners coordinates guaranteeing that it has a non negative area, i.e. a <= b (componentwise)
 		*/
 		void normalize() {
-			order<numeric>(A.x, B.x);
-			order<numeric>(A.y, B.y);
+			order<numeric>(a.x, b.x);
+			order<numeric>(a.y, b.y);
 		}
 
 		/**
 			Translates the box
 		*/
-		inline void translate(numeric X, numeric Y) {
-			A.translate(X, Y);
-			B.translate(X, Y);
+		inline void translate(numeric x, numeric y) {
+			a.translate(x, y);
+			b.translate(x, y);
 		}
 
 		/**
 			Scales the box
 		*/
-		inline void scale(numeric X, numeric Y) {
-			A.x *= X; A.y *= Y;
-			B.x *= X; B.y *= Y;
+		inline void scale(numeric x, numeric y) {
+			a.x *= x; a.y *= y;
+			b.x *= x; b.y *= y;
 		}
 
 		/**
 			Truncates a rectangle to a limiting frame
 		*/
 		inline void limit(const CustomRectangle<numeric>& frame) {
-			if (A.x < frame.A.x)
-				A.x = frame.A.x;
-			if (A.y < frame.A.y)
-				A.y = frame.A.y;
-			if (B.x > frame.B.x)
-				B.x = frame.B.x;
-			if (B.y > frame.B.y)
-				B.y = frame.B.y;
+			if (a.x < frame.a.x)
+				a.x = frame.a.x;
+			if (a.y < frame.a.y)
+				a.y = frame.a.y;
+			if (b.x > frame.b.x)
+				b.x = frame.b.x;
+			if (b.y > frame.b.y)
+				b.y = frame.b.y;
 		}
 
 		/**
 			Returns a translated box
 		*/
-		inline CustomRectangle<numeric> translated(numeric X, numeric Y) {
+		inline CustomRectangle<numeric> translated(numeric x, numeric y) {
 			return CustomRectangle<numeric>(
-				CustomPoint<numeric>(A.x + X, A.y + Y),
-				CustomPoint<numeric>(B.x + X, B.y + Y)
+				CustomPoint<numeric>(a.x + x, a.y + y),
+				CustomPoint<numeric>(b.x + x, b.y + y)
 			);
 		}
 
 		/**
 			Test if a point is inside the rectangle (or on its the border)
 		*/
-		bool isInside(const CustomPoint<numeric>& P) const {
-			return (A.x <= P.x) && (P.x <= B.x) && (A.y <= P.y) && (P.y <= B.y);
+		bool isInside(const CustomPoint<numeric>& point) const {
+			return (a.x <= point.x) && (point.x <= b.x) && (a.y <= point.y) && (point.y <= b.y);
 		}
 
 		/**
 			Test if a point is inside the rectangle including left and top borders, but excluding right and bottom
 		*/
-		bool isInsideHalfOpened(const CustomPoint<numeric>& P) const {
-			return (A.x <= P.x) && (P.x < B.x) && (A.y <= P.y) && (P.y < B.y);
+		bool isInsideHalfOpened(const CustomPoint<numeric>& point) const {
+			return (a.x <= point.x) && (point.x < b.x) && (a.y <= point.y) && (point.y < b.y);
 		}
 
 		/**
 			Rectangle positionning test with respect to a given vertical line
 			\returns -1 if the line passes on the left side of the rectangle, 1 if it is on the right side, 0 otherwise
 		*/
-		short int horizontalPositioningTest(numeric X) const {
-			if (X < A.x)
+		short int horizontalPositioningTest(numeric x) const {
+			if (x < a.x)
 				return -1;
-			if (X > B.x)
+			if (x > b.x)
 				return 1;
 			return 0;
 		}
@@ -211,26 +223,26 @@ namespace Beatmup {
 			Rectangle positionning test with respect to a given horizontal line
 			\returns -1 if the line passes above the rectangle, 1 if it passes below, 0 otherwise
 		*/
-		short int verticalPositioningTest(numeric Y) const {
-			if (Y < A.y)
+		short int verticalPositioningTest(numeric y) const {
+			if (y < a.y)
 				return -1;
-			if (Y > B.y)
+			if (y > b.y)
 				return 1;
 			return 0;
 		}
 
 		void grow(numeric r) {
-			A.x -= r;
-			A.y -= r;
-			B.x += r;
-			B.y += r;
+			a.x -= r;
+			a.y -= r;
+			b.x += r;
+			b.y += r;
 		}
 
 		/**
 			Typecast to float-valued coordinates
 		*/
 		inline operator CustomRectangle<float>() const {
-			CustomRectangle<float> r((CustomPoint<float>)A, (CustomPoint<float>)B);
+			CustomRectangle<float> r((CustomPoint<float>)a, (CustomPoint<float>)b);
 			return r;
 		}
 	};
@@ -253,15 +265,15 @@ namespace Beatmup {
 		/**
 			Computes the corresponding transformed point of the point (x,y)
 		*/
-		inline CustomPoint<numeric> operator()(numeric X, numeric Y) const {
-			return CustomPoint<numeric>(a11 * X + a12 * Y, a21 * X + a22 * Y);
+		inline CustomPoint<numeric> operator()(numeric x, numeric y) const {
+			return CustomPoint<numeric>(a11 * x + a12 * y, a21 * x + a22 * y);
 		}
 
 		/**
 			Integer overloading of (x,y) operator to avoid warnings
 		*/
-		inline CustomPoint<numeric> operator()(int X, int Y) const {
-			return this->operator()((float)X, (float)Y);
+		inline CustomPoint<numeric> operator()(int x, int y) const {
+			return this->operator()((float)x, (float)y);
 		}
 
 		/**
@@ -307,18 +319,18 @@ namespace Beatmup {
 			scale(factor, factor);
 		}
 
-		void scale(numeric X, numeric Y) {
-			a11 *= X;
-			a12 *= Y;
-			a21 *= X;
-			a22 *= Y;
+		void scale(numeric x, numeric y) {
+			a11 *= x;
+			a12 *= y;
+			a21 *= x;
+			a22 *= y;
 		}
 
-		void prescale(numeric X, numeric Y) {
-			a11 *= X;
-			a12 *= X;
-			a21 *= Y;
-			a22 *= Y;
+		void prescale(numeric x, numeric y) {
+			a11 *= x;
+			a12 *= x;
+			a21 *= y;
+			a22 *= y;
 		}
 
 		void rotateRadians(float angle) {
@@ -394,11 +406,11 @@ namespace Beatmup {
 			Computes inverse of a given point
 			\returns the inverse
 		*/
-		CustomPoint<numeric> getInverse(const CustomPoint<numeric>& p) const {
-			numeric D = det();
+		CustomPoint<numeric> getInverse(const CustomPoint<numeric>& point) const {
+			const numeric det = det();
 			return CustomPoint<numeric>(
-				(+p.x * a22 - p.y * a12) / D,
-				(-p.x * a21 + p.y * a11) / D
+				(+point.x * a22 - point.y * a12) / det,
+				(-point.x * a21 + point.y * a11) / det
 			);
 		}
 
@@ -416,28 +428,30 @@ namespace Beatmup {
 
 
 		/**
-			Changes transformation domain and codomain units
+			Scales transformation input and output units
+            If input/output axes change their scales, the transformation may be rescaled to keep
+            the correspondence between the same points as before but in newly scaled coordinates.
 		*/
-		void rescaleUnits(numeric Xdom, numeric Ydom, numeric Xcod, numeric Ycod) {
-			a11 = a11 * Xcod / Xdom;
-			a12 = a12 * Xcod / Ydom;
-			a21 = a21 * Ycod / Xdom;
-			a22 = a22 * Ycod / Ydom;
+		void rescaleUnits(numeric xIn, numeric yIn, numeric xOut, numeric yOut) {
+			a11 = a11 * xOut / xIn;
+			a12 = a12 * xOut / yIn;
+			a21 = a21 * yOut / xIn;
+			a22 = a22 * yOut / yIn;
 		}
 
 		/**
-			Checks whether a given point is inside a rectangular area in the transform codomain
+			Checks whether a given input point is inside a rectangular area when transformed
 		*/
 		template<typename num> inline bool isPointInsideBox(num x, num y, CustomRectangle<num> box) const {
 			num p = a11*x + a12*y;
-			if (p < box.A.x || box.B.x < p)
+			if (p < box.a.x || box.b.x < p)
 				return false;
 			p = a21*x + a22*y;
-			return (box.A.y <= p  &&  p <= box.B.y);
+			return (box.a.y <= p  &&  p <= box.b.y);
 		}
 
 		/**
-			Checks whether a given point is inside the unit square in the affine axes
+			Checks whether a given input point is inside the unit square when transformed
 		*/
 		inline bool isPointInsideAxes(numeric x, numeric y, numeric w, numeric h) const {
 			numeric p = a11*x + a12*y;
@@ -526,7 +540,7 @@ namespace Beatmup {
 	typedef CustomRectangle<int> IntRectangle;
 
 	/**
-		Entity representing 2x3 affine mapping regrouping Matrix2 and Point
+		2x3 affine mapping regrouping Matrix2 and Point
 	*/
 	class AffineMapping {
 	public:
@@ -554,12 +568,12 @@ namespace Beatmup {
 		void invert();
 
 		/**
-			Computes and return inversed mapping
+			Computes inversed mapping
 		*/
 		AffineMapping getInverse() const;
 
 		/**
-			Computes inversed point
+			Computes inverse of a point
 		*/
 		Point getInverse(const Point& pos) const;
 		Point getInverse(float x, float y) const;
@@ -570,7 +584,7 @@ namespace Beatmup {
 		void setCenterPosition(const Point& newPos);
 
 		/**
-			Translates a mapping
+			Translates the mapping
 		*/
 		void translate(const Point& delta);
 		
@@ -585,7 +599,7 @@ namespace Beatmup {
 		void rotateDegrees(float angle, const Point& fixedPoint = Point::ZERO);
 
 		/**
-			Tests whether a point in TARGET domain is inside axes span
+			Tests whether a point in output domain is inside the input axes span
 		*/
 		bool isPointInside(const Point& point) const;
 		bool isPointInside(float x, float y) const;
