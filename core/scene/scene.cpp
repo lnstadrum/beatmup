@@ -81,7 +81,7 @@ Scene::SceneIntegrityError::SceneIntegrityError(const std::string reason, const 
 std::string generateUniqueLayerName(const Scene& scene, const char* prefix = "") {
 	int n = 1;
 	std::string candidate;
-	while (scene.getLayer(candidate = prefix + (" #" + to_string(n))))
+	while (scene.getLayer((candidate = prefix + (" #" + to_string(n))).c_str()))
 		n++;
 	return candidate;
 }
@@ -96,55 +96,55 @@ Scene::~Scene() {
 }
 
 
-Scene::BitmapLayer& Scene::newBitmapLayer(const string& name) {
+Scene::BitmapLayer& Scene::newBitmapLayer(const char* name) {
 	return newLayer<BitmapLayer>(name);
 }
 
 
 Scene::BitmapLayer& Scene::newBitmapLayer() {
-	return newLayer<BitmapLayer>(generateUniqueLayerName(*this, "Bitmap layer"));
+	return newLayer<BitmapLayer>(generateUniqueLayerName(*this, "Bitmap layer").c_str());
 }
 
 
-Scene::MaskedBitmapLayer& Scene::newMaskedBitmapLayer(const string& name) {
+Scene::MaskedBitmapLayer& Scene::newMaskedBitmapLayer(const char* name) {
 	return newLayer<MaskedBitmapLayer>(name);
 }
 
 
 Scene::MaskedBitmapLayer& Scene::newMaskedBitmapLayer() {
-	return newLayer<MaskedBitmapLayer>(generateUniqueLayerName(*this, "Masked bitmap layer"));
+	return newLayer<MaskedBitmapLayer>(generateUniqueLayerName(*this, "Masked bitmap layer").c_str());
 }
 
 
-Scene::ShapedBitmapLayer& Scene::newShapedBitmapLayer(const string& name) {
+Scene::ShapedBitmapLayer& Scene::newShapedBitmapLayer(const char* name) {
 	return newLayer<ShapedBitmapLayer>(name);
 }
 
 
 Scene::ShapedBitmapLayer& Scene::newShapedBitmapLayer() {
-	return newLayer<ShapedBitmapLayer>(generateUniqueLayerName(*this, "Shaped bitmap layer"));
+	return newLayer<ShapedBitmapLayer>(generateUniqueLayerName(*this, "Shaped bitmap layer").c_str());
 }
 
 
-Scene::ShadedBitmapLayer& Scene::newShadedBitmapLayer(const string& name) {
+Scene::ShadedBitmapLayer& Scene::newShadedBitmapLayer(const char* name) {
 	return newLayer<ShadedBitmapLayer>(name);
 }
 
 
 Scene::ShadedBitmapLayer& Scene::newShadedBitmapLayer() {
-	return newLayer<ShadedBitmapLayer>(generateUniqueLayerName(*this, "Shaped bitmap layer"));
+	return newLayer<ShadedBitmapLayer>(generateUniqueLayerName(*this, "Shaped bitmap layer").c_str());
 }
 
 
 Scene::SceneLayer& Scene::addScene(const Scene& scene) {
 	SceneLayer* l = new SceneLayer(scene);
-	l->setName(generateUniqueLayerName(*this, "Scene layer"));
+	l->setName(generateUniqueLayerName(*this, "Scene layer").c_str());
 	layers.push_back(l);
 	return *l;
 }
 
 
-Scene::Layer* Scene::getLayer(std::string name) const {
+Scene::Layer* Scene::getLayer(const char* name) const {
 	for (auto l : layers)
 		if (l->getName() == name)
 			return l;
@@ -207,7 +207,7 @@ bool Scene::resolveMapping(const Layer& layer, AffineMapping& mapping) const {
 
 void Scene::attachLayer(Layer& layer) {
 	if (getLayerIndex(layer) >= 0)
-		throw SceneIntegrityError("Layer " + layer.getName() + " is already in the scene", *this);
+		throw SceneIntegrityError(std::string("Layer ") + layer.getName() + " is already in the scene", *this);
 	layers.push_back(&layer);
 }
 

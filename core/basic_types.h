@@ -36,11 +36,6 @@ namespace Beatmup {
 	typedef uint8_t pixbyte;
 	typedef float pixfloat;
 
-	typedef pixbyte* pixptrbyte;
-	typedef pixfloat* pixptrfloat;
-
-	typedef pixptrbyte pixptr;					//!< pointer to image data
-
 	typedef int dtime;
 
 	enum ProcessingTarget {CPU = 0, GPU};		//!< where to process the stuff

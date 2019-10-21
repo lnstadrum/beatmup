@@ -46,7 +46,7 @@ namespace Beatmup {
 
             void unlockPixels();
 
-            const pixptr getData(int x, int y) const;
+            const void* getData(int x, int y) const;
 
             const msize getMemorySize() const;
         };

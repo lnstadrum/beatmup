@@ -95,12 +95,12 @@ void Bitmap::unlockPixels() {
 }
 
 
-const pixptr Bitmap::getData(int x, int y) const {
+const pixbyte* Bitmap::getData(int x, int y) const {
 	RuntimeError::check(lockedPixels, "No pixel data available. Forget to lock the bitmap?");
 	if (x < 0 || y < 0 || x >= lockedWidth || y >= lockedHeight)
 		return nullptr;
 	msize n = y * lockedWidth + x;
-    return (pixptr)( (unsigned char*)lockedPixels + n * BITS_PER_PIXEL[lockedPixelFormat] / 8 );
+    return (pixbyte*)( (unsigned char*)lockedPixels + n * BITS_PER_PIXEL[lockedPixelFormat] / 8 );
 }
 
 

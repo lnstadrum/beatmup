@@ -82,7 +82,7 @@ const msize InternalBitmap::getMemorySize() const {
 }
 
 
-const pixptr InternalBitmap::getData(int x, int y) const {
+pixbyte* InternalBitmap::getData(int x, int y) const {
 	return data + (y * width + x) * AbstractBitmap::BITS_PER_PIXEL[pixelFormat] / 8;
 }
 
@@ -91,7 +91,7 @@ void InternalBitmap::lockPixelData() {
 	if (!memory)
 		memory = env.allocateMemory(getMemorySize());
 	if (!data)
-		data = env.acquireMemory(memory);
+		data = (pixbyte*)env.acquireMemory(memory);
 }
 
 

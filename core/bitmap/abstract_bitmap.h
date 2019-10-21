@@ -98,7 +98,7 @@ namespace Beatmup {
 			\param y			target pixel vertical coordinate
 			\returns a pointer, may be NULL.
 		*/
-		virtual const pixptr getData(int x, int y) const = 0;
+		virtual pixbyte* getData(int x, int y) const = 0;
 
 		/**
 			Retrieves integer value of given channel at given pixel

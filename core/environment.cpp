@@ -133,7 +133,7 @@ private:
 	typedef struct {
 		msize size;							//!< the size of the chunk
 		unsigned int lockCounter;			//!< number of active chunk users (the chunk may not be swapped if it is positive)
-		pixptr data;						//!< chunk data, if null, the chunk is swapped
+		void* data;							//!< chunk data, if null, the chunk is swapped
 		bool toFree;						//!< must be freed when number of users is zero
 		ChunkSwappingState swapping;		//!< indicates if the chunk is swapped and where it is
 	} ChunkState;
@@ -260,13 +260,13 @@ protected:
 	}
 
 
-	inline pixptr allocateWithSwapping(msize howMuch) {
+	inline void* allocateWithSwapping(msize howMuch) {
 		BEATMUP_DEBUG_I("Allocating %u Kbytes (%u MB free)...", howMuch / 1024, getAvailableMemory() / 1048576);
 
 		while (true) {
 			msize avail = getAvailableMemory();
 			if (avail >= howMuch + memToKeepFree)
-				return (pixptr)malloc(howMuch);
+				return malloc(howMuch);
 			if (!swapEnabled || doSwapping(howMuch) == 0)
 				OutOfMemory::raise(howMuch);
 		}
@@ -326,7 +326,7 @@ public:
 		// freeing allocated memory chunks
 		for (auto chunk : chunks)
 			if (chunk.second.data)
-				delete chunk.second.data;
+				free(chunk.second.data);
 	}
 
 
@@ -402,19 +402,19 @@ public:
 	}
 
 
-	const pixptr acquireMemory(memchunk chunk) {
+	void* acquireMemory(memchunk chunk) {
 		std::lock_guard<std::mutex> lock(memAccess);
 		if (!chunks.count(chunk))
 			return nullptr;
 		// unswapping
 		ChunkState& C = chunks[chunk];
 		if (C.swapping == ChunkSwappingState::ON_DISK) {
-			C.data = (pixptr)allocateWithSwapping(C.size);
+			C.data = allocateWithSwapping(C.size);
 			swapChunk(chunk, SwappingOperation::UNSWAP);
 			C.swapping = ChunkSwappingState::AVAILABLE;
 		}
 		else if (C.swapping == ChunkSwappingState::SOMEWHERE) {
-			C.data = (pixptr)allocateWithSwapping(C.size);
+			C.data = allocateWithSwapping(C.size);
 			C.swapping = ChunkSwappingState::AVAILABLE;
 		}
 		else if (C.swapping != ChunkSwappingState::AVAILABLE)
@@ -542,7 +542,7 @@ const memchunk Environment::allocateMemory(msize size) {
 	return impl->allocateMemory(size);
 }
 
-const pixptr Environment::acquireMemory(memchunk chunk) {
+void* Environment::acquireMemory(memchunk chunk) {
 	return impl->acquireMemory(chunk);
 }
 
