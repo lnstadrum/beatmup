@@ -27,7 +27,7 @@ namespace Beatmup {
 	private:
 		std::vector<Layer*> layers;		//!< scene layers
 
-		template<class Type> Type& newLayer(const std::string& name) {
+		template<class Type> Type& newLayer(const char* name) {
 			Type* l = new Type();
 			l->setName(name);
 			layers.push_back(l);
@@ -77,8 +77,8 @@ namespace Beatmup {
 			*/
 			inline Type getType() const { return type; }
 
-			inline std::string getName() const { return name; }
-			inline void setName(const std::string& name) { this->name = name; }
+			inline const char* getName() const { return name.c_str(); }
+			inline void setName(const char* name) { this->name = name; }
 
 			inline AffineMapping& getMapping() { return mapping; }
 			inline const AffineMapping& getMapping() const { return mapping; }
@@ -276,13 +276,13 @@ namespace Beatmup {
 		/**
 			Create a new layer
 		*/
-		BitmapLayer& newBitmapLayer(const std::string& name);
+		BitmapLayer& newBitmapLayer(const char* name);
 		BitmapLayer& newBitmapLayer();
-		MaskedBitmapLayer& newMaskedBitmapLayer(const std::string& name);
+		MaskedBitmapLayer& newMaskedBitmapLayer(const char* name);
 		MaskedBitmapLayer& newMaskedBitmapLayer();
-		ShapedBitmapLayer& newShapedBitmapLayer(const std::string& name);
+		ShapedBitmapLayer& newShapedBitmapLayer(const char* name);
 		ShapedBitmapLayer& newShapedBitmapLayer();
-		ShadedBitmapLayer& newShadedBitmapLayer(const std::string& name);
+		ShadedBitmapLayer& newShadedBitmapLayer(const char* name);
 		ShadedBitmapLayer& newShadedBitmapLayer();
 
 		/**
@@ -293,7 +293,7 @@ namespace Beatmup {
 		/**
 			Retrieves layer by name
 		*/
-		Layer* getLayer(const std::string name) const;
+		Layer* getLayer(const char* name) const;
 
 		/**
 			Retrieves layer by index

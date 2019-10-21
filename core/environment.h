@@ -76,7 +76,7 @@ namespace Beatmup {
 			Environment& env;
 			const memchunk mem;
 			const bool garbage;
-			pixptr data;
+			void* data;
 		public:
 			Mem(Environment& env, memchunk mem, bool garbageAfterRelease = false):
 				env(env), mem(mem), garbage(garbageAfterRelease)
@@ -86,7 +86,7 @@ namespace Beatmup {
 			~Mem() {
 				env.releaseMemory(mem, garbage);
 			}
-			pixptr operator()() { return data; }
+			void* operator()() { return data; }
 		};
 
 		Environment();
@@ -175,7 +175,7 @@ namespace Beatmup {
 			\param chunk	the chunk id
 			\returns a pointer containing the chunk data, NULL if an invalid chunk id is passed
 		*/
-		const pixptr acquireMemory(memchunk chunk);
+		void* acquireMemory(memchunk chunk);
 
 		/**
 			Releases an allocated memory chunk, allowing to swap it; does not necessarily free the allocated memory.

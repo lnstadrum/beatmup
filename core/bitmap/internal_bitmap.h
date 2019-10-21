@@ -16,7 +16,7 @@ namespace Beatmup {
 		PixelFormat pixelFormat;
 		int width, height;
 		memchunk memory;				//!< ID of memory chunk
-		pixptr data;					//!< pointer to pixel data when locked
+		pixbyte* data;					//!< pointer to pixel data when locked
 
 		void lockPixelData();
 		void unlockPixelData();
@@ -43,7 +43,7 @@ namespace Beatmup {
 		const int getWidth() const;
 		const int getHeight() const;
 		const msize getMemorySize() const;
-		const pixptr getData(int x, int y) const;
+		pixbyte* getData(int x, int y) const;
 		void unlockPixels();
 
 		void saveBmp(const char* filename);

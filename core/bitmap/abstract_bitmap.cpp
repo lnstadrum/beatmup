@@ -150,10 +150,10 @@ int AbstractBitmap::getPixelInt(int x, int y, int cha) const {
 		unsigned char
 			pixPerByte = 8 / BITS_PER_PIXEL[pf],
 			offset = (x + y*getWidth()) % pixPerByte;			// offset from byte-aligned bound in pixels
-		const pixptr p = getData(x, y);
+		const pixbyte* p = getData(x, y);
 		return ((*p) >> (offset*BITS_PER_PIXEL[pf])) & ((1 << BITS_PER_PIXEL[pf]) - 1);
 	}
-	const pixptr p = getData(x, y) + cha * BITS_PER_PIXEL[pf] / 8 / CHANNELS_PER_PIXEL[pf];
+	const pixbyte* p = getData(x, y) + cha * BITS_PER_PIXEL[pf] / 8 / CHANNELS_PER_PIXEL[pf];
 	if (isInteger(pf))
 		return *p;
 	//if (isFloat(pf))

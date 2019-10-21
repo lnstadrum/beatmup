@@ -34,7 +34,7 @@ namespace Beatmup {
 
 		void unlockPixelData();
 
-		const pixptr getData(int x, int y) const;
+		const pixbyte* getData(int x, int y) const;
 
 		void save(const wchar_t* filename);
 	};

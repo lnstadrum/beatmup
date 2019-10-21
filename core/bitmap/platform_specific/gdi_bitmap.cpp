@@ -126,8 +126,8 @@ public:
 	}
 
 
-	inline const pixptr getData(int x, int y) const {
-		return (const pixptr)data.Scan0 + x + y * data.Stride;
+	inline const pixbyte* getData(int x, int y) const {
+		return (const pixbyte*)data.Scan0 + x + y * data.Stride;
 	}
 
 
@@ -193,7 +193,7 @@ void GDIBitmap::unlockPixelData() {
 }
 
 
-const pixptr GDIBitmap::getData(int x, int y) const {
+const pixbyte* GDIBitmap::getData(int x, int y) const {
 	return impl->getData(x, y);
 }
 
