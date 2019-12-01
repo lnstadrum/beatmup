@@ -6,7 +6,6 @@
 #include "pixelwise_filter.h"
 #include "../../basic_types.h"
 #include "../../color/matrix.h"
-#include "../../bitmap/pixel_arithmetic.h"
 
 namespace Beatmup {
 	namespace Filters {
@@ -14,16 +13,16 @@ namespace Beatmup {
 		class ColorMatrix : public PixelwiseFilter {
 		private:
 			Color::Matrix matrix;
-			pixfloat4 add;				//!< additional vector
+			color4f add;				//!< additional vector
 			bool allowIntApprox;		//!< allow integer approximation of the coefficients
 
 		public:
 			ColorMatrix();
 			void apply(int startx, int starty, msize nPix, TaskThread& thread);
 
-			bool allowIntegerApproximations() const { return allowIntApprox; }
+			bool isIntegerApproximationsAllowed() const { return allowIntApprox; }
 
-			void setAllowIntegerApproximations(bool allow);
+			void allowIntegerApproximations(bool allow);
 
 			Color::Matrix& getMatrix() { return matrix; }
 		
@@ -46,7 +45,7 @@ namespace Beatmup {
 			*/
 			void setHSVCorrection(float addHueDegrees, float scaleSat, float scaleVal);
 
-			void setColorInversion(pixfloat3 preservedHue, float scaleSat = 1.0f, float scaleVal = 1.0f);
+			void setColorInversion(color3f preservedHue, float scaleSat = 1.0f, float scaleVal = 1.0f);
 		};
 	}
 }

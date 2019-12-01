@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
 		Beatmup::Scene::BitmapLayer& l = scene.newBitmapLayer();
 		l.setBitmap(&fecamp);
 		l.getMapping().setCenterPosition(Beatmup::Point(0.5f, 0.5f));
-		l.setModulationColor({ 1, 0, 0, 1 });
+		l.setModulationColor({ 127, 127, 127, 255 });
 	}
 
 	{

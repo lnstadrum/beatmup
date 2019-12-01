@@ -2,18 +2,19 @@
 #include "../../bitmap/bitmap_access.h"
 #include "../../bitmap/processing.h"
 #include "../../color/color_spaces.h"
+#include "../../color/colors.h"
 
 using namespace Beatmup;
 
 Filters::ColorMatrix::ColorMatrix() : allowIntApprox(true)
 {
-	add.zero();
+	add = Colors::ZeroF;
 }
 
 
 template <class in_t, class out_t> class ApplyColorMatrix {
 public:
-	static void process(in_t in, out_t out, pixfloat4 &addF, Color::Matrix& matrixF, bool useIntApprox, msize nPix) {
+	static void process(in_t in, out_t out, const pixfloat4 &addF, const Color::Matrix& matrixF, bool useIntApprox, msize nPix) {
 		if (useIntApprox) {
 			pixint4 matrixI[4], addI;
 			addI = addF;
@@ -54,28 +55,30 @@ void Filters::ColorMatrix::apply(int startx, int starty, msize nPix, TaskThread&
 }
 
 
-void Filters::ColorMatrix::setAllowIntegerApproximations(bool allow) {
+void Filters::ColorMatrix::allowIntegerApproximations(bool allow) {
 	allowIntApprox = allow;
 }
 
 
 void Filters::ColorMatrix::setCoefficients(int outChannel, float add, float inR, float inG, float inB, float inA) {
 	RuntimeError::check(outChannel >= 0 && outChannel <= 3, "Invalid output channel index");
-	this->add.val[outChannel] = add;
-	matrix[outChannel][CHANNELS_4.R] = inR;
-	matrix[outChannel][CHANNELS_4.G] = inG;
-	matrix[outChannel][CHANNELS_4.B] = inB;
-	matrix[outChannel][CHANNELS_4.A] = inA;
+    pixfloat4 _(this->add);
+	_[outChannel] = add;
+    this->add = _;
+	matrix[outChannel].r = inR;
+	matrix[outChannel].g = inG;
+	matrix[outChannel].b = inB;
+	matrix[outChannel].a = inA;
 }
 
 
-void Filters::ColorMatrix::setHSVCorrection(float Hdegrees, float S, float V) {
-	matrix = Color::Matrix::getHSVCorrection(Hdegrees, S, V);
-	add = pixfloat4(0, 0, 0, 0);
+void Filters::ColorMatrix::setHSVCorrection(float hDegrees, float s, float v) {
+	matrix = Color::Matrix::getHSVCorrection(hDegrees, s, v);
+	add = Colors::ZeroF;
 }
 
 
-void Filters::ColorMatrix::setColorInversion(pixfloat3 preservedColor, float S, float V) {
-	matrix = Color::Matrix::getColorInversion(preservedColor, S, V);
-	add = pixfloat4(0, 0, 0, 0);
+void Filters::ColorMatrix::setColorInversion(color3f preservedColor, float s, float v) {
+	matrix = Color::Matrix::getColorInversion(preservedColor, s, v);
+	add = Colors::ZeroF;
 }

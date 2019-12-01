@@ -6,7 +6,6 @@
 #include "rendering_context.h"
 #include "../exception.h"
 #include "../bitmap/abstract_bitmap.h"
-#include "../bitmap/pixel_arithmetic.h"
 #include "../geometry.h"
 #include "../utils/lockable_object.h"
 #include "../shading/image_shader.h"
@@ -156,6 +155,10 @@ namespace Beatmup {
 			BitmapLayer();
 			BitmapLayer(Type type);
 			GL::TextureHandler* resolveContent(RenderingContext& context);
+
+			/**
+				Configures current rendering program to render this layer
+			*/
 			void configure(RenderingContext& context, GL::TextureHandler* content);
 			void render(RenderingContext& context);
 
@@ -163,7 +166,7 @@ namespace Beatmup {
 			ImageSource source;				//!< content source
 			BitmapPtr bitmap;				//!< content to display, used if the image source is set to BITMAP
 			AffineMapping bitmapMapping;	//!< bitmap mapping w.r.t. the layer mapping
-			pixfloat4 modulation;			//!< modulation color
+			color4i modulation;               //!< modulation color
 
 		public:
 			bool testPoint(float x, float y) const;
@@ -178,8 +181,8 @@ namespace Beatmup {
 			inline const AffineMapping& getBitmapMapping() const { return bitmapMapping; }
 			inline void setBitmapMapping(const AffineMapping& mapping) { this->bitmapMapping = mapping; }
 
-			inline pixfloat4 getModulationColor() const { return modulation; }
-			inline void setModulationColor(pixfloat4 color) { this->modulation = color; }
+			inline color4i getModulationColor() const { return modulation; }
+			inline void setModulationColor(color4i color) { this->modulation = color; }
 		};
 
 
@@ -192,14 +195,14 @@ namespace Beatmup {
 			void configure(RenderingContext& context, GL::TextureHandler* content);
 
 			AffineMapping maskMapping;		//!< mask mapping w.r.t. the layer mapping
-			pixfloat4 bgColor;				//!< color to fill mask areas where the bitmap is not present
+			color4i bgColor;				//!< color to fill mask areas where the bitmap is not present
 		public:
 			inline AffineMapping& getMaskMapping() { return maskMapping; }
 			inline const AffineMapping& getMaskMapping() const { return maskMapping; }
 			inline void setMaskMapping(const AffineMapping& mapping) { this->maskMapping = mapping; }
 
-			inline pixfloat4 getBackgroundColor() const { return bgColor; }
-			inline void setBackgroundColor(pixfloat4 color) { this->bgColor = color; }
+			inline color4i getBackgroundColor() const { return bgColor; }
+			inline void setBackgroundColor(color4i color) { this->bgColor = color; }
 		};
 
 

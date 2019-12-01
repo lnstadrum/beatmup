@@ -1,11 +1,10 @@
 #include "../basic_types.h"
 #include "../scene/scene.h"
 #include "../exception.h"
+#include "../color/colors.h"
 #include <map>
 #include <vector>
 #include <cmath>
-
-#include "../debug.h"
 
 using namespace Beatmup;
 using namespace std;
@@ -250,7 +249,7 @@ Scene::BitmapLayer::BitmapLayer():
 {}
 
 Scene::BitmapLayer::BitmapLayer(Type type):
-	Layer(type), source(ImageSource::BITMAP), invAr(0), bitmap(nullptr), bitmapMapping(), modulation(1, 1, 1, 1)
+	Layer(type), source(ImageSource::BITMAP), invAr(0), bitmap(nullptr), bitmapMapping(), modulation(Colors::White)
 {}
 
 
@@ -279,7 +278,7 @@ void Scene::BitmapLayer::configure(RenderingContext& context, GL::TextureHandler
 	else
 		invAr = 0;
 
-	context.getProgram().setVector4("modulationColor", modulation.r, modulation.g, modulation.b, modulation.a);
+	context.getProgram().setVector4("modulationColor", modulation);
 }
 
 
@@ -315,16 +314,15 @@ bool Scene::BitmapLayer::testPoint(float x, float y) const {
 
 
 Scene::CustomMaskedBitmapLayer::CustomMaskedBitmapLayer(Type type) :
-	BitmapLayer(type), maskMapping()
+	BitmapLayer(type), maskMapping(), bgColor{ 0, 0, 0, 0 }
 {}
 
 void Scene::CustomMaskedBitmapLayer::configure(RenderingContext& context, GL::TextureHandler* content) {
 	BitmapLayer::configure(context, content);
-
 	AffineMapping arImgMapping(bitmapMapping), arMaskMapping(maskMapping);
 	arImgMapping.matrix.scale(1.0f, invAr);
 	arMaskMapping.matrix.scale(1.0f, invAr);
-	context.getProgram().setVector4("bgColor", bgColor.r, bgColor.g, bgColor.b, bgColor.a);
+	context.getProgram().setVector4("bgColor", bgColor);
 	context.getProgram().setMatrix3(RenderingPrograms::MODELVIEW_MATRIX_ID, context.getMapping());
 	context.getProgram().setMatrix3("invImgMapping", arImgMapping.getInverse() * arMaskMapping);
 	context.getProgram().setMatrix3("maskMapping", arMaskMapping);

@@ -200,6 +200,12 @@ void AbstractProgram::setVector4(const char* name, const float x, const float y,
 }
 
 
+void AbstractProgram::setVector4(const char* name, const color4i& color, const float outRange) {
+    const float scale = outRange / 255;
+    setVector4(name, scale * color.r, scale * color.g, scale * color.b, scale * color.a);
+}
+
+
 void AbstractProgram::setMatrix2(const char* name, const Matrix2& mat) {
 	GLfloat m[4] = { 1, 0, 0, 1 };
 	mat.getElements(m[0], m[2], m[1], m[3]);

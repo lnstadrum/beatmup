@@ -88,7 +88,7 @@ namespace Beatmup {
 		*/
 		class UnsupportedInputTextureFormat : public Exception {
 		public:
-			UnsupportedInputTextureFormat(GL::TextureHandler::TextureFormat& format):
+			UnsupportedInputTextureFormat(const GL::TextureHandler::TextureFormat& format):
 				Exception("Input texture format is not supported: %s", GL::TextureHandler::textureFormatToString(format))
 			{}
 		};

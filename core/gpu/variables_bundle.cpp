@@ -1,4 +1,5 @@
 #include "variables_bundle.h"
+#include "../bitmap/pixel_arithmetic.h"
 #include "bgl.h"
 
 using namespace Beatmup;
@@ -137,9 +138,11 @@ void VariablesBundle::setFloatMatrix4(std::string name, const Color::Matrix& mat
 	MatrixParameter& param = params[name];
 	param.configure(MatrixParameter::Type::FLOAT, 4, 4);
 	GLfloat *out = param.getData<GLfloat>();
-	for (int x = 0; x < 4; ++x)
+	for (int x = 0; x < 4; ++x) {
+        const pixfloat4 row = matrix[x];
 		for (int y = 0; y < 4; ++y)
-			*out++ = matrix[x][y];
+			*out++ = row[y];
+    }
 }
 
 float VariablesBundle::getFloat(const std::string& name) const {
