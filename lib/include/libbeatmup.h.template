@@ -2,13 +2,8 @@
 #define __LIBBEATMUP_INCLUDE_H__
 ## INCLUDES ##
 
-
-#ifdef BEATMUP_PLATFORM_64BIT_
-	//typedef uint64_t handle_t;
-#else
-	//typedef uint32_t handle_t;
-#endif
 typedef void* handle_t;
+typedef const void* chandle_t;
 
 ## TYPEDEFS ##
 

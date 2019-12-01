@@ -4,6 +4,7 @@
 
 #pragma once
 #include "../parallelism.h"
+#include "../exception.h"
 #include <vector>
 #include <mutex>
 

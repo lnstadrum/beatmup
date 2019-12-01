@@ -129,6 +129,9 @@ namespace Beatmup {
 	struct pixint3 {
 		typedef int operating_type;
 		int r, g, b;
+        pixint3(): r(0), g(0), b(0) {}
+		pixint3(const color3i& _) : r(_.r), g(_.g), b(_.b) {}
+		pixint3(int r, int g, int b) : r(r), g(g), b(b) {}
 		operator pixint1() const;
 		operator pixint4() const;
 		operator pixfloat1() const;
@@ -170,7 +173,7 @@ namespace Beatmup {
 		int			sum() const { return r + g + b; }
 		float		mean() const { return (float)(r + g + b) / 3; }
 		int			max() const { return std::max(r, std::max(g, b)); }
-		pixint3		abs() const { return pixint3{ r > 0 ? r : -r,  g > 0 ? g : -g,  b > 0 ? b : -b }; }
+		pixint3		abs() const { return pixint3(r > 0 ? r : -r,  g > 0 ? g : -g,  b > 0 ? b : -b); }
 	};
 
 	/**
@@ -179,7 +182,9 @@ namespace Beatmup {
 	struct pixfloat3 {
 		typedef float operating_type;
 		pixfloat r, g, b;
-
+        pixfloat3(): r(0), g(0), b(0) {}
+		pixfloat3(const color3f& _) : r(_.r), g(_.g), b(_.b) {}
+		pixfloat3(float r, float g, float b) : r(r), g(g), b(b) {}
 		operator pixint1() const;
 		operator pixint3() const;
 		operator pixint4() const;
@@ -243,8 +248,9 @@ namespace Beatmup {
 			int val[4];
 		};
 
-		pixint4();
-		pixint4(int r, int g, int b, int a);
+		pixint4() : r(0), g(0), b(0), a(0) {}
+		pixint4(const color4i& _) : r(_.r), g(_.g), b(_.b) {}
+		pixint4(int r, int g, int b, int a) : r(r), g(g), b(b), a(a) {}
 		operator pixint1() const;
 		operator pixint3() const;
 		operator pixfloat1() const;
@@ -308,14 +314,17 @@ namespace Beatmup {
 			pixfloat val[4];
 		};
 
-		pixfloat4();
-		pixfloat4(float r, float g, float b, float a);
+		pixfloat4() : r(0), g(0), b(0), a(0) {}
+		pixfloat4(const color4f& _) : r(_.r), g(_.g), b(_.b), a(_.a) {}
+		pixfloat4(float r, float g, float b, float a) : r(r), g(g), b(b), a(a) {}
 		pixfloat& operator[](int i) { return val[i]; }
+        pixfloat operator[](int i) const { return val[i]; }
 		operator pixint1() const;
 		operator pixint3() const;
 		operator pixint4() const;
 		operator pixfloat1() const;
 		operator pixfloat3() const;
+		operator color4f() const;
 		bool		operator==(const pixfloat4 P) const;
 		void		operator=(const pixint1 P);
 		void		operator=(const pixfloat1 P);
@@ -869,7 +878,7 @@ namespace Beatmup {
 	//////////////////////////////////////////////////////////
 
 	inline pixfloat3::operator pixint1() const {
-		return pixint3{ roundf_fast(255 * (r + g + b)) };
+		return pixint1{ roundf_fast(255 * (r + g + b)) };
 	}
 
 	inline pixfloat3::operator pixint3() const {
@@ -1034,12 +1043,6 @@ namespace Beatmup {
 	//////////////////////////////////////////////////////////
 	//					4-channel integer					//
 	//////////////////////////////////////////////////////////
-
-	inline pixint4::pixint4() : r(0), g(0), b(0), a(0)
-	{}
-
-	inline pixint4::pixint4(int r, int g, int b, int a): r(r), g(g), b(b), a(a)
-	{}
 
 	inline pixint4::operator pixint1() const {
 		return pixint1{ (r + g + b) / 4 };
@@ -1211,12 +1214,6 @@ namespace Beatmup {
 	//				4-channel floating point				//
 	//////////////////////////////////////////////////////////
 
-	inline pixfloat4::pixfloat4() : r(0), g(0), b(0), a(0)
-	{}
-
-	inline pixfloat4::pixfloat4(float r, float g, float b, float a) : r(r), g(g), b(b), a(a)
-	{}
-
 	inline pixfloat4::operator pixint1() const {
 		return pixint1{ roundf_fast(85 * (r + g + b)) };
 	}
@@ -1235,6 +1232,10 @@ namespace Beatmup {
 	inline pixfloat4::operator pixfloat3() const {
 		return pixfloat3{ r, g, b };
 	}
+
+    inline pixfloat4::operator color4f() const {
+        return color4f{ r, g, b, a };
+    }
 
 	inline bool pixfloat4::operator==(const pixfloat4 P) const {
 		return (r == P.r) && (g == P.g) && (b == P.b) && (a == P.a);

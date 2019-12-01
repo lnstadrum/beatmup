@@ -118,6 +118,7 @@ namespace Beatmup {
 			void setVector2(const char* name, const float x, const float y);
 			void setVector3(const char* name, const float x, const float y, const float z);
 			void setVector4(const char* name, const float x, const float y, const float z, const float w);
+            void setVector4(const char* name, const color4i& color, const float outRange = 1.0f);
 
 			void setVector2(const std::string& name, const float x, const float y)
               { setVector2(name.c_str(), x, y); }

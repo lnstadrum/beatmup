@@ -14,7 +14,7 @@ public:
 	) {
 		while (--nPix > 0) {
 			// first apply brightness / contrast
-			pixhsva hsv(in());
+			colorhsv hsv(in());
 
 			// then HSV
 			hsv.h += hueOffset;

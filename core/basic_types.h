@@ -38,6 +38,22 @@ namespace Beatmup {
 
 	typedef int dtime;
 
+    typedef struct {
+        uint8_t r, g, b;
+    } color3i;
+  
+    typedef struct {
+        uint8_t r, g, b, a;
+    } color4i;
+
+    typedef struct {
+        float r, g, b;
+    } color3f;
+
+    typedef struct {
+        float r, g, b, a;
+    } color4f;
+
 	enum ProcessingTarget {CPU = 0, GPU};		//!< where to process the stuff
 
 	namespace GL {
