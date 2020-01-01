@@ -49,7 +49,7 @@ bool BasicRealtimePlayback::sendNextBuffer() {
     std::lock_guard<std::mutex> lock(queueAccess);
     if (sendIndex >= fillIndex)
         return false;
-    DEBUG_I("Enqueueing buffer %d", sendIndex);
+    BEATMUP_DEBUG_I("Enqueueing buffer %d", sendIndex);
     enqueueBuffer(buffers[sendIndex % numBuffers], sendIndex);
     sendIndex++;
     underrun = false;
@@ -69,7 +69,7 @@ bool BasicRealtimePlayback::goToNextBuffer() {
     if (!underrun && (fillIndex - playIndex) % numBuffers == 0)
         return false;
     fillIndex++;
-    DEBUG_I("goToNextBuffer: fillIndex = %d", fillIndex);
+    BEATMUP_DEBUG_I("goToNextBuffer: fillIndex = %d", fillIndex);
     advanceTime();
     // if underrun, to continue playing we have to send something
     if (underrun)

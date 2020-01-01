@@ -69,7 +69,7 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, Abstr
 		throw NoSource();
 
 	// check input format input
-	if (input->getTextureFormat() != inputFormat)
+	if (input && input->getTextureFormat() != inputFormat)
 		fragmentShaderReady = false;
 
 	// destroy fragment shader if not up to date
@@ -118,14 +118,13 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, Abstr
 	// enable program
 	gpu.getRenderingPrograms().enableProgram(&gpu, *program);
   
-    // bind output
-    if (output)
-        gpu.bindOutput(*output);
+	// bind output
+	if (output)
+		gpu.bindOutput(*output);
 
 	// bind input
-	if (input) {
+	if (input)
 		gpu.bind(*input, 0, TextureParam::INTERP_LINEAR);
-    }
 		// Binding order matters: texture unit 0 is used for input now.
 
 	// set up mapping

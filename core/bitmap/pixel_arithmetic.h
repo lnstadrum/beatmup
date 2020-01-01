@@ -249,8 +249,8 @@ namespace Beatmup {
 		};
 
 		pixint4() : r(0), g(0), b(0), a(0) {}
-		pixint4(const color4i& _) : r(_.r), g(_.g), b(_.b) {}
 		pixint4(int r, int g, int b, int a) : r(r), g(g), b(b), a(a) {}
+		static pixint4 fromColor(const color4i& _) { return pixint4(_.r, _.g, _.b, _.a); }
 		operator pixint1() const;
 		operator pixint3() const;
 		operator pixfloat1() const;
@@ -324,6 +324,7 @@ namespace Beatmup {
 		operator pixint4() const;
 		operator pixfloat1() const;
 		operator pixfloat3() const;
+		operator color4i() const;
 		operator color4f() const;
 		bool		operator==(const pixfloat4 P) const;
 		void		operator=(const pixint1 P);
@@ -1236,6 +1237,10 @@ namespace Beatmup {
     inline pixfloat4::operator color4f() const {
         return color4f{ r, g, b, a };
     }
+
+	inline pixfloat4::operator color4i() const {
+		return color4i{ pixfloat2pixbyte(r), pixfloat2pixbyte(g), pixfloat2pixbyte(b), pixfloat2pixbyte(a) };
+	}
 
 	inline bool pixfloat4::operator==(const pixfloat4 P) const {
 		return (r == P.r) && (g == P.g) && (b == P.b) && (a == P.a);

@@ -140,7 +140,7 @@ JNIMETHOD(jobject, getLayerByName, Java_Beatmup_Rendering_Scene, getLayerByName)
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::Scene, scene, hScene);
     BEATMUP_STRING(name);
-    Beatmup::Scene::Layer* layer = scene->getLayer(nameStr);
+    Beatmup::Scene::Layer* layer = scene->getLayer(nameStr.c_str());
     if (!layer)
         return NULL;
     return $pool.getJavaReference(layer);
@@ -163,7 +163,7 @@ JNIMETHOD(void, setLayerName, Java_Beatmup_Rendering_Scene, setLayerName)(JNIEnv
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::Scene::Layer, layer, hLayer);
     BEATMUP_STRING(name);
-    layer->setName(nameStr);
+    layer->setName(nameStr.c_str());
 }
 
 /**
@@ -172,7 +172,7 @@ JNIMETHOD(void, setLayerName, Java_Beatmup_Rendering_Scene, setLayerName)(JNIEnv
 JNIMETHOD(jstring, getLayerName, Java_Beatmup_Rendering_Scene, getLayerName)(JNIEnv * jenv, jobject, jlong hLayer) {
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::Scene::Layer, layer, hLayer);
-    return jenv->NewStringUTF(layer->getName().c_str());
+    return jenv->NewStringUTF(layer->getName());
 }
 
 
@@ -944,7 +944,7 @@ JNIMETHOD(void, setColorInversion, Java_Beatmup_Imaging_Filters_Local_ColorMatri
 {
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::Filters::ColorMatrix, filter, hInstance);
-    Beatmup::pixfloat3 preservedColor{ (float)r, (float)g, (float)b };
+    Beatmup::color3f preservedColor{ (float)r, (float)g, (float)b };
     filter->setColorInversion(preservedColor, (float)s, (float)v);
 }
 
@@ -952,14 +952,14 @@ JNIMETHOD(void, setColorInversion, Java_Beatmup_Imaging_Filters_Local_ColorMatri
 JNIMETHOD(void, setAllowIntegerApprox, Java_Beatmup_Imaging_Filters_Local_ColorMatrixTransform, setAllowIntegerApprox)(JNIEnv * jenv, jobject, jlong hInstance, jboolean allow) {
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::Filters::ColorMatrix, filter, hInstance);
-    filter->setAllowIntegerApproximations(allow == JNI_TRUE);
+    filter->allowIntegerApproximations(allow == JNI_TRUE);
 }
 
 
 JNIMETHOD(jboolean, allowIntegerApprox, Java_Beatmup_Imaging_Filters_Local_ColorMatrixTransform, allowIntegerApprox)(JNIEnv * jenv, jobject, jlong hInstance) {
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::Filters::ColorMatrix, filter, hInstance);
-    return (jboolean) filter->allowIntegerApproximations();
+    return (jboolean) filter->isIntegerApproximationsAllowed();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -1115,7 +1115,7 @@ JNIMETHOD(void, setColorInversion, Java_Beatmup_Imaging_ColorMatrix, setColorInv
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::Color::Matrix, mat, hInst);
     *mat = Beatmup::Color::Matrix::getColorInversion(
-            Beatmup::pixfloat3({r,g,b}),
+            Beatmup::color3f{ r, g, b },
             s, v
     );
 }
@@ -1127,7 +1127,7 @@ JNIMETHOD(jfloat, getElement, Java_Beatmup_Imaging_ColorMatrix, getElement)(JNIE
 #ifdef BEATMUP_DEBUG
     Beatmup::DebugAssertion::check(x >= 0 && x < 4 && y >= 0 && y < 4, "Matrix element index out of range: %d %d", x, y);
 #endif
-    return (jfloat) (*mat)[x][y];
+    return (jfloat) mat->elem[x][y];
 }
 
 
@@ -1137,7 +1137,7 @@ JNIMETHOD(void, setElement, Java_Beatmup_Imaging_ColorMatrix, setElement)(JNIEnv
 #ifdef BEATMUP_DEBUG
     Beatmup::DebugAssertion::check(x >= 0 && x < 4 && y >= 0 && y < 4, "Matrix element index out of range: %d %d", x, y);
 #endif
-    (*mat)[x][y] = v;
+    mat->elem[x][y] = v;
 }
 
 

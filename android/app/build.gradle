@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 26
+    flavorDimensions "version"
     defaultConfig {
         applicationId "xyz.beatmup.android.app"
         minSdkVersion 21

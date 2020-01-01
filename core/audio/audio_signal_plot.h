@@ -3,7 +3,6 @@
 #include "../bitmap/abstract_bitmap.h"
 #include "../parallelism.h"
 #include "audio_signal.h"
-#include "../bitmap/pixel_arithmetic.h"
 #include <vector>
 
 namespace Beatmup {
@@ -20,7 +19,7 @@ namespace Beatmup {
 		std::vector<int> values;
 		
 		struct {
-			pixint4 bgColor, color1, color2;
+			color4i bgColor, color1, color2;
 		} palette;
 		
 		/**
@@ -64,7 +63,7 @@ namespace Beatmup {
 		/**
 			Specifies plot colors
 		*/
-		void setPalette(pixint4 bgColor, pixint4 color1, pixint4 color2);
+		void setPalette(color4i bgColor, color4i color1, color4i color2);
 
 		/**
 			Specifies which channels to plot

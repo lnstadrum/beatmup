@@ -1,7 +1,6 @@
 #pragma once
 #include <jni.h>
 #include <core/geometry.h>
-#include <core/bitmap/pixel_arithmetic.h>
 
 
 class JavaFactory {
@@ -66,10 +65,10 @@ public:
     );
 
     /**
-     * \brief Creates Java's Color object from Beatmup pixint4
+     * \brief Creates Java's Color object from Beatmup's color
      */
-    jobject makeColor(JNIEnv *jenv, const Beatmup::pixint4 color);
+    jobject makeColor(JNIEnv *jenv, const Beatmup::color4i& color);
 
-    void setColor(JNIEnv* jenv, const Beatmup::pixint4 c, jobject jColor);
+    void setColor(JNIEnv* jenv, const Beatmup::color4i& c, jobject jColor);
 
 };
