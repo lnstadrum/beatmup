@@ -78,7 +78,7 @@ namespace Beatmup {
 		/**
 			Specifies left-top corner position of the mask inside the input bitmap
 		*/
-		void setMaskPos(IntPoint&);
+		void setMaskPos(const IntPoint&);
 
 		/**
 			Specifies a set of seeds (starting points)

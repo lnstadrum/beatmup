@@ -1,33 +1,33 @@
 #include "../include/libbeatmup.h"
 #include "../../core/bitmap/crop.h"
-#include "../../core/geometry.h"
-#include "../../core/gpu/pipeline.h"
-#include "../../core/scene/renderer.h"
-#include "../../core/parallelism.h"
-#include "../../core/bitmap/converter.h"
-#include "../../core/pipelining/multitask.h"
-#include "../../core/masking/flood_fill.h"
-#include "../../core/scene/scene.h"
-#include "../../core/exception.h"
-#include "../../core/bitmap/abstract_bitmap.h"
-#include "../../core/scene/rendering_context.h"
-#include "../../core/pipelining/custom_pipeline.h"
-#include "../../core/bitmap/resampler.h"
-#include "../../core/contours/contours.h"
-#include "../../core/filters/tuning.h"
-#include "../../core/gpu/recycle_bin.h"
-#include "../../core/filters/local/sepia.h"
-#include "../../core/color/matrix.h"
-#include "../../core/bitmap/operator.h"
-#include "../../core/bitmap/tools.h"
-#include "../../core/shading/shader_applicator.h"
-#include "../../core/environment.h"
-#include "../../core/bitmap/internal_bitmap.h"
 #include "../../core/utils/image_resolution.h"
+#include "../../core/scene/renderer.h"
+#include "../../core/filters/tuning.h"
+#include "../../core/pipelining/custom_pipeline.h"
+#include "../../core/scene/scene.h"
+#include "../../core/bitmap/internal_bitmap.h"
 #include "../../core/shading/image_shader.h"
+#include "../../core/bitmap/resampler.h"
+#include "../../core/environment.h"
+#include "../../core/scene/rendering_context.h"
+#include "../../core/parallelism.h"
+#include "../../core/geometry.h"
+#include "../../core/bitmap/abstract_bitmap.h"
+#include "../../core/color/matrix.h"
+#include "../../core/gpu/recycle_bin.h"
+#include "../../core/bitmap/converter.h"
 #include "../../core/basic_types.h"
+#include "../../core/shading/shader_applicator.h"
+#include "../../core/bitmap/tools.h"
 #include "../../core/gpu/texture_handler.h"
+#include "../../core/gpu/pipeline.h"
+#include "../../core/contours/contours.h"
+#include "../../core/bitmap/operator.h"
+#include "../../core/filters/local/sepia.h"
+#include "../../core/masking/flood_fill.h"
+#include "../../core/exception.h"
 #include "../../core/filters/local/color_matrix.h"
+#include "../../core/pipelining/multitask.h"
 
 
 void BeatmupEnvironmentCreate1(handle_t * handle) {
@@ -205,18 +205,6 @@ beatmup_int_rectangle_t BeatmupImageResolutionClientRect(const beatmup_image_res
     Beatmup::ImageResolution self(handle->_1, handle->_2);
     Beatmup::IntRectangle result = self.clientRect();
     return beatmup_int_rectangle_t{ result.getX1(), result.getY1(), result.getX2(), result.getY2() };
-}
-
-
-unsigned int BeatmupImageResolutionGetWidth(const beatmup_image_resolution_t* handle) {
-    Beatmup::ImageResolution self(handle->_1, handle->_2);
-    return self.getWidth();
-}
-
-
-unsigned int BeatmupImageResolutionGetHeight(const beatmup_image_resolution_t* handle) {
-    Beatmup::ImageResolution self(handle->_1, handle->_2);
-    return self.getHeight();
 }
 
 
@@ -615,6 +603,79 @@ void BeatmupBitmapToolsInvert(handle_t _input, handle_t _output) {
 }
 
 
+beatmup_color4f_t* BeatmupColorMatrixR2(beatmup_color_matrix_t* handle) {
+    Beatmup::Color::Matrix self(Beatmup::color4f{ handle->_1.r, handle->_1.g, handle->_1.b, handle->_1.a }, Beatmup::color4f{ handle->_2.r, handle->_2.g, handle->_2.b, handle->_2.a }, Beatmup::color4f{ handle->_3.r, handle->_3.g, handle->_3.b, handle->_3.a }, Beatmup::color4f{ handle->_4.r, handle->_4.g, handle->_4.b, handle->_4.a });
+    Beatmup::color4f& result = self.r();
+    *handle = { beatmup_color4f_t{ self.r().r, self.r().g, self.r().b, self.r().a }, beatmup_color4f_t{ self.g().r, self.g().g, self.g().b, self.g().a }, beatmup_color4f_t{ self.b().r, self.b().g, self.b().b, self.b().a }, beatmup_color4f_t{ self.a().r, self.a().g, self.a().b, self.a().a } };
+    return &beatmup_color4f_t{ result.r, result.g, result.b, result.a };
+}
+
+
+beatmup_color4f_t* BeatmupColorMatrixG2(beatmup_color_matrix_t* handle) {
+    Beatmup::Color::Matrix self(Beatmup::color4f{ handle->_1.r, handle->_1.g, handle->_1.b, handle->_1.a }, Beatmup::color4f{ handle->_2.r, handle->_2.g, handle->_2.b, handle->_2.a }, Beatmup::color4f{ handle->_3.r, handle->_3.g, handle->_3.b, handle->_3.a }, Beatmup::color4f{ handle->_4.r, handle->_4.g, handle->_4.b, handle->_4.a });
+    Beatmup::color4f& result = self.g();
+    *handle = { beatmup_color4f_t{ self.r().r, self.r().g, self.r().b, self.r().a }, beatmup_color4f_t{ self.g().r, self.g().g, self.g().b, self.g().a }, beatmup_color4f_t{ self.b().r, self.b().g, self.b().b, self.b().a }, beatmup_color4f_t{ self.a().r, self.a().g, self.a().b, self.a().a } };
+    return &beatmup_color4f_t{ result.r, result.g, result.b, result.a };
+}
+
+
+beatmup_color4f_t* BeatmupColorMatrixB2(beatmup_color_matrix_t* handle) {
+    Beatmup::Color::Matrix self(Beatmup::color4f{ handle->_1.r, handle->_1.g, handle->_1.b, handle->_1.a }, Beatmup::color4f{ handle->_2.r, handle->_2.g, handle->_2.b, handle->_2.a }, Beatmup::color4f{ handle->_3.r, handle->_3.g, handle->_3.b, handle->_3.a }, Beatmup::color4f{ handle->_4.r, handle->_4.g, handle->_4.b, handle->_4.a });
+    Beatmup::color4f& result = self.b();
+    *handle = { beatmup_color4f_t{ self.r().r, self.r().g, self.r().b, self.r().a }, beatmup_color4f_t{ self.g().r, self.g().g, self.g().b, self.g().a }, beatmup_color4f_t{ self.b().r, self.b().g, self.b().b, self.b().a }, beatmup_color4f_t{ self.a().r, self.a().g, self.a().b, self.a().a } };
+    return &beatmup_color4f_t{ result.r, result.g, result.b, result.a };
+}
+
+
+beatmup_color4f_t* BeatmupColorMatrixA2(beatmup_color_matrix_t* handle) {
+    Beatmup::Color::Matrix self(Beatmup::color4f{ handle->_1.r, handle->_1.g, handle->_1.b, handle->_1.a }, Beatmup::color4f{ handle->_2.r, handle->_2.g, handle->_2.b, handle->_2.a }, Beatmup::color4f{ handle->_3.r, handle->_3.g, handle->_3.b, handle->_3.a }, Beatmup::color4f{ handle->_4.r, handle->_4.g, handle->_4.b, handle->_4.a });
+    Beatmup::color4f& result = self.a();
+    *handle = { beatmup_color4f_t{ self.r().r, self.r().g, self.r().b, self.r().a }, beatmup_color4f_t{ self.g().r, self.g().g, self.g().b, self.g().a }, beatmup_color4f_t{ self.b().r, self.b().g, self.b().b, self.b().a }, beatmup_color4f_t{ self.a().r, self.a().g, self.a().b, self.a().a } };
+    return &beatmup_color4f_t{ result.r, result.g, result.b, result.a };
+}
+
+
+beatmup_color4f_t* BeatmupColorMatrixIndex1(beatmup_color_matrix_t* handle, int _par1) {
+    Beatmup::Color::Matrix self(Beatmup::color4f{ handle->_1.r, handle->_1.g, handle->_1.b, handle->_1.a }, Beatmup::color4f{ handle->_2.r, handle->_2.g, handle->_2.b, handle->_2.a }, Beatmup::color4f{ handle->_3.r, handle->_3.g, handle->_3.b, handle->_3.a }, Beatmup::color4f{ handle->_4.r, handle->_4.g, handle->_4.b, handle->_4.a });
+    Beatmup::color4f& result = self.operator[](_par1);
+    *handle = { beatmup_color4f_t{ self.r().r, self.r().g, self.r().b, self.r().a }, beatmup_color4f_t{ self.g().r, self.g().g, self.g().b, self.g().a }, beatmup_color4f_t{ self.b().r, self.b().g, self.b().b, self.b().a }, beatmup_color4f_t{ self.a().r, self.a().g, self.a().b, self.a().a } };
+    return &beatmup_color4f_t{ result.r, result.g, result.b, result.a };
+}
+
+
+beatmup_color4f_t BeatmupColorMatrixIndex2(const beatmup_color_matrix_t* handle, int _par1) {
+    Beatmup::Color::Matrix self(Beatmup::color4f{ handle->_1.r, handle->_1.g, handle->_1.b, handle->_1.a }, Beatmup::color4f{ handle->_2.r, handle->_2.g, handle->_2.b, handle->_2.a }, Beatmup::color4f{ handle->_3.r, handle->_3.g, handle->_3.b, handle->_3.a }, Beatmup::color4f{ handle->_4.r, handle->_4.g, handle->_4.b, handle->_4.a });
+    Beatmup::color4f result = self.operator[](_par1);
+    return beatmup_color4f_t{ result.r, result.g, result.b, result.a };
+}
+
+
+beatmup_color_matrix_t BeatmupColorMatrixMultiply(const beatmup_color_matrix_t* handle, const beatmup_color_matrix_t* _par1) {
+    Beatmup::Color::Matrix self(Beatmup::color4f{ handle->_1.r, handle->_1.g, handle->_1.b, handle->_1.a }, Beatmup::color4f{ handle->_2.r, handle->_2.g, handle->_2.b, handle->_2.a }, Beatmup::color4f{ handle->_3.r, handle->_3.g, handle->_3.b, handle->_3.a }, Beatmup::color4f{ handle->_4.r, handle->_4.g, handle->_4.b, handle->_4.a });
+    Beatmup::Color::Matrix result = self.operator*(Beatmup::Color::Matrix(Beatmup::color4f{ _par1->_1.r, _par1->_1.g, _par1->_1.b, _par1->_1.a }, Beatmup::color4f{ _par1->_2.r, _par1->_2.g, _par1->_2.b, _par1->_2.a }, Beatmup::color4f{ _par1->_3.r, _par1->_3.g, _par1->_3.b, _par1->_3.a }, Beatmup::color4f{ _par1->_4.r, _par1->_4.g, _par1->_4.b, _par1->_4.a }));
+    return beatmup_color_matrix_t{ beatmup_color4f_t{ result.r().r, result.r().g, result.r().b, result.r().a }, beatmup_color4f_t{ result.g().r, result.g().g, result.g().b, result.g().a }, beatmup_color4f_t{ result.b().r, result.b().g, result.b().b, result.b().a }, beatmup_color4f_t{ result.a().r, result.a().g, result.a().b, result.a().a } };
+}
+
+
+void BeatmupColorMatrixAssign(beatmup_color_matrix_t* handle, const beatmup_color_matrix_t* _par1) {
+    Beatmup::Color::Matrix self(Beatmup::color4f{ handle->_1.r, handle->_1.g, handle->_1.b, handle->_1.a }, Beatmup::color4f{ handle->_2.r, handle->_2.g, handle->_2.b, handle->_2.a }, Beatmup::color4f{ handle->_3.r, handle->_3.g, handle->_3.b, handle->_3.a }, Beatmup::color4f{ handle->_4.r, handle->_4.g, handle->_4.b, handle->_4.a });
+    self.operator=(Beatmup::Color::Matrix(Beatmup::color4f{ _par1->_1.r, _par1->_1.g, _par1->_1.b, _par1->_1.a }, Beatmup::color4f{ _par1->_2.r, _par1->_2.g, _par1->_2.b, _par1->_2.a }, Beatmup::color4f{ _par1->_3.r, _par1->_3.g, _par1->_3.b, _par1->_3.a }, Beatmup::color4f{ _par1->_4.r, _par1->_4.g, _par1->_4.b, _par1->_4.a }));
+    *handle = { beatmup_color4f_t{ self.r().r, self.r().g, self.r().b, self.r().a }, beatmup_color4f_t{ self.g().r, self.g().g, self.g().b, self.g().a }, beatmup_color4f_t{ self.b().r, self.b().g, self.b().b, self.b().a }, beatmup_color4f_t{ self.a().r, self.a().g, self.a().b, self.a().a } };
+}
+
+
+beatmup_color_matrix_t BeatmupColorMatrixGetHSVCorrection(float _hDegrees, float _s, float _v) {
+    Beatmup::Color::Matrix result = Beatmup::Color::Matrix::getHSVCorrection(_hDegrees, _s, _v);
+    return beatmup_color_matrix_t{ beatmup_color4f_t{ result.r().r, result.r().g, result.r().b, result.r().a }, beatmup_color4f_t{ result.g().r, result.g().g, result.g().b, result.g().a }, beatmup_color4f_t{ result.b().r, result.b().g, result.b().b, result.b().a }, beatmup_color4f_t{ result.a().r, result.a().g, result.a().b, result.a().a } };
+}
+
+
+beatmup_color_matrix_t BeatmupColorMatrixGetColorInversion(const beatmup_color3f_t* _preservedColor, float _sScale, float _vScale) {
+    Beatmup::Color::Matrix result = Beatmup::Color::Matrix::getColorInversion(Beatmup::color3f{ _preservedColor->r, _preservedColor->g, _preservedColor->b }, _sScale, _vScale);
+    return beatmup_color_matrix_t{ beatmup_color4f_t{ result.r().r, result.r().g, result.r().b, result.r().a }, beatmup_color4f_t{ result.g().r, result.g().g, result.g().b, result.g().a }, beatmup_color4f_t{ result.b().r, result.b().g, result.b().b, result.b().a }, beatmup_color4f_t{ result.a().r, result.a().g, result.a().b, result.a().a } };
+}
+
+
 void BeatmupFiltersImageTuningCreate(handle_t * handle) {
     *handle = static_cast<handle_t>(new Beatmup::Filters::ImageTuning());
 }
@@ -703,12 +764,6 @@ bool BeatmupFiltersColorMatrixIsIntegerApproximationsAllowed(chandle_t handle) {
 
 void BeatmupFiltersColorMatrixAllowIntegerApproximations(handle_t handle, bool _allow) {
     static_cast<Beatmup::Filters::ColorMatrix*>(handle)->allowIntegerApproximations(_allow);
-}
-
-
-handle_t BeatmupFiltersColorMatrixGetMatrix(handle_t handle) {
-    Beatmup::Color::Matrix& result = static_cast<Beatmup::Filters::ColorMatrix*>(handle)->getMatrix();
-    return static_cast<handle_t>(&result);
 }
 
 
@@ -832,10 +887,8 @@ void BeatmupFloodFillSetOutput(handle_t handle, handle_t _par1) {
 }
 
 
-void BeatmupFloodFillSetMaskPos(handle_t handle, beatmup_int_point_t* _par1) {
-    Beatmup::IntPoint __par1 = Beatmup::IntPoint(_par1->_1, _par1->_2);
-    static_cast<Beatmup::FloodFill*>(handle)->setMaskPos(__par1);
-    *_par1 = beatmup_int_point_t{ __par1.getX(), __par1.getY() };
+void BeatmupFloodFillSetMaskPos(handle_t handle, const beatmup_int_point_t* _par1) {
+    static_cast<Beatmup::FloodFill*>(handle)->setMaskPos(Beatmup::IntPoint(_par1->_1, _par1->_2));
 }
 
 

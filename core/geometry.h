@@ -108,21 +108,21 @@ namespace Beatmup {
 	public:
 		CustomPoint<numeric> a, b;
 
-		CustomRectangle<numeric>() : a(0, 0), b(0, 0)
+		CustomRectangle() : a(0, 0), b(0, 0)
 		{}
 
-		CustomRectangle<numeric>(CustomPoint<numeric> a, CustomPoint<numeric> b) : a(a), b(b)
+		CustomRectangle(CustomPoint<numeric> a, CustomPoint<numeric> b) : a(a), b(b)
 		{}
 
-		CustomRectangle<numeric>(numeric x1, numeric y1, numeric x2, numeric y2) : a(CustomPoint<numeric>(x1, y1)), b(CustomPoint<numeric>(x2, y2))
+		CustomRectangle(numeric x1, numeric y1, numeric x2, numeric y2) : a(CustomPoint<numeric>(x1, y1)), b(CustomPoint<numeric>(x2, y2))
 		{}
 
-		inline CustomRectangle<numeric> operator*(numeric _) const {
-			return CustomRectangle<numeric>(_ * a, _ * b);
+		inline CustomRectangle operator*(numeric _) const {
+			return CustomRectangle(_ * a, _ * b);
 		}
 
-		inline CustomRectangle<numeric> operator/(numeric _) const {
-			return CustomRectangle<numeric>(a / _, b / _);
+		inline CustomRectangle operator/(numeric _) const {
+			return CustomRectangle(a / _, b / _);
 		}
 
         inline numeric getX1() const { return a.x; }
@@ -172,7 +172,7 @@ namespace Beatmup {
 		/**
 			Truncates a rectangle to a limiting frame
 		*/
-		inline void limit(const CustomRectangle<numeric>& frame) {
+		inline void limit(const CustomRectangle& frame) {
 			if (a.x < frame.a.x)
 				a.x = frame.a.x;
 			if (a.y < frame.a.y)
@@ -186,8 +186,8 @@ namespace Beatmup {
 		/**
 			Returns a translated box
 		*/
-		inline CustomRectangle<numeric> translated(numeric x, numeric y) {
-			return CustomRectangle<numeric>(
+		inline CustomRectangle translated(numeric x, numeric y) {
+			return CustomRectangle(
 				CustomPoint<numeric>(a.x + x, a.y + y),
 				CustomPoint<numeric>(b.x + x, b.y + y)
 			);
@@ -262,6 +262,14 @@ namespace Beatmup {
 		CustomMatrix2(numeric lambda1, numeric lambda2) : a11(lambda1), a12(0), a21(0), a22(lambda2)
 		{}
 
+		CustomMatrix2(numeric _11, numeric _12, numeric _21, numeric _22): a11(_11), a12(_12), a21(_21), a22(_22)
+        {}
+
+		inline numeric getA11() const { return a11; }
+		inline numeric getA12() const { return a12; }
+		inline numeric getA21() const { return a21; }
+		inline numeric getA22() const { return a22; }
+
 		/**
 			Computes the corresponding transformed point of the point (x,y)
 		*/
@@ -286,8 +294,8 @@ namespace Beatmup {
 		/**
 			Multiplies two matrices
 		*/
-		inline CustomMatrix2<numeric> operator*(const CustomMatrix2<numeric>& matrix) const {
-			CustomMatrix2<numeric> result;
+		inline CustomMatrix2 operator*(const CustomMatrix2& matrix) const {
+			CustomMatrix2 result;
 			result.a11 = a11 * matrix.a11 + a12 * matrix.a21;
 			result.a12 = a11 * matrix.a12 + a12 * matrix.a22;
 			result.a21 = a21 * matrix.a11 + a22 * matrix.a21;
@@ -306,8 +314,8 @@ namespace Beatmup {
 		/**
 			Multiplies matrix by a scalar
 		*/
-		inline CustomMatrix2<numeric> operator*(const numeric factor) const {
-			CustomMatrix2<numeric> result;
+		inline CustomMatrix2 operator*(const numeric factor) const {
+			CustomMatrix2 result;
 			result.a11 = a11*factor;
 			result.a12 = a12*factor;
 			result.a21 = a21*factor;
@@ -426,7 +434,6 @@ namespace Beatmup {
 			return t;
 		}
 
-
 		/**
 			Scales transformation input and output units
             If input/output axes change their scales, the transformation may be rescaled to keep
@@ -464,7 +471,6 @@ namespace Beatmup {
 		inline bool isPointInsideAxes(numeric x, numeric y) const {
 			return isPointInsideAxes(x, y, 1, 1);
 		}
-
 
 		/**
 			Computes X axis scaling factor
@@ -549,7 +555,14 @@ namespace Beatmup {
 
 		AffineMapping();
 		AffineMapping(const Matrix2& aMatrix, const Point& aPosition);
+      
+		inline Point getPosition() const {
+			return position;
+        }
 
+		inline Matrix2 getMatrix() const {
+			return matrix;
+        }
 
 		inline Point operator()(const Point& point) const {
 			return matrix(point) + position;

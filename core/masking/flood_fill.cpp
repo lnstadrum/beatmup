@@ -29,7 +29,7 @@ void FloodFill::setOutput(AbstractBitmap& mask) {
 }
 
 
-void FloodFill::setMaskPos(IntPoint& pos) {
+void FloodFill::setMaskPos(const IntPoint& pos) {
 	this->maskPos = pos;
 }
 
