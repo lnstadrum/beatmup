@@ -6,12 +6,21 @@ typedef void* handle_t;
 typedef const void* chandle_t;
 
 typedef enum {
+    BEATMUP_SCENE_BITMAP_LAYER_IMAGE_SOURCE_BITMAP = 0
+} beatmup_scene_bitmap_layer_image_source_t;
+typedef enum {
     BEATMUP_SCENE_LAYER_TYPE_SCENELAYER = 0,
     BEATMUP_SCENE_LAYER_TYPE_BITMAPLAYER = 1,
     BEATMUP_SCENE_LAYER_TYPE_MASKEDBITMAPLAYER = 2,
     BEATMUP_SCENE_LAYER_TYPE_SHAPEDBITMAPLAYER = 3,
     BEATMUP_SCENE_LAYER_TYPE_SHADEDBITMAPLAYER = 4
 } beatmup_scene_layer_type_t;
+typedef enum {
+    BEATMUP_MULTITASK_REPETITION_POLICY_REPEAT_ALWAYS = 0,
+    BEATMUP_MULTITASK_REPETITION_POLICY_REPEAT_UPDATE = 1,
+    BEATMUP_MULTITASK_REPETITION_POLICY_IGNORE_IF_UPTODATE = 2,
+    BEATMUP_MULTITASK_REPETITION_POLICY_IGNORE_ALWAYS = 3
+} beatmup_multitask_repetition_policy_t;
 typedef enum {
     BEATMUP_PIXEL_FORMAT_SINGLEBYTE = 0,
     BEATMUP_PIXEL_FORMAT_TRIPLEBYTE = 1,
@@ -24,33 +33,58 @@ typedef enum {
     BEATMUP_PIXEL_FORMAT_HEXMASK = 8
 } beatmup_pixel_format_t;
 typedef unsigned int beatmup_job_t;
-typedef unsigned int beatmup_memchunk_t;
 typedef enum {
-    BEATMUP_ABSTRACT_TASK_EXECUTION_TARGET_DONOTUSEGPU = 0,
-    BEATMUP_ABSTRACT_TASK_EXECUTION_TARGET_USEGPUIFAVAILABLE = 1,
-    BEATMUP_ABSTRACT_TASK_EXECUTION_TARGET_USEGPU = 2
-} beatmup_abstract_task_execution_target_t;
-typedef struct {
-    unsigned int _1;
-    unsigned int _2;
-} beatmup_image_resolution_t;
-typedef unsigned char beatmup_pool_index_t;
-typedef struct {
-    float r;
-    float g;
-    float b;
-} beatmup_color3f_t;
+    BEATMUP_BITMAP_BINARY_OPERATION_OPERATION_NONE = 0,
+    BEATMUP_BITMAP_BINARY_OPERATION_OPERATION_ADD = 1,
+    BEATMUP_BITMAP_BINARY_OPERATION_OPERATION_MULTIPLY = 2
+} beatmup_bitmap_binary_operation_operation_t;
 typedef enum {
     BEATMUP_SCENE_RENDERER_OUTPUT_MAPPING_STRETCH = 0,
     BEATMUP_SCENE_RENDERER_OUTPUT_MAPPING_FIT_WIDTH_TO_TOP = 1,
     BEATMUP_SCENE_RENDERER_OUTPUT_MAPPING_FIT_WIDTH = 2,
     BEATMUP_SCENE_RENDERER_OUTPUT_MAPPING_FIT_HEIGHT = 3
 } beatmup_scene_renderer_output_mapping_t;
+typedef struct {
+    int _1;
+    int _2;
+} beatmup_int_point_t;
+typedef enum {
+    BEATMUP_PROCESSING_TARGET_CPU = 0,
+    BEATMUP_PROCESSING_TARGET_GPU = 1
+} beatmup_processing_target_t;
+typedef struct {
+    float r;
+    float g;
+    float b;
+    float a;
+} beatmup_color4f_t;
+typedef unsigned char beatmup_thread_index_t;
 typedef enum {
     BEATMUP_FLOOD_FILL_BORDER_MORPHOLOGY_NONE = 0,
     BEATMUP_FLOOD_FILL_BORDER_MORPHOLOGY_DILATE = 1,
     BEATMUP_FLOOD_FILL_BORDER_MORPHOLOGY_ERODE = 2
 } beatmup_flood_fill_border_morphology_t;
+typedef unsigned int beatmup_memchunk_t;
+typedef struct {
+    float r;
+    float g;
+    float b;
+} beatmup_color3f_t;
+typedef struct {
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+    uint8_t a;
+} beatmup_color4i_t;
+typedef struct {
+    unsigned int _1;
+    unsigned int _2;
+} beatmup_image_resolution_t;
+typedef enum {
+    BEATMUP_ABSTRACT_TASK_EXECUTION_TARGET_DONOTUSEGPU = 0,
+    BEATMUP_ABSTRACT_TASK_EXECUTION_TARGET_USEGPUIFAVAILABLE = 1,
+    BEATMUP_ABSTRACT_TASK_EXECUTION_TARGET_USEGPU = 2
+} beatmup_abstract_task_execution_target_t;
 typedef enum {
     BEATMUP_G_L_TEXTURE_HANDLER_TEXTURE_FORMAT_RX8 = 0,
     BEATMUP_G_L_TEXTURE_HANDLER_TEXTURE_FORMAT_RGBX8 = 1,
@@ -61,42 +95,20 @@ typedef enum {
     BEATMUP_G_L_TEXTURE_HANDLER_TEXTURE_FORMAT_OES_EXT = 6
 } beatmup_g_l_texture_handler_texture_format_t;
 typedef struct {
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-    uint8_t a;
-} beatmup_color4i_t;
-typedef enum {
-    BEATMUP_SCENE_BITMAP_LAYER_IMAGE_SOURCE_BITMAP = 0
-} beatmup_scene_bitmap_layer_image_source_t;
-typedef struct {
     int _1;
     int _2;
     int _3;
     int _4;
 } beatmup_int_rectangle_t;
-typedef unsigned char beatmup_thread_index_t;
-typedef enum {
-    BEATMUP_PROCESSING_TARGET_CPU = 0,
-    BEATMUP_PROCESSING_TARGET_GPU = 1
-} beatmup_processing_target_t;
-typedef enum {
-    BEATMUP_BITMAP_BINARY_OPERATION_OPERATION_NONE = 0,
-    BEATMUP_BITMAP_BINARY_OPERATION_OPERATION_ADD = 1,
-    BEATMUP_BITMAP_BINARY_OPERATION_OPERATION_MULTIPLY = 2
-} beatmup_bitmap_binary_operation_operation_t;
-typedef enum {
-    BEATMUP_MULTITASK_REPETITION_POLICY_REPEAT_ALWAYS = 0,
-    BEATMUP_MULTITASK_REPETITION_POLICY_REPEAT_UPDATE = 1,
-    BEATMUP_MULTITASK_REPETITION_POLICY_IGNORE_IF_UPTODATE = 2,
-    BEATMUP_MULTITASK_REPETITION_POLICY_IGNORE_ALWAYS = 3
-} beatmup_multitask_repetition_policy_t;
+typedef unsigned char beatmup_pool_index_t;
 typedef struct {
-    int _1;
-    int _2;
-} beatmup_int_point_t;
-typedef handle_t beatmup_bitmap_ptr_t;
+    beatmup_color4f_t _1;
+    beatmup_color4f_t _2;
+    beatmup_color4f_t _3;
+    beatmup_color4f_t _4;
+} beatmup_color_matrix_t;
 typedef uint32_t beatmup_msize_t;
+typedef handle_t beatmup_bitmap_ptr_t;
 typedef uint8_t beatmup_pixbyte_t;
 
 #ifdef __cplusplus
@@ -131,8 +143,6 @@ beatmup_msize_t BeatmupEnvironmentGetTotalRam();
 void BeatmupEnvironmentWarmUpGpu(handle_t);
 
 /* Beatmup::IntPoint */
-int BeatmupCustomPointGetX2(const beatmup_int_point_t*);
-int BeatmupCustomPointGetY2(const beatmup_int_point_t*);
 bool BeatmupCustomPointIsEqual(const beatmup_int_point_t*, const beatmup_int_point_t* _);
 beatmup_int_point_t BeatmupCustomPointAdd1(const beatmup_int_point_t*, const beatmup_int_point_t* _);
 beatmup_int_point_t BeatmupCustomPointSubtract1(const beatmup_int_point_t*, const beatmup_int_point_t* _);
@@ -145,20 +155,16 @@ int BeatmupCustomPointHypot22(const beatmup_int_point_t*);
 bool BeatmupCustomPointIsInsideAxesSpan2(const beatmup_int_point_t*, int scaleX, int scaleY);
 
 /* Beatmup::IntRectangle */
-beatmup_int_rectangle_t BeatmupCustomRectangleMultiply(const beatmup_int_rectangle_t*, int _);
-beatmup_int_rectangle_t BeatmupCustomRectangleDivide(const beatmup_int_rectangle_t*, int _);
-int BeatmupCustomRectangleGetX12(const beatmup_int_rectangle_t*);
-int BeatmupCustomRectangleGetY12(const beatmup_int_rectangle_t*);
-int BeatmupCustomRectangleGetX22(const beatmup_int_rectangle_t*);
-int BeatmupCustomRectangleGetY22(const beatmup_int_rectangle_t*);
+beatmup_int_rectangle_t BeatmupCustomRectangleMultiply2(const beatmup_int_rectangle_t*, int _);
+beatmup_int_rectangle_t BeatmupCustomRectangleDivide2(const beatmup_int_rectangle_t*, int _);
 int BeatmupCustomRectangleWidth2(const beatmup_int_rectangle_t*);
 int BeatmupCustomRectangleHeight2(const beatmup_int_rectangle_t*);
 int BeatmupCustomRectangleGetArea2(const beatmup_int_rectangle_t*);
 void BeatmupCustomRectangleNormalize2(beatmup_int_rectangle_t*);
 void BeatmupCustomRectangleTranslate2(beatmup_int_rectangle_t*, int x, int y);
 void BeatmupCustomRectangleScale2(beatmup_int_rectangle_t*, int x, int y);
-void BeatmupCustomRectangleLimit(beatmup_int_rectangle_t*, const beatmup_int_rectangle_t* frame);
-beatmup_int_rectangle_t BeatmupCustomRectangleTranslated(beatmup_int_rectangle_t*, int x, int y);
+void BeatmupCustomRectangleLimit2(beatmup_int_rectangle_t*, const beatmup_int_rectangle_t* frame);
+beatmup_int_rectangle_t BeatmupCustomRectangleTranslated2(beatmup_int_rectangle_t*, int x, int y);
 short BeatmupCustomRectangleHorizontalPositioningTest2(const beatmup_int_rectangle_t*, int x);
 short BeatmupCustomRectangleVerticalPositioningTest2(const beatmup_int_rectangle_t*, int y);
 void BeatmupCustomRectangleGrow2(beatmup_int_rectangle_t*, int r);
@@ -172,8 +178,6 @@ float BeatmupImageResolutionGetAspectRatio(const beatmup_image_resolution_t*);
 float BeatmupImageResolutionGetInvAspectRatio(const beatmup_image_resolution_t*);
 bool BeatmupImageResolutionFat(const beatmup_image_resolution_t*);
 beatmup_int_rectangle_t BeatmupImageResolutionClientRect(const beatmup_image_resolution_t*);
-unsigned int BeatmupImageResolutionGetWidth(const beatmup_image_resolution_t*);
-unsigned int BeatmupImageResolutionGetHeight(const beatmup_image_resolution_t*);
 void BeatmupImageResolutionSet(beatmup_image_resolution_t*, unsigned int width, unsigned int height);
 
 /* Beatmup::AbstractBitmap */
@@ -264,6 +268,18 @@ handle_t BeatmupBitmapToolsChessboard(handle_t env, int width, int height, int c
 void BeatmupBitmapToolsMakeOpaque(handle_t, beatmup_int_rectangle_t);
 void BeatmupBitmapToolsInvert(handle_t input, handle_t output);
 
+/* Beatmup::Color::Matrix */
+beatmup_color4f_t* BeatmupColorMatrixR2(beatmup_color_matrix_t*);
+beatmup_color4f_t* BeatmupColorMatrixG2(beatmup_color_matrix_t*);
+beatmup_color4f_t* BeatmupColorMatrixB2(beatmup_color_matrix_t*);
+beatmup_color4f_t* BeatmupColorMatrixA2(beatmup_color_matrix_t*);
+beatmup_color4f_t* BeatmupColorMatrixIndex1(beatmup_color_matrix_t*, int);
+beatmup_color4f_t BeatmupColorMatrixIndex2(const beatmup_color_matrix_t*, int);
+beatmup_color_matrix_t BeatmupColorMatrixMultiply(const beatmup_color_matrix_t*, const beatmup_color_matrix_t*);
+void BeatmupColorMatrixAssign(beatmup_color_matrix_t*, const beatmup_color_matrix_t*);
+beatmup_color_matrix_t BeatmupColorMatrixGetHSVCorrection(float hDegrees, float s, float v);
+beatmup_color_matrix_t BeatmupColorMatrixGetColorInversion(const beatmup_color3f_t* preservedColor, float sScale, float vScale);
+
 /* Beatmup::Filters::ImageTuning */
 void BeatmupFiltersImageTuningCreate(handle_t *);
 void BeatmupFiltersImageTuningSetBitmaps(handle_t, handle_t input, handle_t output);
@@ -285,7 +301,6 @@ void BeatmupFiltersColorMatrixCreate(handle_t *);
 void BeatmupFiltersColorMatrixApply(handle_t, int startx, int starty, beatmup_msize_t nPix, handle_t thread);
 bool BeatmupFiltersColorMatrixIsIntegerApproximationsAllowed(chandle_t);
 void BeatmupFiltersColorMatrixAllowIntegerApproximations(handle_t, bool allow);
-handle_t BeatmupFiltersColorMatrixGetMatrix(handle_t);
 void BeatmupFiltersColorMatrixSetCoefficients(handle_t, int outChannel, float add, float inR, float inG, float inB, float inA);
 void BeatmupFiltersColorMatrixSetHSVCorrection(handle_t, float addHueDegrees, float scaleSat, float scaleVal);
 void BeatmupFiltersColorMatrixSetColorInversion(handle_t, beatmup_color3f_t preservedHue, float scaleSat, float scaleVal);
@@ -315,7 +330,7 @@ int BeatmupFloodFillGetContourCount(chandle_t);
 chandle_t BeatmupFloodFillGetContour(chandle_t, int contourIndex);
 void BeatmupFloodFillSetInput(handle_t, handle_t);
 void BeatmupFloodFillSetOutput(handle_t, handle_t);
-void BeatmupFloodFillSetMaskPos(handle_t, beatmup_int_point_t*);
+void BeatmupFloodFillSetMaskPos(handle_t, const beatmup_int_point_t*);
 void BeatmupFloodFillSetSeeds2(handle_t, const int* seedsXY, int seedCount);
 void BeatmupFloodFillSetTolerance(handle_t, float tolerance);
 void BeatmupFloodFillSetBorderPostprocessing(handle_t, beatmup_flood_fill_border_morphology_t operation, float holdRadius, float releaseRadius);
