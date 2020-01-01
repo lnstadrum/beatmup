@@ -1,5 +1,5 @@
 #include "audio_signal_plot.h"
-#include "../bitmap/color.h"
+#include "../color/colors.h"
 #include "../bitmap/bitmap_access.h"
 #include "../bitmap/processing.h"
 #include <algorithm>
@@ -21,26 +21,26 @@ public:
 		\param color1	color of 1st and 3rd bars
 		\param color2	color of 2nd bar
 	*/
-	static void process(out_t ptr, int x, int y1, int y2, int y3, const pixint4& color1, const pixint4& color2) {
+	static void process(out_t ptr, int x, int y1, int y2, int y3, const color4i& color1, const color4i& color2) {
 		out_t ref = ptr;
 		ref.goTo(x, y1);
 		while (ptr < ref) {
-			ptr = color1;
+			ptr = pixint4::fromColor(color1);
 			ptr += ptr.getWidth();
 		}
 		ref.goTo(x, y2);
 		while (ptr < ref) {
-			ptr = color2;
+			ptr = pixint4::fromColor(color2);
 			ptr += ptr.getWidth();
 		}
-		ptr = color2;
+		ptr = pixint4::fromColor(color2);
 		ptr += ptr.getWidth();
 		ref.goTo(x, y3);
 		while (ptr < ref) {
-			ptr = color1;
+			ptr = pixint4::fromColor(color1);
 			ptr += ptr.getWidth();
 		}
-		ptr = color1;
+		ptr = pixint4::fromColor(color1);
 	}
 };
 
@@ -64,48 +64,49 @@ public:
 	static void process(
 		out_t ptr,
 		int x, int y1, int y2, int y3, int y4, int y5,
-		const pixint4& color1, const pixint4& color2, const pixint4& color3
+		const color4i& color1, const color4i& color2, const color4i& color3
 	) {
 		out_t ref = ptr;
 		ref.goTo(x, y1);
 		while (ptr < ref) {
-			ptr = color1;
+			ptr = pixint4::fromColor(color1);
 			ptr += ptr.getWidth();
 		}
 		ref.goTo(x, y2);
 		while (ptr < ref) {
-			ptr = color2;
+			ptr = pixint4::fromColor(color2);
 			ptr += ptr.getWidth();
 		}
 		ref.goTo(x, y3);
 		while (ptr < ref) {
-			ptr = color3;
+			ptr = pixint4::fromColor(color3);
 			ptr += ptr.getWidth();
 		}
-		ptr = color3; ptr += ptr.getWidth();
+		ptr = pixint4::fromColor(color3);
+		ptr += ptr.getWidth();
 		ref.goTo(x, y4);
 		while (ptr < ref) {
-			ptr = color2;
+			ptr = pixint4::fromColor(color2);
 			ptr += ptr.getWidth();
 		}
 		if (y3 < y4) {
-			ptr = color2;
+			ptr = pixint4::fromColor(color2);
 			ptr += ptr.getWidth();
 		}
 		ref.goTo(x, y5);
 		while (ptr < ref) {
-			ptr = color1;
+			ptr = pixint4::fromColor(color1);
 			ptr += ptr.getWidth();
 		}
-		ptr = color1;
+		ptr = pixint4::fromColor(color1);
 	}
 };
 
 
 void AudioSignalPlot::getPlot(TaskThread& thread, std::vector<int>& data, int& left, int& right) {
 	const dtime
-		startTime = signalWindow.A.x + thread.currentThread() * signalWindow.width() / thread.totalThreads(),
-		stopTime  = signalWindow.A.x + (thread.currentThread() + 1) * signalWindow.width() / thread.totalThreads(),
+		startTime = signalWindow.a.x + thread.currentThread() * signalWindow.width() / thread.totalThreads(),
+		stopTime  = signalWindow.a.x + (thread.currentThread() + 1) * signalWindow.width() / thread.totalThreads(),
 		length = stopTime - startTime;
 	left = thread.currentThread() * outputRect.width() / thread.totalThreads();
 	right = (thread.currentThread() + 1) * outputRect.width() / thread.totalThreads();
@@ -129,8 +130,8 @@ void AudioSignalPlot::getPlot(TaskThread& thread, std::vector<int>& data, int& l
 		data.reserve(2 * width);
 		sample* pMin = min + channels, *pMax = max + channels;
 		for (int x = 0; x < width; x++) {
-			data.push_back( outputRect.B.y - (int)std::min(std::max(.0f, pMin->x * scale - signalWindow.A.y), mag) * heightMag );
-			data.push_back( outputRect.B.y - (int)std::min(std::max(.0f, pMax->x * scale - signalWindow.A.y), mag) * heightMag );
+			data.push_back( outputRect.b.y - (int)std::min(std::max(.0f, pMin->x * scale - signalWindow.a.y), mag) * heightMag );
+			data.push_back( outputRect.b.y - (int)std::min(std::max(.0f, pMax->x * scale - signalWindow.a.y), mag) * heightMag );
 			pMin += channels;
 			pMax += channels;
 		}
@@ -152,10 +153,10 @@ void AudioSignalPlot::getPlot(TaskThread& thread, std::vector<int>& data, int& l
 				ymM = yMm;
 				yMm = _;
 			}				
-			data.push_back(outputRect.B.y - (int)std::min(std::max(.0f, yMM.x * scale - signalWindow.A.y), mag) * heightMag);
-			data.push_back(outputRect.B.y - (int)std::min(std::max(.0f, yMm.x * scale - signalWindow.A.y), mag) * heightMag);
-			data.push_back(outputRect.B.y - (int)std::min(std::max(.0f, ymM.x * scale - signalWindow.A.y), mag) * heightMag);
-			data.push_back(outputRect.B.y - (int)std::min(std::max(.0f, ymm.x * scale - signalWindow.A.y), mag) * heightMag);
+			data.push_back(outputRect.b.y - (int)std::min(std::max(.0f, yMM.x * scale - signalWindow.a.y), mag) * heightMag);
+			data.push_back(outputRect.b.y - (int)std::min(std::max(.0f, yMm.x * scale - signalWindow.a.y), mag) * heightMag);
+			data.push_back(outputRect.b.y - (int)std::min(std::max(.0f, ymM.x * scale - signalWindow.a.y), mag) * heightMag);
+			data.push_back(outputRect.b.y - (int)std::min(std::max(.0f, ymm.x * scale - signalWindow.a.y), mag) * heightMag);
 		}
 	}
 	delete[] min;
@@ -167,9 +168,9 @@ AudioSignalPlot::AudioSignalPlot():
 	signal(NULL), output(NULL), outputRect(0,0,100,100), signalWindow(0,-32768,100,32767), scale(1.0f), channels(-1)
 	//fixme: set reasonable values
 {
-	palette.bgColor = IntColors::White;
-	palette.color1 = IntColors::DarkSeaGreen1;
-	palette.color2 = IntColors::DarkSeaGreen2;
+	palette.bgColor = Colors::White;
+	palette.color1 = Colors::DarkSeaGreen1;
+	palette.color2 = Colors::DarkSeaGreen2;
 }
 
 
@@ -183,15 +184,15 @@ bool AudioSignalPlot::process(TaskThread& thread) {
 	if (0 <= channels && channels < signal->getChannelCount())
 		for (int x = x0; x < x1 && !thread.isTaskAborted(); x++) {
 			int y0 = *y++, y1 = *y++;
-			BitmapProcessing::write<DrawBars3>(*output, x, outputRect.A.y, x, y0, y1, outputRect.B.y, palette.bgColor, palette.color1);
+			BitmapProcessing::write<DrawBars3>(*output, x, outputRect.a.y, x, y0, y1, outputRect.b.y, palette.bgColor, palette.color1);
 		}
 	// all channels
 	else
 		for (int x = x0; x < x1 && !thread.isTaskAborted(); x++) {
 			int y0 = *y++, y1 = *y++, y2 = *y++, y3 = *y++;
 			BitmapProcessing::write<DrawBars5>(
-				*output, x, outputRect.A.y,
-				x, y0, y1, y2, y3, outputRect.B.y,
+				*output, x, outputRect.a.y,
+				x, y0, y1, y2, y3, outputRect.b.y,
 				palette.bgColor, palette.color1, palette.color2
 			);
 		}
@@ -245,7 +246,7 @@ void AudioSignalPlot::setSignalWindow(IntRectangle aWindow, float aScale) {
 }
 
 
-void AudioSignalPlot::setPalette(pixint4 bgColor, pixint4 color1, pixint4 color2) {
+void AudioSignalPlot::setPalette(color4i bgColor, color4i color1, color4i color2) {
 	palette.bgColor = bgColor;
 	palette.color1 = color1;
 	palette.color2 = color2;

@@ -96,7 +96,7 @@ void JavaFactory::setIntPoint(JNIEnv *jenv, int x, int y, jobject jPoint) {
 }
 
 
-jobject JavaFactory::makeColor(JNIEnv *jenv, const Beatmup::pixint4 c) {
+jobject JavaFactory::makeColor(JNIEnv *jenv, const Beatmup::color4i& c) {
     initialize(jenv);
     jclass cls = jenv->FindClass("Beatmup/Imaging/Color");
     jobject result = jenv->NewObject(cls, color.constructor, c.r, c.g, c.b, c.a);
@@ -105,7 +105,7 @@ jobject JavaFactory::makeColor(JNIEnv *jenv, const Beatmup::pixint4 c) {
 }
 
 
-void JavaFactory::setColor(JNIEnv* jenv, const Beatmup::pixint4 c, jobject jColor) {
+void JavaFactory::setColor(JNIEnv* jenv, const Beatmup::color4i& c, jobject jColor) {
     initialize(jenv);
     jenv->SetIntField(jColor, color.idr, c.r);
     jenv->SetIntField(jColor, color.idg, c.g);

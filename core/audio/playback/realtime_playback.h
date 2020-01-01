@@ -105,7 +105,7 @@ namespace Beatmup {
 
             inline void bufferQueueCallbackFunc() {
                 // a buffer is played, step forward
-                DEBUG_I("Buffer played: %d", playIndex);
+                BEATMUP_DEBUG_I("Buffer played: %d", playIndex);
                 playIndex++;
                 // send as many buffas as we can
                 while (sendNextBuffer()) {}

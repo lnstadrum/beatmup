@@ -55,7 +55,6 @@ set(BEATMUP_SOURCES
     ${BEATMUP_SRC_DIR}/masking/region_filling.cpp
     ${BEATMUP_SRC_DIR}/pipelining/custom_pipeline.cpp
     ${BEATMUP_SRC_DIR}/pipelining/multitask.cpp
-    ${BEATMUP_SRC_DIR}/pyramids/decomposition.cpp
     ${BEATMUP_SRC_DIR}/scene/renderer.cpp
     ${BEATMUP_SRC_DIR}/scene/rendering_context.cpp
     ${BEATMUP_SRC_DIR}/scene/rendering_programs.cpp

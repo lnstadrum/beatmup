@@ -48,7 +48,7 @@ void HarmonicSource::prepare(
 
 
 void HarmonicSource::render(TaskThread& thread, psample* buffer, const dtime bufferLength) {
-    DEBUG_I("FILLING BUFFER OF %d SAMPLES at time %d", bufferLength, time);
+    BEATMUP_DEBUG_I("FILLING BUFFER OF %d SAMPLES at time %d", bufferLength, time);
     switch (sampleFormat) {
         case Int8:
             fillSin<sample8>(buffer, time, bufferLength, amplitude, frequency, phase, sampleRate, numChannels, 127);
