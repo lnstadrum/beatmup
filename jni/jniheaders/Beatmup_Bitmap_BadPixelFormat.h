@@ -8,13 +8,13 @@
 extern "C" {
 #endif
 #undef Beatmup_Bitmap_BadPixelFormat_serialVersionUID
-#define Beatmup_Bitmap_BadPixelFormat_serialVersionUID -3042686055658047285i64
+#define Beatmup_Bitmap_BadPixelFormat_serialVersionUID -3042686055658047285LL
 #undef Beatmup_Bitmap_BadPixelFormat_serialVersionUID
-#define Beatmup_Bitmap_BadPixelFormat_serialVersionUID -3387516993124229948i64
+#define Beatmup_Bitmap_BadPixelFormat_serialVersionUID -3387516993124229948LL
 #undef Beatmup_Bitmap_BadPixelFormat_serialVersionUID
-#define Beatmup_Bitmap_BadPixelFormat_serialVersionUID -7034897190745766939i64
+#define Beatmup_Bitmap_BadPixelFormat_serialVersionUID -7034897190745766939LL
 #undef Beatmup_Bitmap_BadPixelFormat_serialVersionUID
-#define Beatmup_Bitmap_BadPixelFormat_serialVersionUID -5365630128856068164i64
+#define Beatmup_Bitmap_BadPixelFormat_serialVersionUID -5365630128856068164LL
 #ifdef __cplusplus
 }
 #endif

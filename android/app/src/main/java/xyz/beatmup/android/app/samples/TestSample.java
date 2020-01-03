@@ -4,6 +4,7 @@ import android.app.Activity;
 
 import java.io.IOException;
 
+import Beatmup.Android.Camera;
 import Beatmup.Context;
 import Beatmup.Geometry.AffineMapping;
 import Beatmup.Rendering.Scene;
@@ -34,11 +35,12 @@ public abstract class TestSample {
      * to illustrate a particular feature.
      * @param context       Beatmup engine instance
      * @param app           Application activity
+     * @param camera        Camera object used by the scene
      *
      * @return the scene.
      * @throws IOException if cannot load some images
      */
-    public abstract Scene designScene(Context context, Activity app) throws IOException;
+    public abstract Scene designScene(Beatmup.Context context, Activity app, Camera camera) throws IOException;
 
     @Override
     public String toString() {

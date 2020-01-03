@@ -5,6 +5,7 @@ import android.app.Activity;
 import java.io.IOException;
 
 import Beatmup.Android.Bitmap;
+import Beatmup.Android.Camera;
 import Beatmup.Context;
 import Beatmup.Imaging.PixelFormat;
 import Beatmup.Shading.Shader;
@@ -24,7 +25,7 @@ public class BasicRendering extends TestSample {
     }
 
     @Override
-    public Scene designScene(Context context, Activity app) throws IOException {
+    public Scene designScene(Beatmup.Context context, Activity app, Camera camera) throws IOException {
         Scene scene = new Scene();
         Bitmap androidBitmap = Bitmap.decodeStream(context, app.getAssets().open("fecamp.bmp"));
 

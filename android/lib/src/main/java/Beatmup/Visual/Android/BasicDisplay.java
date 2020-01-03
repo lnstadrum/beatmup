@@ -38,14 +38,14 @@ public class BasicDisplay extends SurfaceView {
                 renderer.render();
             }
             else
-                Log.e("AndroidBasicGLDisplay", "Unable to bind the surface");
+                Log.e("BasicDisplay", "Unable to bind the surface");
         }
     }
 
     private void unmakeCurrent() {
         if (renderer != null)
             if (!bindSurfaceToContext(renderer.getContext(), null))
-                Log.e("AndroidBasicGLDisplay", "Unable to unbind the surface");
+                Log.e("BasicDisplay", "Unable to unbind the surface");
     }
 
     public BasicDisplay(final android.content.Context context, AttributeSet attrs) {

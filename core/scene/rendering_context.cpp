@@ -60,10 +60,3 @@ GL::Program& RenderingContext::getProgram() {
 void RenderingContext::bindMask(AbstractBitmap& mask) {
 	gpu.getRenderingPrograms().bindMask(&gpu, mask);
 }
-
-
-GL::TextureHandler* RenderingContext::getCameraFrame() {
-	if (!cameraFrame && eventListener)
-		eventListener->onCameraFrameRendering(cameraFrame);
-	return cameraFrame;
-}

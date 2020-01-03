@@ -15,22 +15,6 @@ extern "C" {
 JNIEXPORT jlong JNICALL Java_Beatmup_Android_Context_newEnvironment
   (JNIEnv *, jclass, jint, jstring);
 
-/*
- * Class:     Beatmup_Android_Context
- * Method:    initCamTexture
- * Signature: ()V
- */
-JNIEXPORT void JNICALL Java_Beatmup_Android_Context_initCamTexture
-  (JNIEnv *, jobject);
-
-/*
- * Class:     Beatmup_Android_Context
- * Method:    cameraTextureUpdated
- * Signature: (JII)V
- */
-JNIEXPORT void JNICALL Java_Beatmup_Android_Context_cameraTextureUpdated
-  (JNIEnv *, jobject, jlong, jint, jint);
-
 #ifdef __cplusplus
 }
 #endif

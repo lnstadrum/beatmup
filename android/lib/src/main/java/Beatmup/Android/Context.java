@@ -10,20 +10,9 @@ import java.io.IOException;
  * Beatmup engine context for Android
  */
 public class Context extends Beatmup.Context {
-    private SurfaceTexture camTexture;
     protected java.lang.Object glSurface;             //!< a handle to a surface currently bound to the context, accessed from JNI layer
 
     private static native long newEnvironment(int numPools, String filesFolder);
-    private native void initCamTexture();
-    private native void cameraTextureUpdated(long handle, int width, int height);
-
-    private void initCamTextureCallback(int textureHandle) {
-        camTexture = new SurfaceTexture(textureHandle);
-    }
-
-    private void updateCamTextureCallback() {
-        camTexture.updateTexImage();
-    }
 
     private static String getPathAsPrefix(File filesDir) {
         if (filesDir == null)
@@ -43,29 +32,6 @@ public class Context extends Beatmup.Context {
     public Context(final int poolCount, File filesDir) {
         super(newEnvironment(poolCount, getPathAsPrefix(filesDir)));
         glSurface = null;
-    }
-
-
-    public synchronized void useCamera(Camera camera) {
-        if (camTexture == null)
-            initCamTexture();
-        try {
-            camera.setPreviewTexture(camTexture);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    protected synchronized SurfaceTexture getCamTexture() {
-        if (camTexture == null)
-            initCamTexture();
-        return camTexture;
-    }
-
-
-    protected void cameraFrameReceived(int width, int height) {
-        cameraTextureUpdated(handle, width, height);
     }
 
 

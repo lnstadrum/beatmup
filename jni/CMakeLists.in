@@ -7,7 +7,7 @@ set(JNI_SOURCES_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
 # generate headers
 execute_process(
-    COMMAND CMD /C generate_headers.bat
+    COMMAND generate_headers.sh
     WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
     OUTPUT_VARIABLE GENERATE_HEADERS_OUTPUT
     ERROR_VARIABLE GENERATE_HEADERS_STDERR
@@ -26,12 +26,12 @@ set(BEATMUP_SOURCES	${BEATMUP_SOURCES}
 )
 
 if (PLATFORM_ANDROID)
-	set(BEATMUP_SOURCES ${BEATMUP_SOURCES}
-		${JNI_SOURCES_DIR}/android/bitmap.cpp
-		${JNI_SOURCES_DIR}/android/camera_texture.cpp
-		${JNI_SOURCES_DIR}/android/environment.cpp
-		${JNI_SOURCES_DIR}/android/gl_utils.cpp
-	)
+    set(BEATMUP_SOURCES ${BEATMUP_SOURCES}
+        ${JNI_SOURCES_DIR}/android/bitmap.cpp
+        ${JNI_SOURCES_DIR}/android/external_bitmap.cpp
+        ${JNI_SOURCES_DIR}/android/environment.cpp
+        ${JNI_SOURCES_DIR}/android/gl_utils.cpp
+    )
 endif()
 
 
@@ -45,14 +45,14 @@ endif()
 
 # audio package sources
 if (PROFILE_AUDIO)
-	set(BEATMUP_SOURCES ${BEATMUP_SOURCES}		
-		${JNI_SOURCES_DIR}/wrapper_audio.cpp
-	)
-	if (PLATFORM_ANDROID)
-		set(BEATMUP_SOURCES ${BEATMUP_SOURCES}
-			${JNI_SOURCES_DIR}/android/sles_playback.cpp
-		)
-	endif()
+    set(BEATMUP_SOURCES ${BEATMUP_SOURCES}
+        ${JNI_SOURCES_DIR}/wrapper_audio.cpp
+    )
+    if (PLATFORM_ANDROID)
+        set(BEATMUP_SOURCES ${BEATMUP_SOURCES}
+            ${JNI_SOURCES_DIR}/android/sles_playback.cpp
+        )
+    endif()
 endif()
 
 

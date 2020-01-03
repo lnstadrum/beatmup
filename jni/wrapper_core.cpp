@@ -341,23 +341,6 @@ JNIMETHOD(jlong, newEnvironment, Java_Beatmup_Android_Context, newEnvironment)(J
         );
 }
 
-
-JNIMETHOD(void, initCamTexture, Java_Beatmup_Android_Context, initCamTexture)(JNIEnv * jenv, jobject jCtx) {
-    BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Android::Environment, env, jCtx);
-    env->initCameraTexture(jenv, jCtx);
-}
-
-
-JNIMETHOD(void, cameraTextureUpdated, Java_Beatmup_Android_Context, cameraTextureUpdated)(JNIEnv * jenv, jobject, jlong hCtx, jint width, jint height) {
-    BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Android::Environment, env, hCtx);
-    if (env->cameraTexture) {
-        env->cameraTexture->setFrameSize(width, height);
-        env->cameraTextureUpdated = true;
-    }
-}
-
 /////////////////////////////////////////////////////////////////////////////////////////////
 //                                      VARIABLES BUNDLE
 /////////////////////////////////////////////////////////////////////////////////////////////

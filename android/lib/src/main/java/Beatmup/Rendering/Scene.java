@@ -50,9 +50,6 @@ public class Scene extends Beatmup.Object {
     private native void scaleLayer(long handle, float factor, float fixX, float fixY);
     private native void rotateLayer(long handle, float angleDegrees, float fixX, float fixY);
 
-    private native void setBitmapLayerImageSource(long handle, int source);
-    private native int getBitmapLayerImageSource(long handle);
-
     private native void setBitmapLayerModulationColor(long handle, float r, float g, float b, float a);
     private native void getBitmapLayerModulationColor(long handle, Color color);
 
@@ -324,30 +321,12 @@ public class Scene extends Beatmup.Object {
      * Simple bitmap scene layer with no mask
      */
     public static class BitmapLayer extends Layer {
-        /**
-         * Specifies for a given scene layer where the image it displays comes from
-         */
-        public enum ImageSource {
-            CAMERA,     //!< Image comes from a device camera carefully configured by the user. The
-                        //!< frame is shared amongst other layers using the camera image source and
-                        //!< is obtained by the scene renderer internally.
-            BITMAP      //!< Image is a bitmap. Every bitmap layer has its own pointer to a bitmap
-                        //!< to display which is set up by the user.
-        };
 
         private Bitmap bitmap;
 
         private BitmapLayer(Scene scene) {
             super(scene);
             handle = scene.newBitmapLayer(scene.handle, this);
-        }
-
-        public void setImageSource(ImageSource newSource) {
-            scene.setBitmapLayerImageSource(handle, newSource.ordinal());
-        }
-
-        public ImageSource getImageSource() {
-            return ImageSource.values()[ scene.getBitmapLayerImageSource(handle) ];
         }
 
         /**
