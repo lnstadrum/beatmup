@@ -249,25 +249,14 @@ Scene::BitmapLayer::BitmapLayer():
 {}
 
 Scene::BitmapLayer::BitmapLayer(Type type):
-	Layer(type), source(ImageSource::BITMAP), invAr(0), bitmap(nullptr), bitmapMapping(), modulation(Colors::White)
+	Layer(type), invAr(0), bitmap(nullptr), bitmapMapping(), modulation(Colors::White)
 {}
 
 
 GL::TextureHandler* Scene::BitmapLayer::resolveContent(RenderingContext& context) {
-	GL::TextureHandler* texture = nullptr;
-	switch (source) {
-	case Scene::BitmapLayer::ImageSource::BITMAP:
-		if (bitmap)
+	if (bitmap)
 			context.lockBitmap(bitmap);
-		return bitmap;
-
-#ifdef BEATMUP_PLATFORM_ANDROID
-	case Scene::BitmapLayer::ImageSource::CAMERA:
-		return context.getCameraFrame();
-#endif
-	}
-
-	return nullptr;
+	return bitmap;
 }
 
 void Scene::BitmapLayer::configure(RenderingContext& context, GL::TextureHandler* content) {
@@ -307,7 +296,7 @@ void Scene::BitmapLayer::render(RenderingContext& context) {
 
 bool Scene::BitmapLayer::testPoint(float x, float y) const {
 	// no bitmap - no deal (if the source is set to bitmap)
-	if (!bitmap && source == ImageSource::BITMAP)
+	if (!bitmap)
 		return false;
 	return (mapping * bitmapMapping).isPointInside(x, y, 1, invAr);
 }
@@ -365,7 +354,7 @@ void Scene::MaskedBitmapLayer::render(RenderingContext& context) {
 
 bool Scene::MaskedBitmapLayer::testPoint(float x, float y) const {
 	// no bitmap - no deal (if the source is set to bitmap)
-	if (!bitmap && source == ImageSource::BITMAP)
+	if (!bitmap)
 		return false;
 	if (mask) {
 		RuntimeError::check(mask->isUpToDate(CPU), "Mask is out of date on CPU.");
@@ -426,7 +415,7 @@ void Scene::ShapedBitmapLayer::render(RenderingContext& context) {
 
 bool Scene::ShapedBitmapLayer::testPoint(float x, float y) const {
 	// no bitmap - no deal (if the source is set to bitmap)
-	if (!bitmap && source == ImageSource::BITMAP)
+	if (!bitmap)
 		return false;
 	return (mapping * maskMapping).isPointInside(x, y, 1, invAr) && BitmapLayer::testPoint(x, y);
 }

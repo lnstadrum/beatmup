@@ -30,7 +30,7 @@ namespace Beatmup {
 		GL::TextureHandler* cameraFrame;
 		EventListener* eventListener;
 		AffineMapping mapping;
-		
+
 		const float outputWidth;
 		const bool renderingOnScreen;
 
@@ -41,21 +41,20 @@ namespace Beatmup {
 		void lockBitmap(BitmapPtr bitmap);
 		void unlockBitmap(BitmapPtr bitmap);
 		GraphicPipeline& getGpu() { return gpu; }
-		
+
 		/**
 			Initiates the rendering operation.
 		*/
 		void blend();
-		
+
 		void enableProgram(RenderingPrograms::Program type);
 		void enableProgram(GL::Program& program);
 		GL::Program& getProgram();
 
 		void bindMask(AbstractBitmap& mask);
-		
+
 		void setMapping(const AffineMapping& mapping) { this->mapping = mapping; }
-		const AffineMapping& getMapping() const { return mapping;  }
-		GL::TextureHandler* getCameraFrame();
+		const AffineMapping& getMapping() const { return mapping; }
 
 		const float getOutputWidth() const { return outputWidth; }
 		const bool isRenderingOnScreen() const { return renderingOnScreen; }

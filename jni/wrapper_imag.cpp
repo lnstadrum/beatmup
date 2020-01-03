@@ -1,6 +1,7 @@
 #include "wrapper.h"
 
 #include "jniheaders/Beatmup_Bitmap.h"
+#include "jniheaders/Beatmup_Android_ExternalBitmap.h"
 #include "jniheaders/Beatmup_Rendering_Scene.h"
 #include "jniheaders/Beatmup_Rendering_SceneRenderer.h"
 #include "jniheaders/Beatmup_Shading_Shader.h"
@@ -14,8 +15,9 @@
 #include "jniheaders/Beatmup_Imaging_Filters_Local_Sepia.h"
 #include "jniheaders/Beatmup_Imaging_ColorMatrix.h"
 
+#include "android/environment.h"
 #include "android/bitmap.h"
-#include "android/renderer_toolkit.h"
+#include "android/external_bitmap.h"
 
 #include <core/environment.h>
 #include <core/geometry.h>
@@ -309,20 +311,6 @@ JNIMETHOD(void, rotateLayer, Java_Beatmup_Rendering_Scene, rotateLayer)(JNIEnv *
 }
 
 
-JNIMETHOD(void, setBitmapLayerImageSource, Java_Beatmup_Rendering_Scene, setBitmapLayerImageSource)(JNIEnv * jenv, jobject, jlong hLayer, jint source) {
-    BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Scene::BitmapLayer, layer, hLayer);
-    layer->setImageSource((Beatmup::Scene::BitmapLayer::ImageSource) source);
-}
-
-
-JNIMETHOD(jint, getBitmapLayerImageSource, Java_Beatmup_Rendering_Scene, getBitmapLayerImageSource)(JNIEnv * jenv, jobject, jlong hLayer) {
-    BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Scene::BitmapLayer, layer, hLayer);
-    return (jint) layer->getImageSource();
-}
-
-
 JNIMETHOD(void, setBitmapLayerModulationColor, Java_Beatmup_Rendering_Scene, setBitmapLayerModulationColor)(JNIEnv * jenv, jobject, jlong hLayer, jfloat r, jfloat g, jfloat b, jfloat a) {
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::Scene::BitmapLayer, layer, hLayer);
@@ -512,7 +500,7 @@ JNIMETHOD(void, setShadedBitmapLayerShader, Java_Beatmup_Rendering_Scene, setSha
 JNIMETHOD(jlong, newSceneRenderer, Java_Beatmup_Rendering_SceneRenderer, newSceneRenderer)(JNIEnv * jenv, jclass, jobject jEnv) {
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::Android::Environment, env, jEnv);
-    Beatmup::SceneRenderer* renderer = new Beatmup::Android::RendererToolkit<Beatmup::SceneRenderer>(*env, jenv, jEnv);
+    Beatmup::SceneRenderer* renderer = new Beatmup::SceneRenderer();
     return (jlong)renderer;
 }
 
@@ -676,6 +664,32 @@ JNIMETHOD(void, crop, Java_Beatmup_Bitmap, crop)(JNIEnv *jenv, jobject, jlong hI
     crop.setCropRect(rect);
     crop.setOutputOrigin(outOrigin);
     input->getEnvironment().performTask(crop);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+//                                       EXTERNAL BITMAP
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+JNIMETHOD(jlong, newExternalImage, Java_Beatmup_Android_ExternalBitmap, newExternalImage)(JNIEnv *jenv, jclass, jobject jCtx) {
+    BEATMUP_ENTER;
+    BEATMUP_OBJ(Beatmup::Environment, env, jCtx);
+    Beatmup::Android::ExternalBitmap* bitmap = new Beatmup::Android::ExternalBitmap(*env);
+    // env is used in internal bitmap destructor, so add an internal ref
+    $pool.addJavaReference(jenv, jCtx, bitmap);
+    return (jlong) bitmap;
+}
+
+
+JNIMETHOD(void, bind, Java_Beatmup_Android_ExternalBitmap, bind)(JNIEnv * jenv, jobject jobj, jlong hBitmap) {
+    BEATMUP_OBJ(Beatmup::Android::ExternalBitmap, bitmap, hBitmap);
+    bitmap->bind(jenv, jobj);
+}
+
+
+JNIMETHOD(void, notifyUpdate, Java_Beatmup_Android_ExternalBitmap, notifyUpdate)(JNIEnv * jenv, jobject, jlong hBitmap, jint width, jint height) {
+    BEATMUP_ENTER;
+    BEATMUP_OBJ(Beatmup::Android::ExternalBitmap, bitmap, hBitmap);
+    bitmap->notifyUpdate(width, height);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////

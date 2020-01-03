@@ -55,6 +55,7 @@ public class Camera {
     };
 
     private Beatmup.Android.Context context;
+    private ExternalBitmap image;
 
     private String[] cameraIds;
     private int selectedCameraIdx;
@@ -73,6 +74,7 @@ public class Camera {
     @TargetApi(Build.VERSION_CODES.M)
     public Camera(Beatmup.Android.Context beatmup, Context context) throws CameraAccessException {
         this.context = beatmup;
+        image = new ExternalBitmap(beatmup);
         stateCallback = new DeviceStateCallback();
 
         manager = (CameraManager) context.getSystemService(android.content.Context.CAMERA_SERVICE);
@@ -83,6 +85,14 @@ public class Camera {
         backgroundThread = new HandlerThread("Beatmup camera thread");
         backgroundThread.start();
         backgroundHandler = new Handler(backgroundThread.getLooper());
+    }
+
+    /**
+     * Retrieves an image captured by the camera.
+     * @return bitmap object.
+     */
+    public ExternalBitmap getImage() {
+        return image;
     }
 
 
@@ -329,8 +339,7 @@ public class Camera {
         @Override
         public void onOpened(CameraDevice cameraDevice) {
             this.device = cameraDevice;
-
-            SurfaceTexture texture = context.getCamTexture();
+            SurfaceTexture texture = image.getSurfaceTexture();
             assert texture != null;
             texture.setDefaultBufferSize(resolution.getWidth(), resolution.getHeight());
             Surface surface = new Surface(texture);
@@ -408,7 +417,7 @@ public class Camera {
             private class CaptureCallback extends CameraCaptureSession.CaptureCallback {
                 @Override
                 public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
-                    context.cameraFrameReceived(resolution.getWidth(), resolution.getHeight());
+                    image.notifyUpdate(resolution.getWidth(), resolution.getHeight());
 
                     if (callback != null) {
                         Face[] faces = result.get(CaptureResult.STATISTICS_FACES);

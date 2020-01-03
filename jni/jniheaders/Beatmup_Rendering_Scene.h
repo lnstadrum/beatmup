@@ -241,22 +241,6 @@ JNIEXPORT void JNICALL Java_Beatmup_Rendering_Scene_rotateLayer
 
 /*
  * Class:     Beatmup_Rendering_Scene
- * Method:    setBitmapLayerImageSource
- * Signature: (JI)V
- */
-JNIEXPORT void JNICALL Java_Beatmup_Rendering_Scene_setBitmapLayerImageSource
-  (JNIEnv *, jobject, jlong, jint);
-
-/*
- * Class:     Beatmup_Rendering_Scene
- * Method:    getBitmapLayerImageSource
- * Signature: (J)I
- */
-JNIEXPORT jint JNICALL Java_Beatmup_Rendering_Scene_getBitmapLayerImageSource
-  (JNIEnv *, jobject, jlong);
-
-/*
- * Class:     Beatmup_Rendering_Scene
  * Method:    setBitmapLayerModulationColor
  * Signature: (JFFFF)V
  */

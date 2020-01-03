@@ -411,6 +411,7 @@ public:
 
 		case GL::TextureHandler::TextureFormat::OES_Ext:
 			glBindTexture(BGL_TEXTURE_TARGET, texture.textureHandle);
+			texture.prepare(front);
 			glTexParameteri(BGL_TEXTURE_TARGET, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			glTexParameteri(BGL_TEXTURE_TARGET, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			break;

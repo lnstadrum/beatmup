@@ -61,7 +61,7 @@ namespace Beatmup {
 		protected:
 			Layer(Type type);
 			virtual void render(RenderingContext& context) {}
-			
+
 			AffineMapping mapping;		//!< layer mapping
 			bool visible;				//!< layer visibility
 			bool phantom;				//!< if `true`, layer is ignored by selection by point
@@ -92,7 +92,7 @@ namespace Beatmup {
 				Picks a child layer at given point, if any
 			*/
 			virtual Layer* getChild(float x, float y, unsigned int recursionDepth = 0) const;
-			
+
 			/**
 				Returns layer visibility flag
 			*/
@@ -112,7 +112,7 @@ namespace Beatmup {
 				Makes/unmakes layer "phantom" (i.e. whether it should not be picked when selecting layer by point).
 			*/
 			inline void setPhantom(bool phantom) {	this->phantom = phantom; }
-			
+
 			template<class LayerType> LayerType& castTo() const {
 				return (LayerType&)(*this);
 			}
@@ -144,12 +144,6 @@ namespace Beatmup {
 			/**
 				Specifies for a given scene layer where the image it displays comes from
 			*/
-			enum class ImageSource {
-#ifdef BEATMUP_PLATFORM_ANDROID
-				CAMERA,		//!< Image comes from a device camera carefully configured by the user. The frame is shared amongst other layers using the camera image source and is obtained by the scene renderer internally.
-#endif
-				BITMAP		//!< Image is a bitmap. Every bitmap layer has its own pointer to a bitmap to display which is set up by the user.
-			};
 
 		protected:
 			BitmapLayer();
@@ -163,16 +157,12 @@ namespace Beatmup {
 			void render(RenderingContext& context);
 
 			float invAr;					//!< inversed aspect ratio of what is rendered (set by SceneRenderer)
-			ImageSource source;				//!< content source
 			BitmapPtr bitmap;				//!< content to display, used if the image source is set to BITMAP
 			AffineMapping bitmapMapping;	//!< bitmap mapping w.r.t. the layer mapping
 			color4i modulation;               //!< modulation color
 
 		public:
 			bool testPoint(float x, float y) const;
-
-			inline ImageSource getImageSource() const { return source; }
-			inline void setImageSource(ImageSource imageSource) { this->source = imageSource; }
 
 			inline const BitmapPtr getBitmap() const { return bitmap; }
 			inline void setBitmap(BitmapPtr bitmap) { this->bitmap = bitmap; }

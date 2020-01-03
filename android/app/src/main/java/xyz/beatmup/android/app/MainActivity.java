@@ -15,12 +15,9 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -52,6 +49,7 @@ import Beatmup.Rendering.Scene;
 import Beatmup.Rendering.SceneRenderer;
 import Beatmup.Visual.Animator;
 import Beatmup.Visual.GestureListener;
+import xyz.beatmup.android.app.samples.BasicCameraUse;
 import xyz.beatmup.android.app.samples.BasicRendering;
 import xyz.beatmup.android.app.samples.TestSample;
 
@@ -74,7 +72,7 @@ public class MainActivity extends Activity {
                 }
 
                 @Override
-                public Scene designScene(Beatmup.Context context, Activity app) throws IOException {
+                public Scene designScene(Beatmup.Context context, Activity app, Camera camera) throws IOException {
                     //GPUBenchmark bench = new GPUBenchmark(context);
                     Log.i("Beatmup internal dir", Environment.getExternalStorageDirectory().getAbsolutePath());
                     GPUBenchmark.test(
@@ -96,7 +94,7 @@ public class MainActivity extends Activity {
                 }
 
                 @Override
-                public Scene designScene(Beatmup.Context context, Activity app) throws IOException {
+                public Scene designScene(Beatmup.Context context, Activity app, Camera camera) throws IOException {
                     Scene scene = new Scene();
 
                     Beatmup.Bitmap heart = Bitmap.decodeStream(context, getAssets().open("heart.png"));
@@ -165,7 +163,7 @@ public class MainActivity extends Activity {
                 }
 
                 @Override
-                public Scene designScene(Beatmup.Context context, Activity app) throws IOException {
+                public Scene designScene(Beatmup.Context context, Activity app, Camera camera) throws IOException {
                     Scene scene = new Scene();
                     Bitmap bitmap = Bitmap.decodeStream(context, getAssets().open("kitten.jpg"));
 
@@ -219,7 +217,7 @@ public class MainActivity extends Activity {
                 }
 
                 @Override
-                public Scene designScene(Beatmup.Context context, Activity app) throws IOException {
+                public Scene designScene(Beatmup.Context context, Activity app, Camera camera) throws IOException {
                     Scene scene = new Scene();
                     Bitmap bitmap = Bitmap.decodeStream(context, getAssets().open("kitten.jpg"));
 
@@ -238,54 +236,7 @@ public class MainActivity extends Activity {
             },
 
 
-            new TestSample() {
-                @Override
-                public String getCaption() {
-                    return "Camera";
-                }
-
-                public String getDescription() {
-                    return "Camera usage example. A layer displaying the camera image and a shader layer applying a fancy transformation to it.";
-                }
-
-                @Override
-                public Scene designScene(Beatmup.Context context, Activity app) throws IOException {
-                    Scene scene = new Scene();
-
-                    Scene.BitmapLayer layer1 = scene.newBitmapLayer();
-                    layer1.setImageSource(Scene.BitmapLayer.ImageSource.CAMERA);
-                    layer1.rotate(90);
-                    layer1.scale(0.5f);
-                    layer1.setCenterPosition(0.25f, 0.25f);
-
-                    Scene.ShadedBitmapLayer layer2 = scene.newShadedBitmapLayer();
-                    layer2.rotate(90);
-                    layer2.setImageSource(Scene.BitmapLayer.ImageSource.CAMERA);
-                    layer2.scale(0.5f);
-                    layer2.setCenterPosition(0.75f, 0.75f);
-
-                    layer2.setShader(new Shader(context));
-                    ColorMatrix matrix = new ColorMatrix();
-                    matrix.setColorInversion(Color.GREEN, 1, 1);
-                    layer2.getShader().setColorMatrix("transform", matrix);
-
-                    layer2.getShader().setSourceCode(
-                            "beatmupInputImage image;" +
-                            "varying mediump vec2 texCoord;" +
-                            "uniform mediump mat4 transform;" +
-                            "void main() {" +
-                            "   highp vec2 xy = vec2(texCoord.x, min(texCoord.y, 1.0-texCoord.y));" +
-                            "   gl_FragColor.rgba = transform * texture2D(image, xy).rgba;" +
-                            "}"
-                    );
-                    return scene;
-                }
-
-                @Override
-                public boolean usesCamera() {
-                    return true;
-                }
-            },
+            new BasicCameraUse(),
 
             new TestSample() {
                 private Multitask multitask;
@@ -297,7 +248,7 @@ public class MainActivity extends Activity {
                 }
 
                 @Override
-                public Scene designScene(Beatmup.Context context, Activity app) throws IOException {
+                public Scene designScene(Beatmup.Context context, Activity app, Camera camera) throws IOException {
                     Bitmap bitmap = Bitmap.decodeStream(context, getAssets().open("kitten.jpg"));
 
                     ShaderApplicator applicator = new ShaderApplicator(context);
@@ -381,7 +332,7 @@ public class MainActivity extends Activity {
                 public String getCaption() { return "Audio playback: harmonic"; }
 
                 @Override
-                public Scene designScene(Beatmup.Context context, Activity app) throws IOException {
+                public Scene designScene(Beatmup.Context context, Activity app, Camera camera) throws IOException {
                     harmonic = new Harmonic();
                     playback = new Playback(context);
                     playback.setSource(harmonic);
@@ -438,12 +389,12 @@ public class MainActivity extends Activity {
 
         // setting up a renderer
         renderer = new SceneRenderer(context);
-        renderer.setOutputMapping(SceneRenderer.OutputMapping.FIT_WIDTH);
+        renderer.setOutputMapping(SceneRenderer.OutputMapping.FIT_WIDTH_TO_TOP);
         renderer.setOutputReferenceWidth(1000);
         renderer.setOutputPixelsFetching(true);
         try {
             renderer.setBackground(
-                    Bitmap.decodeStream(context, getAssets().open("bg.png"))
+                    Bitmap.decodeStream(context, getAssets().open("bg.bmp"))
             );
         } catch (IOException e) {
             e.printStackTrace();
@@ -548,7 +499,7 @@ public class MainActivity extends Activity {
                 currentTest = (TestSample)view.getTag();
 
                 try {
-                    renderer.setScene(currentTest.designScene(context, MainActivity.this));
+                    renderer.setScene(currentTest.designScene(context, MainActivity.this, currentTest.usesCamera() ? camera : null));
                     if (currentTest.getDrawingTask() != null)
                         drawingTask = currentTest.getDrawingTask();
                     else
@@ -601,9 +552,13 @@ public class MainActivity extends Activity {
     private void setupCamera() {
         try {
             camera = new Camera(context, this);
-            camera.chooseResolution(224,224, Camera.ResolutionSelectionPolicy.SMALLEST_COVERAGE);
+            camera.chooseResolution(1920,1080, Camera.ResolutionSelectionPolicy.SMALLEST_COVERAGE);
+            Log.i("Beatmup", "Camera resolution: "
+                    + Integer.toString(camera.getResolution().getWidth()) + "x"
+                    + Integer.toString(camera.getResolution().getHeight()));
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
     }
+
 }

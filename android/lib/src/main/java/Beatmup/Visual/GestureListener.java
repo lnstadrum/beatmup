@@ -10,23 +10,23 @@ public class GestureListener {
             TAP_TIME_MILLISEC = 200,        //!< difference in time between down and up events to be considered as a tapping
             HOLD_TIME_MILLISEC = 500;
 
-    AffineMapping
+    private AffineMapping
             cumulatedGesture,
             lastMovement,
             currentGesture;                 //!< affine mapping representing entire current gesture (cumulated * last)
 
-    float squaredPointerTolerance;
-    int pointerCount;
-    long mainTouchTime;                     //!< timestamp when main pointer goes down
-    boolean tapping;
-    float mainX, mainY;
-    float
+    private float squaredPointerTolerance;
+    private int pointerCount;
+    private long mainTouchTime;                     //!< timestamp when main pointer goes down
+    private boolean tapping;
+    private float mainX, mainY;
+    private float
             minGestureScale,
             maxGestureScale;
 
-    Animator animator;                      //!< used to handle timed events (like hold)
-    Animator.Event holdEvent;               //!< hold event
-    int holdEventTicket;                    //!< ticket number of current hold event for Animator
+    private Animator animator;                      //!< used to handle timed events (like hold)
+    private Animator.Event holdEvent;               //!< hold event
+    private int holdEventTicket;                    //!< ticket number of current hold event for Animator
 
 
     public GestureListener(float pointerTolerance) {
