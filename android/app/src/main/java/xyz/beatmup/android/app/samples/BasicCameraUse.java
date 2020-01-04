@@ -9,6 +9,7 @@ import Beatmup.Imaging.Color;
 import Beatmup.Imaging.ColorMatrix;
 import Beatmup.Rendering.Scene;
 import Beatmup.Shading.Shader;
+import Beatmup.Task;
 
 public class BasicCameraUse extends TestSample {
     @Override
@@ -21,7 +22,7 @@ public class BasicCameraUse extends TestSample {
     }
 
     @Override
-    public Scene designScene(Beatmup.Context context, Activity app, Camera camera) throws IOException {
+    public Scene designScene(Task drawingTask, Activity app, Camera camera) throws IOException {
         Scene scene = new Scene();
 
         Scene.BitmapLayer layer1 = scene.newBitmapLayer();
@@ -36,7 +37,7 @@ public class BasicCameraUse extends TestSample {
         layer2.scale(0.5f);
         layer2.setCenterPosition(0.75f, 0.75f);
 
-        layer2.setShader(new Shader(context));
+        layer2.setShader(new Shader(drawingTask.getContext()));
         ColorMatrix matrix = new ColorMatrix();
         matrix.setColorInversion(Color.GREEN, 1, 1);
         layer2.getShader().setColorMatrix("transform", matrix);

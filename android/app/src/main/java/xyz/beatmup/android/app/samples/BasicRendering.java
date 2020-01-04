@@ -10,6 +10,7 @@ import Beatmup.Context;
 import Beatmup.Imaging.PixelFormat;
 import Beatmup.Shading.Shader;
 import Beatmup.Rendering.Scene;
+import Beatmup.Task;
 
 public class BasicRendering extends TestSample {
     @Override
@@ -25,8 +26,10 @@ public class BasicRendering extends TestSample {
     }
 
     @Override
-    public Scene designScene(Beatmup.Context context, Activity app, Camera camera) throws IOException {
+    public Scene designScene(Task drawingTask, Activity app, Camera camera) throws IOException {
+        Context context = drawingTask.getContext();
         Scene scene = new Scene();
+
         Bitmap androidBitmap = Bitmap.decodeStream(context, app.getAssets().open("fecamp.bmp"));
 
         // setting up a radial image distortion shader

@@ -52,6 +52,7 @@ import Beatmup.Visual.GestureListener;
 import xyz.beatmup.android.app.samples.BasicCameraUse;
 import xyz.beatmup.android.app.samples.BasicRendering;
 import xyz.beatmup.android.app.samples.TestSample;
+import xyz.beatmup.android.app.samples.VideoDecoding;
 
 
 public class MainActivity extends Activity {
@@ -72,7 +73,7 @@ public class MainActivity extends Activity {
                 }
 
                 @Override
-                public Scene designScene(Beatmup.Context context, Activity app, Camera camera) throws IOException {
+                public Scene designScene(Task drawingTask, Activity app, Camera camera) throws IOException {
                     //GPUBenchmark bench = new GPUBenchmark(context);
                     Log.i("Beatmup internal dir", Environment.getExternalStorageDirectory().getAbsolutePath());
                     GPUBenchmark.test(
@@ -94,7 +95,7 @@ public class MainActivity extends Activity {
                 }
 
                 @Override
-                public Scene designScene(Beatmup.Context context, Activity app, Camera camera) throws IOException {
+                public Scene designScene(Task drawingTask, Activity app, Camera camera) throws IOException {
                     Scene scene = new Scene();
 
                     Beatmup.Bitmap heart = Bitmap.decodeStream(context, getAssets().open("heart.png"));
@@ -163,7 +164,7 @@ public class MainActivity extends Activity {
                 }
 
                 @Override
-                public Scene designScene(Beatmup.Context context, Activity app, Camera camera) throws IOException {
+                public Scene designScene(Task drawingTask, Activity app, Camera camera) throws IOException {
                     Scene scene = new Scene();
                     Bitmap bitmap = Bitmap.decodeStream(context, getAssets().open("kitten.jpg"));
 
@@ -217,7 +218,7 @@ public class MainActivity extends Activity {
                 }
 
                 @Override
-                public Scene designScene(Beatmup.Context context, Activity app, Camera camera) throws IOException {
+                public Scene designScene(Task drawingTask, Activity app, Camera camera) throws IOException {
                     Scene scene = new Scene();
                     Bitmap bitmap = Bitmap.decodeStream(context, getAssets().open("kitten.jpg"));
 
@@ -238,6 +239,8 @@ public class MainActivity extends Activity {
 
             new BasicCameraUse(),
 
+            new VideoDecoding(this),
+
             new TestSample() {
                 private Multitask multitask;
                 private TaskHolder shaderApplication;
@@ -248,7 +251,7 @@ public class MainActivity extends Activity {
                 }
 
                 @Override
-                public Scene designScene(Beatmup.Context context, Activity app, Camera camera) throws IOException {
+                public Scene designScene(Task drawingTask, Activity app, Camera camera) throws IOException {
                     Bitmap bitmap = Bitmap.decodeStream(context, getAssets().open("kitten.jpg"));
 
                     ShaderApplicator applicator = new ShaderApplicator(context);
@@ -332,7 +335,7 @@ public class MainActivity extends Activity {
                 public String getCaption() { return "Audio playback: harmonic"; }
 
                 @Override
-                public Scene designScene(Beatmup.Context context, Activity app, Camera camera) throws IOException {
+                public Scene designScene(Task drawingTask, Activity app, Camera camera) throws IOException {
                     harmonic = new Harmonic();
                     playback = new Playback(context);
                     playback.setSource(harmonic);
@@ -499,10 +502,10 @@ public class MainActivity extends Activity {
                 currentTest = (TestSample)view.getTag();
 
                 try {
-                    renderer.setScene(currentTest.designScene(context, MainActivity.this, currentTest.usesCamera() ? camera : null));
-                    if (currentTest.getDrawingTask() != null)
-                        drawingTask = currentTest.getDrawingTask();
-                    else
+                    Scene scene = currentTest.designScene(renderer, MainActivity.this, currentTest.usesCamera() ? camera : null);
+                    renderer.setScene(scene);
+                    drawingTask = currentTest.getDrawingTask();
+                    if (drawingTask == null)
                         drawingTask = renderer;
                 } catch (Exception e) {
                     e.printStackTrace();
