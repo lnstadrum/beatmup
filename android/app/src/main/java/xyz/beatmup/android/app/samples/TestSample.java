@@ -33,14 +33,14 @@ public abstract class TestSample {
     /**
      * Main stuff. Constructs a {@link Scene} to be given to {@link Beatmup.Rendering.SceneRenderer}
      * to illustrate a particular feature.
-     * @param context       Beatmup engine instance
+     * @param drawingTask   Task to be executed to render the scene
      * @param app           Application activity
      * @param camera        Camera object used by the scene
      *
      * @return the scene.
      * @throws IOException if cannot load some images
      */
-    public abstract Scene designScene(Beatmup.Context context, Activity app, Camera camera) throws IOException;
+    public abstract Scene designScene(Task drawingTask, Activity app, Camera camera) throws IOException;
 
     @Override
     public String toString() {
