@@ -14,8 +14,8 @@ namespace Beatmup {
 
 
             /**
-             * Prepares a source to render audio data. Called by the source userbefore any rendering
-             * to communicate to the source the requested rendering mode.
+             * Prepares a source to render audio data. Called by the user before any rendering to communicate the
+             * configuration of the upcoming rendering process.
              * \param sampleRate        the output sample rate in Hz
              * \param sampleFormat      the output sample format
              * \param numChannels       number of channels in the output
@@ -37,23 +37,21 @@ namespace Beatmup {
 
 
             /**
-             * Returns the maximum number of working threads for rendering from this source.
-             * The actual number of threads may be less than the one returned by this function. It
-             * is the responsibility of the source to deal with the actual number of workers.
+             * Returns the maximum number of working threads for rendering from this source. The actual number of
+             * threads may be less than the one returned by this function. It is the source duty to deal with the actual
+             * number of workers.
              */
             virtual ThreadIndex maxAllowedThreads() { return 1; }
 
 
             /**
-             * Renders audio data to the target output buffer given by the source user.
-             * Called after at least one call to prepare(...). The sampling parameters must match
-             * the ones communicated on the preparation phase. The requested buffer length does not
-             * exceed the one set before. The time is given by the clock set before, and with each
-             * call it advances on the {bufferLength} samples.
+             * Renders audio data to the target output buffer given by the user.
+             * Called after at least one call to prepare(...). The sampling parameters must match the ones communicated
+             * on the preparation phase. The requested buffer length does not exceed the one set before. The time is
+             * given by the clock set before, and with every call it advances by {bufferLength} samples.
              * \param thread            the task thread issuing this rendering call
-             * \param buffer            a pointer to the beginning of a channel-multiplexed output
-             *                          buffer
-             * \param bufferLength      the requested buffer length, in samples per one channel
+             * \param buffer            a pointer to the beginning of a channelwise-multiplexed output buffer
+             * \param bufferLength      the requested buffer length, in samples per single channel
              */
             virtual void render(
                     TaskThread& thread,
@@ -64,7 +62,7 @@ namespace Beatmup {
 
 
         /**
-         * A sinusoidal signal source, mainly for tes purposes
+         * A sinusoidal signal source, mainly for test purposes
          */
         class HarmonicSource : public Source {
         private:

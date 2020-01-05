@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 26
-	defaultPublishConfig "imagingDebug"
+	defaultPublishConfig "fullDebug"
     publishNonDefault true
 
     defaultConfig {
@@ -73,7 +73,7 @@ android {
             dimension "version"
             externalNativeBuild {
                 cmake {
-                    //arguments.add("-DPROFILE_AUDIO=true")
+                    arguments.add("-DPROFILE_AUDIO=true")
                 }
             }
         }
