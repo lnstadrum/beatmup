@@ -50,6 +50,7 @@ import xyz.beatmup.android.app.samples.BasicRendering;
 import xyz.beatmup.android.app.samples.HarmonicPlayback;
 import xyz.beatmup.android.app.samples.TestSample;
 import xyz.beatmup.android.app.samples.VideoDecoding;
+import xyz.beatmup.android.app.samples.WavFilePlayback;
 
 
 public class MainActivity extends Activity {
@@ -323,8 +324,9 @@ public class MainActivity extends Activity {
                 }
             },
 
+            new HarmonicPlayback(),
 
-            new HarmonicPlayback()
+            new WavFilePlayback()
     };
 
     private class TestListAdapter extends ArrayAdapter<TestSample> {
@@ -364,11 +366,14 @@ public class MainActivity extends Activity {
         }
 
         // camera
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                == PackageManager.PERMISSION_DENIED)
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED)
             ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, 0);
         else
             setupCamera();
+
+        //
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED)
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.READ_EXTERNAL_STORAGE}, 0);
 
         // init display
         final Display display = (Display) findViewById(R.id.display);
@@ -495,11 +500,12 @@ public class MainActivity extends Activity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            setupCamera();
-        } else {
-            Toast.makeText(this, "Some examples will not run without camera permissions.", Toast.LENGTH_LONG).show();
-        }
+        if (permissions[0].equals(Manifest.permission.CAMERA))
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                setupCamera();
+            } else {
+                Toast.makeText(this, "Some examples will not run without camera permissions.", Toast.LENGTH_LONG).show();
+            }
     }
 
     public void makeSnapshot(View view) {

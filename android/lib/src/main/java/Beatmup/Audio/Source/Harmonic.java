@@ -3,7 +3,7 @@ package Beatmup.Audio.Source;
 /**
  * A sinusoidal signal generator, mainly for test purposes
  */
-public class Harmonic extends Source {
+public class Harmonic extends AbstractSource {
     private static native long newHarmonicSource();
     private native void setFrequency(long handle, float hz);
     private native void setPhase(long handle, float radians);

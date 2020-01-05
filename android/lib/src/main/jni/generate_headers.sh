@@ -1,4 +1,4 @@
-javah -d ../../../../../jni/jniheaders -classpath ~/Android/Sdk/platforms/android-26/android.jar:../../../build/intermediates/classes/imaging/debug\
+javah -d ../../../../../jni/jniheaders -classpath ~/Android/Sdk/platforms/android-26/android.jar:../../../build/intermediates/classes/full/debug\
   Beatmup.Object\
   Beatmup.Context\
   Beatmup.Android.Context\
@@ -25,3 +25,8 @@ javah -d ../../../../../jni/jniheaders -classpath ~/Android/Sdk/platforms/androi
   Beatmup.Pipelining.CustomPipeline\
   Beatmup.Pipelining.Multitask\
   Beatmup.NNets.GPUBenchmark
+
+
+# Regexp:
+#   JNIEXPORT ([^\s]+) JNICALL ([^\s]+)_([^\s]+)\n\s+\(JNIEnv \*,([^\)]+)\);
+#   JNIMETHOD($1, $3, $2, $3)\n    (JNIEnv * jenv,$4)\n{\n    BEATMUP_ENTER;\n}\n\n

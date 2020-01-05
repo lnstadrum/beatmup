@@ -25,10 +25,10 @@ template <typename sample> inline void fillSin(
 {
     dtime stop = time + length;
     sample* s = (sample*)buffer;
-    float F = 2 * pi * frequency / sampleRate;
+    float f = 2 * pi * frequency / sampleRate;
     sample v;
     for (dtime t = time; t < stop; ++t) {
-        v.x = scale * clamp(-1.0f, volume * std::sin(t * F + phase), 1.0f);
+        v.x = scale * clamp(-1.0f, volume * std::sin(t * f + phase), 1.0f);
         for (unsigned char c = 0; c < numChannels; c++)
             (s++)->x = v.x;
     }

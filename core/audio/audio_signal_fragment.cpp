@@ -281,7 +281,6 @@ void AudioSignalFragment::updateDynamicsLookup() {
 
 
 template<typename sample> void AudioSignalFragment::measureDynamics(int time0, int time1, sample* min, sample* max, AudioSignal::Meter::MeasuringMode mode) {
-	// The goal here is to switch properly between differend measuring modes.
 	BEATMUP_ASSERT_DEBUG(time0 <= time1);
 	BEATMUP_ASSERT_DEBUG(AUDIO_SAMPLE_SIZE[format] == sizeof(sample));
 

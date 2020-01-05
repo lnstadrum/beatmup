@@ -1,7 +1,7 @@
 package Beatmup.Audio;
 
 import Beatmup.*;
-import Beatmup.Audio.Source.Source;
+import Beatmup.Audio.Source.AbstractSource;
 import Beatmup.Exceptions.PlaybackException;
 
 /**
@@ -13,9 +13,9 @@ public class Playback extends Task {
                                   int channelCount, int numBuffers, int bufferLength);
     private native void start(long handle);
     private native void stop(long handle);
-    private native void setSource(long handle, Source source);
+    private native void setSource(long handle, AbstractSource source);
 
-    private Source source;
+    private AbstractSource source;
 
 
     /**
@@ -42,13 +42,13 @@ public class Playback extends Task {
     }
 
 
-    public void setSource(Source source) {
+    public void setSource(AbstractSource source) {
         this.source = source;
         setSource(handle, source);
     }
 
 
-    public Source getSource() {
+    public AbstractSource getSource() {
         return source;
     }
 
