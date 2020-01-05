@@ -14,7 +14,7 @@ namespace Beatmup {
         class AbstractPlayback : public AbstractTask {
         public:
             /**
-             * Parameters describing playback mode
+             * Playback configuration
              */
             struct Mode {
                 dtime sampleRate;                   //!< samples per second / sample rate in Hz
@@ -23,6 +23,14 @@ namespace Beatmup {
                 dtime bufferLength;                 //!< length of each atomic buffer in samples
                 unsigned char numBuffers;           //!< number of atomic buffers
 
+                /**
+                 * Specifies playback configuration.
+                 * \param sampleRate        sampling frequency in Hz
+                 * \param format            sample format
+                 * \param numChannels       number of channels
+                 * \param bufferLength      length of a single buffer
+                 * \param numBuffers        number of buffers
+                 */
                 Mode(dtime sampleRate, AudioSampleFormat format, int numChannels, dtime bufferLength, int numBuffers);
                 Mode(dtime sampleRate, AudioSampleFormat format, int numChannels, dtime bufferLength);
                 Mode();
@@ -39,9 +47,6 @@ namespace Beatmup {
         public:
             /**
              * Initializes the playback by setting its main parameters
-             * \param sampleRate        sampling frequency of the playback in Hz
-             * \param sampleFormat      sample format of the playback
-             * \param channelCount      number of channels
              */
             virtual void initialize(Mode mode);
 

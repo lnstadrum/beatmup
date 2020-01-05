@@ -26,10 +26,6 @@ import java.util.ArrayList;
 
 import Beatmup.Android.Camera;
 import Beatmup.Android.Context;
-import Beatmup.Audio.Playback;
-import Beatmup.Audio.SampleFormat;
-import Beatmup.Audio.Source.Harmonic;
-import Beatmup.Exceptions.PlaybackException;
 import Beatmup.Geometry.IntPoint;
 import Beatmup.Android.Bitmap;
 import Beatmup.Imaging.Color;
@@ -51,6 +47,7 @@ import Beatmup.Visual.Animator;
 import Beatmup.Visual.GestureListener;
 import xyz.beatmup.android.app.samples.BasicCameraUse;
 import xyz.beatmup.android.app.samples.BasicRendering;
+import xyz.beatmup.android.app.samples.HarmonicPlayback;
 import xyz.beatmup.android.app.samples.TestSample;
 import xyz.beatmup.android.app.samples.VideoDecoding;
 
@@ -327,44 +324,7 @@ public class MainActivity extends Activity {
             },
 
 
-            new TestSample() {
-                Playback playback;
-                Harmonic harmonic;
-
-                @Override
-                public String getCaption() { return "Audio playback: harmonic"; }
-
-                @Override
-                public Scene designScene(Task drawingTask, Activity app, Camera camera) throws IOException {
-                    harmonic = new Harmonic();
-                    playback = new Playback(context);
-                    playback.setSource(harmonic);
-                    try {
-                        playback.configure(SampleFormat.Int16, 44100, 1, 2, 64);
-                        playback.start();
-                        context.submitPersistentTask(playback);
-                    } catch (PlaybackException e) {
-                        e.printStackTrace();
-                    }
-
-                    Scene scene = new Scene();
-                    Bitmap androidBitmap = Bitmap.decodeStream(context, getAssets().open("kitten.jpg"));
-
-                    Beatmup.Bitmap bitmap1 = context.copyBitmap(androidBitmap, PixelFormat.SingleByte);
-                    Scene.BitmapLayer layer = scene.newBitmapLayer();
-                    layer.setBitmap(bitmap1);
-                    layer.setPosition(0.1f, 0.1f);
-                    layer.scale(0.25f);
-                    layer.rotate(10);
-                    return scene;
-                }
-
-                @Override
-                public void onGesture(Scene.Layer layer, AffineMapping mapping) {
-                    harmonic.setFrequency(layer.getX() * 2000);
-                    harmonic.setAmplitude(layer.getY() * 0.5f);
-                }
-            }
+            new HarmonicPlayback()
     };
 
     private class TestListAdapter extends ArrayAdapter<TestSample> {

@@ -58,7 +58,6 @@ bool BasicRealtimePlayback::sendNextBuffer() {
 
 
 psample *BasicRealtimePlayback::getCurrentBuffer() const {
-//    DEBUG_I("getCurrentBuffer: fillIndex = %d, playIndex = %d, underrun = %d", fillIndex, playIndex, (int)underrun);
     if (!underrun && (fillIndex - playIndex) % numBuffers == 0)
         return nullptr;
     return buffers[fillIndex % numBuffers];
