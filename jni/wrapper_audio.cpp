@@ -37,6 +37,16 @@ JNIMETHOD(jlong, newAudioSignalFromWAV, Java_Beatmup_Audio_Signal, newAudioSigna
     return BeatmupJavaObjectPool::INVALID_HANDLE;
 }
 
+
+JNIMETHOD(jlong, newAudioSignalSource, Java_Beatmup_Audio_Signal, newAudioSignalSource)
+    (JNIEnv * jenv, jclass, jobject jCtx, jlong hSignal)
+{
+    BEATMUP_ENTER;
+    BEATMUP_OBJ(Beatmup::Environment, env, jCtx);
+    BEATMUP_OBJ(Beatmup::AudioSignal, signal, hSignal);
+    return (jlong) new Beatmup::AudioSignal::Source(*signal);
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 //                                          PLAYBACK
 /////////////////////////////////////////////////////////////////////////////////////////////

@@ -42,7 +42,7 @@ JNIEXPORT void JNICALL Java_Beatmup_Audio_Playback_stop
 /*
  * Class:     Beatmup_Audio_Playback
  * Method:    setSource
- * Signature: (JLBeatmup/Audio/Source/Source;)V
+ * Signature: (JLBeatmup/Audio/Source/AbstractSource;)V
  */
 JNIEXPORT void JNICALL Java_Beatmup_Audio_Playback_setSource
   (JNIEnv *, jobject, jlong, jobject);

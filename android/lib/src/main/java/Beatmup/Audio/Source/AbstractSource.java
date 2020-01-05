@@ -5,8 +5,8 @@ import Beatmup.*;
 /**
  * A source of audio signal
  */
-public class Source extends Beatmup.Object {
-    protected Source(long handle) {
+public class AbstractSource extends Beatmup.Object {
+    protected AbstractSource(long handle) {
         super(handle);
     }
 }

@@ -23,6 +23,14 @@ JNIEXPORT jlong JNICALL Java_Beatmup_Audio_Signal_newAudioSignal
 JNIEXPORT jlong JNICALL Java_Beatmup_Audio_Signal_newAudioSignalFromWAV
   (JNIEnv *, jclass, jobject, jstring);
 
+/*
+ * Class:     Beatmup_Audio_Signal
+ * Method:    newAudioSignalSource
+ * Signature: (LBeatmup/Context;J)J
+ */
+JNIEXPORT jlong JNICALL Java_Beatmup_Audio_Signal_newAudioSignalSource
+  (JNIEnv *, jclass, jobject, jlong);
+
 #ifdef __cplusplus
 }
 #endif

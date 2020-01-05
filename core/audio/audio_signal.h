@@ -2,6 +2,7 @@
 #include "../fragments/sequence.h"
 #include "../environment.h"
 #include "sample_arithmetic.h"
+#include "source.h"
 
 namespace Beatmup {
 
@@ -30,7 +31,7 @@ namespace Beatmup {
 		*/
 		class Writer : public Pointer {
 		public:
-			Writer(AudioSignal& signal, int time);			
+			Writer(AudioSignal& signal, int time);
 			int acquireBuffer(void* &data);
 			void releaseBuffer();
 		};
@@ -52,16 +53,16 @@ namespace Beatmup {
 
 				/**
 					Find an approximative range using a lookup tree.
-					It is guaranteed that the resulting approximative dynamic range covers the exact one.
-					Very fast for less fragmented signals, does not hit the sample data in memory, but
-					requires precomputing and increases memory footprint.
+					It is guaranteed that the resulting approximative dynamic range covers the exact one. Very fast for less
+					fragmented signals, does not hit the sample data in memory, but requires precomputing and increases the
+					memory footprint.
 				*/
 				approximateUsingLookup,
 
 				/**
 					Use lookup and then precise the measurement using sample data.
-					Generally fast, except highly fragmented signals. Requires precomputing and increases
-					memory footprint (strictly the same as in `approximativelyUsingLookup`);
+					Generally fast, except highly fragmented signals. Requires precomputing and increases the memory footprint
+					(same as `approximativelyUsingLookup`);
 				*/
 				preciseUsingLookupAndSamples
 			};
@@ -76,7 +77,7 @@ namespace Beatmup {
 				\param max			channelwise multiplexed magnitude maxima, (resolution) points per channel
 			*/
 			template<typename sample> void measureInFragments(int len, int resolution, sample* min, sample* max);
-			
+
 			static void prepare(AudioSignal& signal, int skipOnStart = 0, int numSteps = 1);
 
 			MeasuringMode mode;
@@ -108,6 +109,37 @@ namespace Beatmup {
 			template<typename sample> void measure(int len, int resolution, sample min[], sample max[]);
 
 			inline void setMode(MeasuringMode newMode) { mode = newMode; }
+		};
+
+		/**
+		 * A Source using audio signal
+		 */
+		class Source : public Audio::Source {
+		private:
+			AudioSignal* signal;
+			dtime time;
+			AudioSampleFormat sampleFormat;
+			unsigned char numChannels;
+
+		public:
+			Source(AudioSignal&);
+
+			ThreadIndex maxAllowedThreads() { return 1; }
+
+			void prepare(
+				const dtime sampleRate,
+				const AudioSampleFormat sampleFormat,
+				const unsigned char numChannels,
+				const dtime maxBufferLen
+			);
+
+			void setClock(dtime time);
+
+			void render(
+				TaskThread& thread,
+				psample* buffer,
+				const dtime bufferLength
+			);
 		};
 
 		class IncompatibleFormat : public Exception {
@@ -147,7 +179,7 @@ namespace Beatmup {
 		void saveWAV(const char* filename);
 
 		static AudioSignal* loadWAV(Environment& env, const char* fileName);
-		
+
 		unsigned char getChannelCount() const { return channelCount; }
 		AudioSampleFormat getSampleFormat() const { return format; }
 		Environment& getEnvironment() const { return env; }

@@ -1,5 +1,6 @@
 #include "audio_signal.h"
 #include "audio_signal_fragment.h"
+#include "processing.h"
 #include "wav_utilities.h"
 #include "../exception.h"
 #include <algorithm>
@@ -48,9 +49,9 @@ AudioSignal* AudioSignal::loadWAV(Environment& env, const char* filename) {
 		throw IOError(filename, "Unable to open for reading");
 
 	// read header
-	WAV::WAVHeader header;
-	file.read((char*)&header, sizeof(header));	
-	WAV::IncorrectWAV::check(header);
+	WAV::WavHeader header;
+	file.read((char*)&header, sizeof(header));
+	WAV::InvalidWavFile::check(header);
 
 	// get sample format
 	AudioSampleFormat format;
@@ -65,12 +66,12 @@ AudioSignal* AudioSignal::loadWAV(Environment& env, const char* filename) {
 		format = Int32;
 		break;
 	default:
-		throw WAV::IncorrectWAV("Incorrect WAV file: unsupported BPS");
+		throw WAV::InvalidWavFile("Incorrect WAV file: unsupported BPS");
 	}
 
 	// check number of channels (insanity check, basically)
 	if (header.numChannels <= 0 || header.numChannels > 255)
-		throw WAV::IncorrectWAV("Incorrect WAV file: unsupported channel count");
+		throw WAV::InvalidWavFile("Incorrect WAV file: unsupported channel count");
 
 	// create signal
 	AudioSignal* signal = new AudioSignal(env, format, header.sampleRate, header.numChannels);
@@ -83,7 +84,7 @@ AudioSignal* AudioSignal::loadWAV(Environment& env, const char* filename) {
 		if (file.fail())
 			throw IOError(filename, "Failed while reading");
 		void* data;
-		int length = pointer.acquireBuffer(data);		
+		int length = pointer.acquireBuffer(data);
 		file.read((char*)data, length * header.numChannels * AUDIO_SAMPLE_SIZE[format]);
 		pointer.releaseBuffer();
 		pointer.jump(length);
@@ -101,10 +102,10 @@ void AudioSignal::saveWAV(const char* filename) {
 
 	// init and write header
 	unsigned char sampleSize = AUDIO_SAMPLE_SIZE[format];
-	WAV::WAVHeader header;
+	WAV::WavHeader header;
 	header.set(sampleRate, sampleSize * 8, channelCount, getLength() * channelCount * sampleSize);
 	file.write((char*)&header, sizeof(header));
-	
+
 	// write out
 	Reader pointer(*this, 0);
 	while (pointer.hasData() && !file.eof()) {
@@ -193,7 +194,7 @@ void AudioSignal::Meter::prepareSignal(AudioSignal& signal, bool runTask) {
 
 		class DynamicsLookupPreparation : public AbstractTask {
 		public:
-			AudioSignal& signal;		
+			AudioSignal& signal;
 			bool process(TaskThread& thread) {
 				// interleaving fragments among threads
 				Meter::prepare(signal, thread.currentThread(), thread.totalThreads());
@@ -214,7 +215,6 @@ void AudioSignal::Meter::prepareSignal(AudioSignal& signal, bool runTask) {
 
 
 template<typename sample> void AudioSignal::Meter::measureInFragments(int len, int resolution, sample* min, sample* max) {
-	// The goal here is to deal with the fragmentation. Computation issues are processed on the fragment level.
 	const int channelCount = ((AudioSignalFragment*)pointer.fragment)->getChannelCount();
 	const dtime startTime = getTime();
 	dtime t1 = startTime;
@@ -266,7 +266,7 @@ namespace Beatmup {		// why? Because of a bug in gcc
 			measureInFragments(len, resolution, (sample16*)min, (sample16*)max);
 			return;
 		}
-		// The goal here is to deal with sample type transfer.
+		// converting min/max types
 		const int size = resolution * ((AudioSignalFragment*)pointer.fragment)->getChannelCount();
 		switch (fmt) {
 		case Int8: {
@@ -300,6 +300,66 @@ namespace Beatmup {		// why? Because of a bug in gcc
 			Insanity::insanity("Unknown audio format");
 		}
 	}
+}
+
+
+template<typename in_t, typename out_t> class Render {
+public:
+	static void process(const in_t* whatever, out_t* output, AudioSignal::Reader& ptr, dtime length, const int inCh, const int outCh) {
+		static const out_t _0{ 0 };
+		const int numc = (int)std::min(inCh, outCh);
+		while (length > 0 && ptr.hasData()) {
+			const void* data;
+			int chunk = ptr.acquireBuffer(data);
+			if (chunk > length)
+				chunk = length;
+
+			const in_t* input = (const in_t*)data;
+			for (int t = 0; t < chunk; ++t, input += inCh, output += outCh) {
+				int c = 0;
+				for (; c < numc; ++c)
+					output[c] = input[c];
+				for (; c < outCh; ++c)
+					output[c] = _0;
+			}
+
+			ptr.releaseBuffer();
+			ptr.jump(chunk);
+			length -= chunk;
+		}
+
+		memset(output, 0, length * outCh);
+	}
+};
+
+
+AudioSignal::Source::Source(AudioSignal& signal): signal(&signal) {}
+
+
+void AudioSignal::Source::prepare(
+		const dtime sampleRate,
+		const AudioSampleFormat sampleFormat,
+		const unsigned char numChannels,
+		const dtime maxBufferLen
+) {
+	this->numChannels = numChannels;
+	this->sampleFormat = sampleFormat;
+}
+
+
+void AudioSignal::Source::setClock(dtime time) {
+	this->time = time;
+}
+
+
+void AudioSignal::Source::render(
+	TaskThread& thread,
+	psample* buffer,
+	const dtime bufferLength
+) {
+	Reader ptr(*signal, time);
+	AudioProcessing::pipeline<Render>(signal->getSampleFormat(), sampleFormat, nullptr, buffer, ptr, bufferLength, signal->getChannelCount(), numChannels);
+	time += bufferLength;
 }
 
 
