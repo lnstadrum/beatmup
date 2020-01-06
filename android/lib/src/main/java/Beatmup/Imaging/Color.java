@@ -4,7 +4,10 @@ package Beatmup.Imaging;
  * Integer RGBA color
  */
 public class Color {
-    public int r, g, b, a;
+    public int r;
+    public int g;
+    public int b;
+    public int a;
 
     public Color() {
         r = g = b = a = 0;
@@ -26,8 +29,8 @@ public class Color {
     }
 
 
-    public int getCode() {
-        return b | g << 8 | r << 16 | a << 24;
+    public int getRgbaCode() {
+        return r | g << 8 | b << 16 | a << 24;
     }
 
 

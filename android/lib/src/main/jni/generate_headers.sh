@@ -19,6 +19,7 @@ javah -d ../../../../../jni/jniheaders -classpath ~/Android/Sdk/platforms/androi
   Beatmup.Imaging.Filters.Resampler\
   Beatmup.Imaging.ColorMatrix\
   Beatmup.Audio.Signal\
+  Beatmup.Audio.SignalPlot\
   Beatmup.Audio.Playback\
   Beatmup.Audio.Source.Harmonic\
   Beatmup.Utils.VariablesBundle\
@@ -28,5 +29,5 @@ javah -d ../../../../../jni/jniheaders -classpath ~/Android/Sdk/platforms/androi
 
 
 # Regexp:
-#   JNIEXPORT ([^\s]+) JNICALL ([^\s]+)_([^\s]+)\n\s+\(JNIEnv \*,([^\)]+)\);
-#   JNIMETHOD($1, $3, $2, $3)\n    (JNIEnv * jenv,$4)\n{\n    BEATMUP_ENTER;\n}\n\n
+#   (/\*\n(\s\*.*\n)+\s\*/\n)?JNIEXPORT ([^\s]+) JNICALL ([^\s]+)_([^\s]+)\n\s+\(JNIEnv \*,([^\)]+)\);
+#   JNIMETHOD($3, $5, $4, $5)\n    (JNIEnv * jenv,$6)\n{\n    BEATMUP_ENTER;\n}\n
