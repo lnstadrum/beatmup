@@ -10,18 +10,18 @@ namespace Beatmup {
 	class AudioSignalPlot : public AbstractTask {
 	private:
 		AudioSignal* signal;
-		AbstractBitmap* output;
+		AbstractBitmap* bitmap;
 		IntRectangle outputRect;
 		IntRectangle signalWindow;
 		float scale;
 		int channels;
-		
+
 		std::vector<int> values;
-		
+
 		struct {
 			color4i bgColor, color1, color2;
 		} palette;
-		
+
 		/**
 			\internal
 			Computes plot data for a given thread.
@@ -41,24 +41,24 @@ namespace Beatmup {
 		/**
 			Sets the input signal to plot
 		*/
-		void setSignal(AudioSignal&);
-		
+		void setSignal(AudioSignal*);
+
 		/**
 			Sets the output bitmap
 		*/
-		void setOutput(AbstractBitmap&);
-		
+		void setBitmap(AbstractBitmap*);
+
 		/**
 			Specifies a rectangular area in pixels in the output bitmap where the plot will be drawn
 		*/
-		void setOutputArea(IntRectangle);
+		void setPlotArea(IntRectangle);
 
 		/**
 			Specifies a time range (X coordinate) and a magnitude range (Y coordinate scaled by `scale`) that will be plotted
 			\param window		a rectangle on time-value plane containing the two ranges
 			\param scale		magnitude scaling
 		*/
-		void setSignalWindow(IntRectangle window, float scale);
+		void setWindow(IntRectangle window, float scale);
 
 		/**
 			Specifies plot colors
@@ -71,7 +71,7 @@ namespace Beatmup {
 		*/
 		void setChannels(int channels);
 
-		inline AbstractBitmap* getOutput() const { return output; }
+		inline AbstractBitmap* getBitmap() const { return bitmap; }
 		inline AudioSignal* getSignal() const { return signal; }
 	};
 }

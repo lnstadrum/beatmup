@@ -17,6 +17,10 @@ public class Signal extends Sequence {
         }
     }
 
+    protected long getHandle() {
+        return handle;
+    }
+
     public Signal(Context context, SampleFormat format, int sampleRate, int channelCount, float fragmentLen) {
         super(newAudioSignal(context, format.ordinal(), sampleRate, channelCount, fragmentLen));
     }

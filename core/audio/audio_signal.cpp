@@ -162,14 +162,6 @@ int AudioSignal::Writer::acquireBuffer(void* &data) {
 }
 
 
-void AudioSignal::Writer::releaseBuffer() {
-	AudioSignalFragment* fragment = (AudioSignalFragment*)pointer.fragment;
-	if (fragment->isDynamicsLookupAvailable())
-		fragment->updateDynamicsLookup();
-	AudioSignal::Pointer::releaseBuffer();
-}
-
-
 void AudioSignal::Meter::prepare(AudioSignal& signal, int skipOnStart, int numSteps) {
 	Meter me(signal, 0, MeasuringMode::approximateUsingLookup);
 	for (int skip = 0; skip < skipOnStart; skip++)

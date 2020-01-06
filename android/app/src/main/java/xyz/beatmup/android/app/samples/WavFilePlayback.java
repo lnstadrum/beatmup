@@ -11,8 +11,11 @@ import Beatmup.Android.Camera;
 import Beatmup.Audio.Playback;
 import Beatmup.Audio.SampleFormat;
 import Beatmup.Audio.Signal;
+import Beatmup.Audio.SignalPlot;
 import Beatmup.Context;
 import Beatmup.Exceptions.PlaybackException;
+import Beatmup.Geometry.IntRectangle;
+import Beatmup.Imaging.Color;
 import Beatmup.Rendering.Scene;
 import Beatmup.Task;
 
@@ -31,6 +34,21 @@ public class WavFilePlayback extends TestSample {
         Context context = drawingTask.getContext();
 
         Signal wav = new Signal(context, "/storage/emulated/0/test.wav");
+
+        SignalPlot plot = new SignalPlot(context);
+        plot.setSignal(wav);
+        plot.setBitmap(Bitmap.createColorBitmap(context, 1024, 400));
+        plot.setPlotArea(plot.getBitmap().clientRectangle());
+        plot.setWindow(new IntRectangle(0, -32000, 123456, 32000), 1);
+        plot.setPalette(Color.WHITE, Color.byHue(123), Color.byHue(133));
+
+        long start = System.currentTimeMillis();
+        plot.prepareMetering();
+        long preparingTime = System.currentTimeMillis() - start;
+
+        float renderingTime = plot.execute();
+        Log.i("Beatmup", String.format("Metering preparation: %d msec, plotting: %f msec", (int)preparingTime, renderingTime));
+
         Signal.Source source = new Signal.Source(context, wav);
         playback = new Playback(context);
         playback.setSource(source);
@@ -43,12 +61,8 @@ public class WavFilePlayback extends TestSample {
         }
 
         Scene scene = new Scene();
-        Bitmap androidBitmap = Bitmap.decodeStream(context, app.getAssets().open("kitten.jpg"));
         Scene.BitmapLayer layer = scene.newBitmapLayer();
-        layer.setBitmap(androidBitmap);
-        layer.setPosition(0.1f, 0.1f);
-        layer.scale(0.25f);
-        layer.rotate(10);
+        layer.setBitmap(plot.getBitmap());
         return scene;
     }
 }

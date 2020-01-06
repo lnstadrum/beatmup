@@ -1,12 +1,15 @@
 #include "wrapper.h"
 
 #include "jniheaders/Beatmup_Audio_Signal.h"
+#include "jniheaders/Beatmup_Audio_SignalPlot.h"
 #include "jniheaders/Beatmup_Audio_Playback.h"
 #include "jniheaders/Beatmup_Audio_Source_Harmonic.h"
 
 #include "android/sles_playback.h"
 
 #include <core/audio/audio_signal.h>
+#include <core/audio/audio_signal_plot.h>
+#include <core/color/packing.h>
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 //                                          SIGNAL
@@ -45,6 +48,87 @@ JNIMETHOD(jlong, newAudioSignalSource, Java_Beatmup_Audio_Signal, newAudioSignal
     BEATMUP_OBJ(Beatmup::Environment, env, jCtx);
     BEATMUP_OBJ(Beatmup::AudioSignal, signal, hSignal);
     return (jlong) new Beatmup::AudioSignal::Source(*signal);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+//                                        SIGNAL PLOT
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+JNIMETHOD(jlong, newSignalPlot, Java_Beatmup_Audio_SignalPlot, newSignalPlot)
+    (JNIEnv * jenv, jclass, jobject jCtx)
+{
+    BEATMUP_ENTER;
+    return (jlong) new Beatmup::AudioSignalPlot();
+}
+
+
+JNIMETHOD(void, prepareMetering, Java_Beatmup_Audio_SignalPlot, prepareMetering)
+    (JNIEnv * jenv, jclass, jlong hSignal)
+{
+    BEATMUP_ENTER;
+    BEATMUP_OBJ(Beatmup::AudioSignal, signal, hSignal);
+    Beatmup::AudioSignal::Meter::prepareSignal(*signal, true);
+}
+
+
+JNIMETHOD(void, setSignal, Java_Beatmup_Audio_SignalPlot, setSignal)
+    (JNIEnv * jenv, jobject, jlong hPlot, jlong hSignal)
+{
+    BEATMUP_ENTER;
+    BEATMUP_OBJ(Beatmup::AudioSignalPlot, plot, hPlot);
+    BEATMUP_OBJ(Beatmup::AudioSignal, signal, hSignal);
+    plot->setSignal(signal);
+}
+
+
+
+JNIMETHOD(void, setBitmap, Java_Beatmup_Audio_SignalPlot, setBitmap)
+    (JNIEnv * jenv, jobject, jlong hPlot, jobject jBitmap)
+{
+    BEATMUP_ENTER;
+    BEATMUP_OBJ(Beatmup::AudioSignalPlot, plot, hPlot);
+    BEATMUP_OBJ(Beatmup::AbstractBitmap, bitmap, jBitmap);
+    plot->setBitmap(bitmap);
+}
+
+
+JNIMETHOD(void, setWindow, Java_Beatmup_Audio_SignalPlot, setWindow)
+    (JNIEnv * jenv, jobject, jlong hPlot, jint t1, jint t2, jint y1, jint y2, jfloat scale)
+{
+    BEATMUP_ENTER;
+    BEATMUP_OBJ(Beatmup::AudioSignalPlot, plot, hPlot);
+    plot->setWindow(Beatmup::IntRectangle(t1, y1, t2, y2), scale);
+}
+
+
+JNIMETHOD(void, setPlotArea, Java_Beatmup_Audio_SignalPlot, setPlotArea)
+    (JNIEnv * jenv, jobject, jlong hPlot, jint x1, jint y1, jint x2, jint y2)
+{
+    BEATMUP_ENTER;
+    BEATMUP_OBJ(Beatmup::AudioSignalPlot, plot, hPlot);
+    plot->setPlotArea(Beatmup::IntRectangle(x1, y1, x2, y2));
+}
+
+
+JNIMETHOD(void, setPalette, Java_Beatmup_Audio_SignalPlot, setPalette)
+    (JNIEnv * jenv, jobject, jlong hPlot, jint background, jint color1, jint color2)
+{
+    BEATMUP_ENTER;
+    BEATMUP_OBJ(Beatmup::AudioSignalPlot, plot, hPlot);
+    plot->setPalette(
+      Beatmup::fromPackedInt((int32_t)background),
+      Beatmup::fromPackedInt((int32_t)color1),
+      Beatmup::fromPackedInt((int32_t)color2)
+    );
+}
+
+
+JNIMETHOD(void, setChannels, Java_Beatmup_Audio_SignalPlot, setChannels)
+    (JNIEnv * jenv, jobject, jlong hPlot, jint channels)
+{
+    BEATMUP_ENTER;
+    BEATMUP_OBJ(Beatmup::AudioSignalPlot, plot, hPlot);
+    plot->setChannels(channels);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////

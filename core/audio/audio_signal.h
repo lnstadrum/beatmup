@@ -33,7 +33,6 @@ namespace Beatmup {
 		public:
 			Writer(AudioSignal& signal, int time);
 			int acquireBuffer(void* &data);
-			void releaseBuffer();
 		};
 
 		/**
@@ -47,13 +46,13 @@ namespace Beatmup {
 			enum class MeasuringMode {
 				/**
 					Just run across all samples.
-					This does not require nor precomputing neither extra memory, but slow as hell.
+					This does not require neither precomputing nor extra memory, but slow as hell.
 				*/
 				preciseUsingSamples,
 
 				/**
 					Find an approximative range using a lookup tree.
-					It is guaranteed that the resulting approximative dynamic range covers the exact one. Very fast for less
+					It is guaranteed that the resulting approximative dynamic range covers the precise range. Very fast for less
 					fragmented signals, does not hit the sample data in memory, but requires precomputing and increases the
 					memory footprint.
 				*/
