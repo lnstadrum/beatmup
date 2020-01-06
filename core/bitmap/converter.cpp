@@ -104,6 +104,7 @@ void BitmapConverter::doConvert(int outX, int outY, msize nPix) {
 			case SingleFloat:	CALL_CONVERT_AND_RETURN(SingleByteBitmapReader, SingleFloatBitmapWriter)
 			case TripleFloat:	CALL_CONVERT_AND_RETURN(SingleByteBitmapReader, TripleFloatBitmapWriter)
 			case QuadFloat:		CALL_CONVERT_AND_RETURN(SingleByteBitmapReader, QuadFloatBitmapWriter)
+			default: throw ImplementationUnsupported("Cannot convert given formats");
 		}
 
 	case TripleByte:
@@ -113,6 +114,7 @@ void BitmapConverter::doConvert(int outX, int outY, msize nPix) {
 			case SingleFloat:	CALL_CONVERT_AND_RETURN(TripleByteBitmapReader, SingleFloatBitmapWriter)
 			case TripleFloat:	CALL_CONVERT_AND_RETURN(TripleByteBitmapReader, TripleFloatBitmapWriter)
 			case QuadFloat:		CALL_CONVERT_AND_RETURN(TripleByteBitmapReader, QuadFloatBitmapWriter)
+			default: throw ImplementationUnsupported("Cannot convert given formats");
 		}
 
 	case QuadByte:
@@ -122,6 +124,7 @@ void BitmapConverter::doConvert(int outX, int outY, msize nPix) {
 			case SingleFloat:	CALL_CONVERT_AND_RETURN(QuadByteBitmapReader, SingleFloatBitmapWriter)
 			case TripleFloat:	CALL_CONVERT_AND_RETURN(QuadByteBitmapReader, TripleFloatBitmapWriter)
 			case QuadFloat:		CALL_CONVERT_AND_RETURN(QuadByteBitmapReader, QuadFloatBitmapWriter)
+			default: throw ImplementationUnsupported("Cannot convert given formats");
 		}
 
 	case SingleFloat:
@@ -131,6 +134,7 @@ void BitmapConverter::doConvert(int outX, int outY, msize nPix) {
 			case QuadByte:		CALL_CONVERT_AND_RETURN(SingleFloatBitmapReader, QuadByteBitmapWriter)
 			case TripleFloat:	CALL_CONVERT_AND_RETURN(SingleFloatBitmapReader, TripleFloatBitmapWriter)
 			case QuadFloat:		CALL_CONVERT_AND_RETURN(SingleFloatBitmapReader, QuadFloatBitmapWriter)
+			default: throw ImplementationUnsupported("Cannot convert given formats");
 		}
 
 	case TripleFloat:
@@ -140,6 +144,7 @@ void BitmapConverter::doConvert(int outX, int outY, msize nPix) {
 			case QuadByte:		CALL_CONVERT_AND_RETURN(TripleFloatBitmapReader, QuadByteBitmapWriter)
 			case SingleFloat:	CALL_CONVERT_AND_RETURN(TripleFloatBitmapReader, SingleFloatBitmapWriter)
 			case QuadFloat:		CALL_CONVERT_AND_RETURN(TripleFloatBitmapReader, QuadFloatBitmapWriter)
+			default: throw ImplementationUnsupported("Cannot convert given formats");
 		}
 
 	case QuadFloat:
@@ -149,6 +154,7 @@ void BitmapConverter::doConvert(int outX, int outY, msize nPix) {
 			case QuadByte:		CALL_CONVERT_AND_RETURN(QuadFloatBitmapReader, QuadByteBitmapWriter)
 			case SingleFloat:	CALL_CONVERT_AND_RETURN(QuadFloatBitmapReader, SingleFloatBitmapWriter)
 			case TripleFloat:	CALL_CONVERT_AND_RETURN(QuadFloatBitmapReader, TripleFloatBitmapWriter)
+			default: throw ImplementationUnsupported("Cannot convert given formats");
 		}
 
 	case BinaryMask:
@@ -158,6 +164,7 @@ void BitmapConverter::doConvert(int outX, int outY, msize nPix) {
 			case QuadByte:		CALL_CONVERT_AND_RETURN(BinaryMaskReader, QuadByteBitmapWriter)
 			case SingleFloat:	CALL_CONVERT_AND_RETURN(BinaryMaskReader, SingleFloatBitmapWriter)
 			case TripleFloat:	CALL_CONVERT_AND_RETURN(BinaryMaskReader, TripleFloatBitmapWriter)
+			default: throw ImplementationUnsupported("Cannot convert given formats");
 		}
 
 	case QuaternaryMask:
@@ -167,6 +174,7 @@ void BitmapConverter::doConvert(int outX, int outY, msize nPix) {
 			case QuadByte:		CALL_CONVERT_AND_RETURN(QuaternaryMaskReader, QuadByteBitmapWriter)
 			case SingleFloat:	CALL_CONVERT_AND_RETURN(QuaternaryMaskReader, SingleFloatBitmapWriter)
 			case TripleFloat:	CALL_CONVERT_AND_RETURN(QuaternaryMaskReader, TripleFloatBitmapWriter)
+			default: throw ImplementationUnsupported("Cannot convert given formats");
 		}
 
 	case HexMask:
@@ -176,6 +184,7 @@ void BitmapConverter::doConvert(int outX, int outY, msize nPix) {
 			case QuadByte:		CALL_CONVERT_AND_RETURN(HexMaskReader, QuadByteBitmapWriter)
 			case SingleFloat:	CALL_CONVERT_AND_RETURN(HexMaskReader, SingleFloatBitmapWriter)
 			case TripleFloat:	CALL_CONVERT_AND_RETURN(HexMaskReader, TripleFloatBitmapWriter)
+			default: throw ImplementationUnsupported("Cannot convert given formats");
 		}
 	}
 }

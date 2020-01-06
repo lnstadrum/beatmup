@@ -31,9 +31,9 @@ Sequence::~Sequence() {
 }
 
 
-int Sequence::findFragment(int time) const {
+int Sequence::findFragment(dtime time) const {
 	int index = fragments.size() / 2, step = std::max(index / 2, 1);
-	
+
 	// simple log search
 	do {
 		if (cumTimes[index] > time)
@@ -56,7 +56,7 @@ int Sequence::findFragment(int time) const {
 }
 
 
-void Sequence::splitFragment(int index, int dt) {
+void Sequence::splitFragment(int index, dtime dt) {
 	if (dt > 0) {
 		fragments.insert(fragments.begin() + index, fragments[index]);
 		fragments[index].length = dt;
@@ -66,7 +66,7 @@ void Sequence::splitFragment(int index, int dt) {
 }
 
 
-void Sequence::concatenate(Fragment& fragment, int offset, int length) {
+void Sequence::concatenate(Fragment& fragment, dtime offset, dtime length) {
 	fragments.emplace_back(fragment, offset, length);
 	cumTimes.push_back(cumTimes.back() + length);
 }
@@ -86,7 +86,7 @@ void Sequence::clear() {
 }
 
 
-void Sequence::shrink(int timeLeft, int timeRight) {
+void Sequence::shrink(dtime timeLeft, dtime timeRight) {
 	if (timeLeft >= timeRight || timeLeft >= getLength() || timeRight <= 0) {
 		clear();
 		return;
@@ -109,7 +109,7 @@ void Sequence::shrink(int timeLeft, int timeRight) {
 		fragments.erase(fragments.begin(), fragments.begin() + leftFragment);
 
 	// adjust time bounds
-	int dt = timeLeft - cumTimes[leftFragment];
+	dtime dt = timeLeft - cumTimes[leftFragment];
 	fragments[0].offset += dt;
 	fragments[0].length -= dt;
 	fragments.back().length = timeRight - cumTimes[rightFragment];
@@ -126,7 +126,7 @@ void Sequence::shrink(int timeLeft, int timeRight) {
 		fragments.back().length = dt;
 	}
 	else {
-		int time = 0;
+		dtime time = 0;
 		for (const auto &it : fragments)
 			cumTimes.push_back(time += it.length);
 	}
@@ -140,17 +140,17 @@ void Sequence::shrink(int timeLeft, int timeRight) {
 }
 
 
-Sequence* Sequence::copy(int fromTime, int toTime) const {
+Sequence* Sequence::copy(dtime fromTime, dtime toTime) const {
 	if (fromTime >= toTime)
-		return NULL;		// nothing to copy
-	
+		return nullptr;		// nothing to copy
+
 	int
 		fromFragment = findFragment(fromTime),
 		toFragment = findFragment(toTime);
-	
+
 	// whole sequence is apart
 	if ((toFragment == VOID_LEFT || toFragment == VOID_RIGHT) && fromFragment == toFragment)
-		return NULL;
+		return nullptr;
 
 	// now we are sure that there is some data to copy
 	if (fromFragment == VOID_LEFT || toFragment == VOID_RIGHT)
@@ -168,7 +168,7 @@ Sequence* Sequence::copy(int fromTime, int toTime) const {
 	result->cumTimes.push_back(0);
 
 	// put first fragment
-	int dt = fromTime - cumTimes[fromFragment];
+	dtime dt = fromTime - cumTimes[fromFragment];
 	result->fragments.emplace_back(fragments[fromFragment]);
 	result->fragments[0].offset += dt;
 
@@ -179,7 +179,7 @@ Sequence* Sequence::copy(int fromTime, int toTime) const {
 		result->cumTimes.push_back(dt);
 	}
 	else {
-		int cumTime = (result->fragments[0].length -= dt);
+		dtime cumTime = (result->fragments[0].length -= dt);
 		result->cumTimes.push_back(cumTime);
 
 		// go
@@ -192,11 +192,11 @@ Sequence* Sequence::copy(int fromTime, int toTime) const {
 
 		// right boundary
 		result->fragments.emplace_back(fragments[toFragment]);
-		int l = toTime - cumTimes[toFragment];
+		dtime l = toTime - cumTimes[toFragment];
 		result->fragments.back().length = l;
 		result->cumTimes.push_back(cumTime + l);
 	}
-	
+
 #ifdef BEATMUP_DEBUG
 	consistencyTest(fragments);
 #endif
@@ -204,7 +204,7 @@ Sequence* Sequence::copy(int fromTime, int toTime) const {
 }
 
 
-void Sequence::insert(const Sequence& sequence, int time) {
+void Sequence::insert(const Sequence& sequence, dtime time) {
 	// check if the time is okay
 	if (time < 0 || time > getLength())		// time may be equal to the length
 		throw AccessException("Bad insert position", *this);
@@ -212,7 +212,7 @@ void Sequence::insert(const Sequence& sequence, int time) {
 	// find the fragment (guaranteeing that it is split it in two)
 	int index = findFragment(time);
 	if (time > cumTimes[index]) {
-		int dt = time - cumTimes[index];
+		dtime dt = time - cumTimes[index];
 		splitFragment(index, dt);
 		index++;
 		cumTimes[index] = cumTimes[index - 1] + dt;
@@ -221,7 +221,7 @@ void Sequence::insert(const Sequence& sequence, int time) {
 	// insert remaining part of the sequence
 	fragments.insert(fragments.begin() + index, sequence.fragments.begin(), sequence.fragments.end());
 	cumTimes.resize(fragments.size() + 1);
-	int cumTime = cumTimes[index];
+	dtime cumTime = cumTimes[index];
 	for (auto it = fragments.begin() + index; it != fragments.end(); ++it)
 		cumTimes[++index] = (cumTime += it->length);
 
@@ -232,7 +232,7 @@ void Sequence::insert(const Sequence& sequence, int time) {
 }
 
 
-void Sequence::remove(int fromTime, int toTime) {
+void Sequence::remove(dtime fromTime, dtime toTime) {
 	if (fromTime >= toTime)
 		throw AccessException("Inconsistent time bounds when removing", *this);
 
@@ -251,12 +251,12 @@ void Sequence::remove(int fromTime, int toTime) {
 		toFragment = findFragment(toTime);
 
 	// determine fragment indices range to remove
-	int dt = fromTime - cumTimes[fromFragment];
+	dtime dt = fromTime - cumTimes[fromFragment];
 	int removeRangeBegin = fromFragment;
 	if (dt > 0)
 		removeRangeBegin++;
 	int removeRangeEnd = toFragment >= 0 ? toFragment : fragments.size();
-	
+
 	// remove fragments
 	if (removeRangeBegin <= removeRangeEnd) {
 		if (removeRangeBegin < removeRangeEnd)
@@ -276,7 +276,7 @@ void Sequence::remove(int fromTime, int toTime) {
 	}
 	// special case: single fragment concerned
 	else {
-		int dt = fromTime - cumTimes[fromFragment];
+		dtime dt = fromTime - cumTimes[fromFragment];
 		splitFragment(fromFragment, dt);
 		dt = toTime - fromTime;
 		int index = fromFragment + 1;
@@ -287,10 +287,10 @@ void Sequence::remove(int fromTime, int toTime) {
 	// update cumulative time index
 	cumTimes.resize(fragments.size() + 1);
 	int index = fromFragment;
-	int cumTime = cumTimes[index];
+	dtime cumTime = cumTimes[index];
 	for (auto it = fragments.begin() + index; it != fragments.end(); ++it)
 		cumTimes[++index] = (cumTime += it->length);
-	
+
 	syncPointers();
 
 #ifdef BEATMUP_DEBUG
@@ -300,25 +300,25 @@ void Sequence::remove(int fromTime, int toTime) {
 
 
 void Sequence::split(int time, Sequence* left, Sequence* right) {
-	const int L = getLength();
+	const dtime l = getLength();
 	if (time <= 0) {
-		left = NULL;
+		left = nullptr;
 		right = this;
 	}
-	else if (time >= L-1) {
+	else if (time >= l - 1) {
 		left = this;
-		right = NULL;
+		right = nullptr;
 	}
 	else {
 		left = this;
-		right = copy(time, L);
+		right = copy(time, l);
 		shrink(0, time);
 	}
 }
 
 
 
-Sequence::Pointer::Pointer(Sequence& sequence, int time, bool writing) : sequence(sequence), writing(writing), watching(false) {
+Sequence::Pointer::Pointer(Sequence& sequence, dtime time, bool writing) : sequence(sequence), writing(writing), watching(false) {
 	if (0 <= time && time < sequence.cumTimes[1]) {
 		// an heuristic to start quickly
 		if (writing)
@@ -340,14 +340,14 @@ Sequence::Pointer::~Pointer() {
 }
 
 
-void Sequence::Pointer::moveTo(int time) {
+void Sequence::Pointer::moveTo(dtime time) {
 	currentTime = time;
 	fragmentIdx = sequence.findFragment(time);
 	if (fragmentIdx != VOID_LEFT && fragmentIdx != VOID_RIGHT) {
 		if (writing)
 			sequence.fragments[fragmentIdx].editData();
 		pointer = sequence.fragments[fragmentIdx];
-		int dt = time - sequence.cumTimes[fragmentIdx];
+		dtime dt = time - sequence.cumTimes[fragmentIdx];
 		pointer.offset += dt;
 		pointer.length -= dt;
 	}

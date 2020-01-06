@@ -39,7 +39,7 @@ public class WavFilePlayback extends TestSample {
         plot.setSignal(wav);
         plot.setBitmap(Bitmap.createColorBitmap(context, 1024, 400));
         plot.setPlotArea(plot.getBitmap().clientRectangle());
-        plot.setWindow(new IntRectangle(0, -32000, 123456, 32000), 1);
+        plot.setWindow(new IntRectangle(0, -32000, (int)wav.getLength(), 32000), 1);
         plot.setPalette(Color.WHITE, Color.byHue(123), Color.byHue(133));
 
         long start = System.currentTimeMillis();

@@ -25,14 +25,14 @@ AudioSignal::AudioSignal(Environment& env, AudioSampleFormat format, int sampleR
 }
 
 
-void AudioSignal::insert(const AudioSignal& sequence, int time) {
+void AudioSignal::insert(const AudioSignal& sequence, dtime time) {
 	if (sequence.channelCount != channelCount || sequence.format != format)
 		throw AudioSignal::IncompatibleFormat(sequence, *this);
 	Sequence::insert(sequence, time);
 }
 
 
-void AudioSignal::reserve(int length) {
+void AudioSignal::reserve(dtime length) {
 	int currentLength;
 	while ((currentLength = getLength()) < length) {
 		AudioSignalFragment* newbie = new AudioSignalFragment(env, format, channelCount, defaultFragmentSize);
@@ -75,7 +75,7 @@ AudioSignal* AudioSignal::loadWAV(Environment& env, const char* filename) {
 
 	// create signal
 	AudioSignal* signal = new AudioSignal(env, format, header.sampleRate, header.numChannels);
-	unsigned int totalTime = header.dataSizeBytes / (header.numChannels * header.bitsPerSample / 8);
+	dtime totalTime = header.dataSizeBytes / (header.numChannels * header.bitsPerSample / 8);
 	signal->reserve(totalTime);
 
 	// read data using pointer
@@ -84,7 +84,7 @@ AudioSignal* AudioSignal::loadWAV(Environment& env, const char* filename) {
 		if (file.fail())
 			throw IOError(filename, "Failed while reading");
 		void* data;
-		int length = pointer.acquireBuffer(data);
+		dtime length = pointer.acquireBuffer(data);
 		file.read((char*)data, length * header.numChannels * AUDIO_SAMPLE_SIZE[format]);
 		pointer.releaseBuffer();
 		pointer.jump(length);
@@ -112,7 +112,7 @@ void AudioSignal::saveWAV(const char* filename) {
 		if (file.fail())
 			throw IOError(filename, "Failed while writing");
 		const void* data;
-		int length = pointer.acquireBuffer(data);
+		dtime length = pointer.acquireBuffer(data);
 		file.write((const char*)data, length * channelCount * sampleSize);
 		pointer.releaseBuffer();
 		pointer.jump(length);
@@ -120,7 +120,7 @@ void AudioSignal::saveWAV(const char* filename) {
 }
 
 
-AudioSignal::Pointer::Pointer(AudioSignal& signal, int time, bool writing): Sequence::Pointer(signal, time, writing)
+AudioSignal::Pointer::Pointer(AudioSignal& signal, dtime time, bool writing): Sequence::Pointer(signal, time, writing)
 {}
 
 
@@ -135,10 +135,10 @@ unsigned char AudioSignal::Pointer::getChannelCount() const {
 }
 
 
-AudioSignal::Reader::Reader(AudioSignal& signal, int time) : Pointer(signal, time, false) {};
+AudioSignal::Reader::Reader(AudioSignal& signal, dtime time) : Pointer(signal, time, false) {};
 
 
-int AudioSignal::Reader::acquireBuffer(const void* &data) {
+dtime AudioSignal::Reader::acquireBuffer(const void* &data) {
 	if (pointer.isNull()) {
 		data = NULL;
 		return 0;
@@ -149,9 +149,9 @@ int AudioSignal::Reader::acquireBuffer(const void* &data) {
 }
 
 
-AudioSignal::Writer::Writer(AudioSignal& signal, int time) : Pointer(signal, time, true) {};
+AudioSignal::Writer::Writer(AudioSignal& signal, dtime time) : Pointer(signal, time, true) {};
 
-int AudioSignal::Writer::acquireBuffer(void* &data) {
+dtime AudioSignal::Writer::acquireBuffer(void* &data) {
 	if (pointer.isNull()) {
 		data = NULL;
 		return 0;
@@ -176,7 +176,7 @@ void AudioSignal::Meter::prepare(AudioSignal& signal, int skipOnStart, int numSt
 }
 
 
-AudioSignal::Meter::Meter(AudioSignal& signal, int time, MeasuringMode mode):
+AudioSignal::Meter::Meter(AudioSignal& signal, dtime time, MeasuringMode mode):
 	Pointer(signal, time, false), mode(mode)
 {}
 
@@ -206,7 +206,7 @@ void AudioSignal::Meter::prepareSignal(AudioSignal& signal, bool runTask) {
 }
 
 
-template<typename sample> void AudioSignal::Meter::measureInFragments(int len, int resolution, sample* min, sample* max) {
+template<typename sample> void AudioSignal::Meter::measureInFragments(dtime len, int resolution, sample* min, sample* max) {
 	const int channelCount = ((AudioSignalFragment*)pointer.fragment)->getChannelCount();
 	const dtime startTime = getTime();
 	dtime t1 = startTime;
@@ -244,15 +244,15 @@ template<typename sample> void AudioSignal::Meter::measureInFragments(int len, i
 	}
 }
 
-template void AudioSignal::Meter::measureInFragments(int len, int resolution, sample8* min, sample8* max);
-template void AudioSignal::Meter::measureInFragments(int len, int resolution, sample16* min, sample16* max);
-template void AudioSignal::Meter::measureInFragments(int len, int resolution, sample32* min, sample32* max);
-template void AudioSignal::Meter::measureInFragments(int len, int resolution, sample32f* min, sample32f* max);
+template void AudioSignal::Meter::measureInFragments(dtime len, int resolution, sample8* min, sample8* max);
+template void AudioSignal::Meter::measureInFragments(dtime len, int resolution, sample16* min, sample16* max);
+template void AudioSignal::Meter::measureInFragments(dtime len, int resolution, sample32* min, sample32* max);
+template void AudioSignal::Meter::measureInFragments(dtime len, int resolution, sample32f* min, sample32f* max);
 
 
 namespace Beatmup {		// why? Because of a bug in gcc
 
-	template<> void AudioSignal::Meter::measure(int len, int resolution, sample16 min[], sample16 max[]) {
+	template<> void AudioSignal::Meter::measure(dtime len, int resolution, sample16 min[], sample16 max[]) {
 		const AudioSampleFormat fmt = ((AudioSignalFragment*)pointer.fragment)->getAudioFormat();
 		if (fmt == Int16) {
 			measureInFragments(len, resolution, (sample16*)min, (sample16*)max);
