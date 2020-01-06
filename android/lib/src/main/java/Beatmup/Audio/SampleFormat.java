@@ -1,7 +1,7 @@
 package Beatmup.Audio;
 
 /**
- * Audio sample formats identification
+ * Audio sample format
  */
 public enum SampleFormat {
     Int8,

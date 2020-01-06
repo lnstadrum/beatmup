@@ -10,8 +10,8 @@ template<class in_t, class out_t> class BinaryOpBody {
 public:
 
 	/**
-        Performs a binary operation on two bitmaps
-    */
+		Performs a binary operation on two bitmaps
+	*/
 	static void process(
 			in_t op1, in_t op2, out_t out,
 			BitmapBinaryOperation::Operation operation,
@@ -41,6 +41,8 @@ public:
 						out = op1() * op2();
 					}
 					break;
+
+				default: return;
 			}
 
 			if (tt.isTaskAborted())
@@ -49,82 +51,84 @@ public:
 	}
 
 
-    /**
-        Performs a binary operation on two binary masks
-    */
-    static void processAlignedBinaryMask(
-            in_t op1, in_t op2, out_t out,
-            BitmapBinaryOperation::Operation operation,
-            int width, int height,
-            const IntPoint &op1Origin,
-            const IntPoint &op2Origin,
-            const IntPoint &outOrigin,
-            const TaskThread &tt
-    ) {
-        if (operation == BitmapBinaryOperation::Operation::NONE)
-            return;
+	/**
+		Performs a binary operation on two binary masks
+	*/
+	static void processAlignedBinaryMask(
+			in_t op1, in_t op2, out_t out,
+			BitmapBinaryOperation::Operation operation,
+			int width, int height,
+			const IntPoint &op1Origin,
+			const IntPoint &op2Origin,
+			const IntPoint &outOrigin,
+			const TaskThread &tt
+	) {
+		if (operation == BitmapBinaryOperation::Operation::NONE)
+			return;
 
-        BEATMUP_ASSERT_DEBUG(op1Origin.x % 8 == 0);
-        BEATMUP_ASSERT_DEBUG(op2Origin.x % 8 == 0);
-        BEATMUP_ASSERT_DEBUG(outOrigin.x % 8 == 0);
+		BEATMUP_ASSERT_DEBUG(op1Origin.x % 8 == 0);
+		BEATMUP_ASSERT_DEBUG(op2Origin.x % 8 == 0);
+		BEATMUP_ASSERT_DEBUG(outOrigin.x % 8 == 0);
 
-        for (int y = tt.currentThread(); y < height; y += tt.totalThreads()) {
-            int x = 0;
+		for (int y = tt.currentThread(); y < height; y += tt.totalThreads()) {
+			int x = 0;
 
-            // running aligned part first
-            op1.goTo(op1Origin.x, op1Origin.y + y);
-            op2.goTo(op2Origin.x, op2Origin.y + y);
-            out.goTo(outOrigin.x, outOrigin.y + y);
+			// running aligned part first
+			op1.goTo(op1Origin.x, op1Origin.y + y);
+			op2.goTo(op2Origin.x, op2Origin.y + y);
+			out.goTo(outOrigin.x, outOrigin.y + y);
 
-            pixint_platform
-                    *p1 = (pixint_platform*)*op1,
-                    *p2 = (pixint_platform*)*op2,
-                    *po = (pixint_platform*)*out;
+			pixint_platform
+					*p1 = (pixint_platform*)*op1,
+					*p2 = (pixint_platform*)*op2,
+					*po = (pixint_platform*)*out;
 
-            static const int step = 8 * sizeof(pixint_platform);
+			static const int step = 8 * sizeof(pixint_platform);
 
-            switch (operation) {
-                case BitmapBinaryOperation::Operation::ADD:
-                    for (x = 0; x + step <= width; x += step, p1++, p2++, po++) {
-                        *po = *p1 | *p2;
-                    }
-                    break;
+			switch (operation) {
+				case BitmapBinaryOperation::Operation::ADD:
+					for (x = 0; x + step <= width; x += step, p1++, p2++, po++) {
+						*po = *p1 | *p2;
+					}
+					break;
 
-                case BitmapBinaryOperation::Operation::MULTIPLY:
-                    for (x = 0; x + step <= width; x += step, p1++, p2++, po++) {
-                        *po = *p1 & *p2;
-                    }
-                    break;
-                default:
-                    return;
-            }
+				case BitmapBinaryOperation::Operation::MULTIPLY:
+					for (x = 0; x + step <= width; x += step, p1++, p2++, po++) {
+						*po = *p1 & *p2;
+					}
+					break;
 
-            // if unaligned reminder, deal with it
-            if (x < width) {
-                op1.goTo(op1Origin.x + x, op1Origin.y + y);
-                op2.goTo(op2Origin.x + x, op2Origin.y + y);
-                out.goTo(outOrigin.x + x, outOrigin.y + y);
+				default: return;
+			}
 
-                switch (operation) {
-                    case BitmapBinaryOperation::Operation::ADD:
-                        for (; x < width; ++x, op1++, op2++, out++) {
-                            out = op1() + op2();
-                        }
-                        break;
+			// if unaligned reminder, deal with it
+			if (x < width) {
+				op1.goTo(op1Origin.x + x, op1Origin.y + y);
+				op2.goTo(op2Origin.x + x, op2Origin.y + y);
+				out.goTo(outOrigin.x + x, outOrigin.y + y);
 
-                    case BitmapBinaryOperation::Operation::MULTIPLY:
-                        for (; x < width; ++x, op1++, op2++, out++) {
-                            out = op1() * op2();
-                        }
-                        break;
-                }
+				switch (operation) {
+					case BitmapBinaryOperation::Operation::ADD:
+						for (; x < width; ++x, op1++, op2++, out++) {
+							out = op1() + op2();
+						}
+						break;
 
-            }
+					case BitmapBinaryOperation::Operation::MULTIPLY:
+						for (; x < width; ++x, op1++, op2++, out++) {
+							out = op1() * op2();
+						}
+						break;
 
-            if (tt.isTaskAborted())
-                return;
-        }
-    }
+					default: return;
+				}
+
+			}
+
+			if (tt.isTaskAborted())
+				return;
+		}
+	}
 };
 
 
@@ -135,17 +139,17 @@ BitmapBinaryOperation::BitmapBinaryOperation() :
 
 
 void BitmapBinaryOperation::setOperand1(AbstractBitmap* bitmap) {
-    this->op1 = bitmap;
+	this->op1 = bitmap;
 }
 
 
 void BitmapBinaryOperation::setOperand2(AbstractBitmap* bitmap) {
-    this->op2 = bitmap;
+	this->op2 = bitmap;
 }
 
 
 void BitmapBinaryOperation::setOutput(AbstractBitmap* bitmap) {
-    this->output = bitmap;
+	this->output = bitmap;
 }
 
 
@@ -176,11 +180,11 @@ void BitmapBinaryOperation::setOutputOrigin(const IntPoint origin) {
 
 
 void BitmapBinaryOperation::resetCrop() {
-    if (op1 && op2 && output) {
-        cropWidth  = std::min(output->getWidth(),  std::min(op1->getWidth(),  op2->getWidth()));
-        cropHeight = std::min(output->getHeight(), std::min(op1->getHeight(), op2->getHeight()));
-        op1Origin = op2Origin = outputOrigin = IntPoint::ZERO;
-    }
+	if (op1 && op2 && output) {
+		cropWidth  = std::min(output->getWidth(),  std::min(op1->getWidth(),  op2->getWidth()));
+		cropHeight = std::min(output->getHeight(), std::min(op1->getHeight(), op2->getHeight()));
+		op1Origin = op2Origin = outputOrigin = IntPoint::ZERO;
+	}
 }
 
 
@@ -221,7 +225,7 @@ void BitmapBinaryOperation::afterProcessing(ThreadIndex threadCount, bool aborte
 
 bool BitmapBinaryOperation::process(TaskThread& thread) {
 #define PROCESS(IN_T, OUT_T) \
-    BinaryOpBody<IN_T, OUT_T>::process( \
+		BinaryOpBody<IN_T, OUT_T>::process( \
 			IN_T(*op1), IN_T(*op2), OUT_T(*output), \
 			operation, cropWidth, cropHeight, op1Origin, op2Origin, outputOrigin, thread);
 
@@ -245,13 +249,13 @@ bool BitmapBinaryOperation::process(TaskThread& thread) {
 			PROCESS(QuadFloatBitmapReader, QuadFloatBitmapWriter);
 			break;
 		case BinaryMask:
-            if (op1Origin.x % 8 == 0 && op2Origin.x % 8 == 0 && outputOrigin.x % 8 == 0)
-                BinaryOpBody<BinaryMaskReader, BinaryMaskWriter>::processAlignedBinaryMask(
-                        BinaryMaskReader(*op1), BinaryMaskReader(*op2), BinaryMaskWriter(*output),
-                        operation, cropWidth, cropHeight, op1Origin, op2Origin, outputOrigin,
-                        thread);
-            else
-			    PROCESS(BinaryMaskReader, BinaryMaskWriter);
+			if (op1Origin.x % 8 == 0 && op2Origin.x % 8 == 0 && outputOrigin.x % 8 == 0)
+				BinaryOpBody<BinaryMaskReader, BinaryMaskWriter>::processAlignedBinaryMask(
+						BinaryMaskReader(*op1), BinaryMaskReader(*op2), BinaryMaskWriter(*output),
+						operation, cropWidth, cropHeight, op1Origin, op2Origin, outputOrigin,
+						thread);
+			else
+				PROCESS(BinaryMaskReader, BinaryMaskWriter);
 			break;
 		case QuaternaryMask:
 			PROCESS(QuaternaryMaskReader, QuaternaryMaskWriter);

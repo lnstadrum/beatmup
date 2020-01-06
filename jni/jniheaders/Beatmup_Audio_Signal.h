@@ -31,6 +31,30 @@ JNIEXPORT jlong JNICALL Java_Beatmup_Audio_Signal_newAudioSignalFromWAV
 JNIEXPORT jlong JNICALL Java_Beatmup_Audio_Signal_newAudioSignalSource
   (JNIEnv *, jclass, jobject, jlong);
 
+/*
+ * Class:     Beatmup_Audio_Signal
+ * Method:    getLength
+ * Signature: (J)I
+ */
+JNIEXPORT jint JNICALL Java_Beatmup_Audio_Signal_getLength
+  (JNIEnv *, jclass, jlong);
+
+/*
+ * Class:     Beatmup_Audio_Signal
+ * Method:    getSampleFormat
+ * Signature: (J)I
+ */
+JNIEXPORT jint JNICALL Java_Beatmup_Audio_Signal_getSampleFormat
+  (JNIEnv *, jclass, jlong);
+
+/*
+ * Class:     Beatmup_Audio_Signal
+ * Method:    getChannelCount
+ * Signature: (J)I
+ */
+JNIEXPORT jint JNICALL Java_Beatmup_Audio_Signal_getChannelCount
+  (JNIEnv *, jclass, jlong);
+
 #ifdef __cplusplus
 }
 #endif

@@ -42,13 +42,41 @@ JNIMETHOD(jlong, newAudioSignalFromWAV, Java_Beatmup_Audio_Signal, newAudioSigna
 
 
 JNIMETHOD(jlong, newAudioSignalSource, Java_Beatmup_Audio_Signal, newAudioSignalSource)
-    (JNIEnv * jenv, jclass, jobject jCtx, jlong hSignal)
+    (JNIEnv * jenv, jclass, jobject jCtx, jlong handle)
 {
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::Environment, env, jCtx);
-    BEATMUP_OBJ(Beatmup::AudioSignal, signal, hSignal);
+    BEATMUP_OBJ(Beatmup::AudioSignal, signal, handle);
     return (jlong) new Beatmup::AudioSignal::Source(*signal);
 }
+
+
+JNIMETHOD(jint, getLength, Java_Beatmup_Audio_Signal, getLength)
+    (JNIEnv * jenv, jclass, jlong handle)
+{
+    BEATMUP_ENTER;
+    BEATMUP_OBJ(Beatmup::AudioSignal, signal, handle);
+    return (jint)signal->getLength();
+}
+
+
+JNIMETHOD(jint, getSampleFormat, Java_Beatmup_Audio_Signal, getSampleFormat)
+    (JNIEnv * jenv, jclass, jlong handle)
+{
+    BEATMUP_ENTER;
+    BEATMUP_OBJ(Beatmup::AudioSignal, signal, handle);
+    return (jint)signal->getSampleFormat();
+}
+
+
+JNIMETHOD(jint, getChannelCount, Java_Beatmup_Audio_Signal, getChannelCount)
+    (JNIEnv * jenv, jclass, jlong handle)
+{
+    BEATMUP_ENTER;
+    BEATMUP_OBJ(Beatmup::AudioSignal, signal, handle);
+    return signal->getChannelCount();
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 //                                        SIGNAL PLOT

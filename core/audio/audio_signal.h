@@ -10,7 +10,7 @@ namespace Beatmup {
 	private:
 		class Pointer : public Sequence::Pointer {
 		public:
-			Pointer(AudioSignal& signal, int time, bool writing);
+			Pointer(AudioSignal& signal, dtime time, bool writing);
 			virtual void releaseBuffer();
 			unsigned char getChannelCount() const;
 		};
@@ -22,8 +22,8 @@ namespace Beatmup {
 		*/
 		class Reader : public Pointer {
 		public:
-			Reader(AudioSignal& signal, int time);
-			int acquireBuffer(const void* &data);
+			Reader(AudioSignal& signal, dtime time);
+			dtime acquireBuffer(const void* &data);
 		};
 
 		/**
@@ -31,8 +31,8 @@ namespace Beatmup {
 		*/
 		class Writer : public Pointer {
 		public:
-			Writer(AudioSignal& signal, int time);
-			int acquireBuffer(void* &data);
+			Writer(AudioSignal& signal, dtime time);
+			dtime acquireBuffer(void* &data);
 		};
 
 		/**
@@ -75,7 +75,7 @@ namespace Beatmup {
 				\param min			channelwise multiplexed magnitude minima, (resolution) points per channel
 				\param max			channelwise multiplexed magnitude maxima, (resolution) points per channel
 			*/
-			template<typename sample> void measureInFragments(int len, int resolution, sample* min, sample* max);
+			template<typename sample> void measureInFragments(dtime len, int resolution, sample* min, sample* max);
 
 			static void prepare(AudioSignal& signal, int skipOnStart = 0, int numSteps = 1);
 
@@ -96,7 +96,7 @@ namespace Beatmup {
 				\param time			initial time to start measurements from
 				\param mode			algorithm used to measure the signal dynamics
 			*/
-			Meter(AudioSignal& signal, int time, MeasuringMode mode = MeasuringMode::approximateUsingLookup);
+			Meter(AudioSignal& signal, dtime time, MeasuringMode mode = MeasuringMode::approximateUsingLookup);
 
 			/**
 				Measures signal dynamis in a given period of time.
@@ -105,7 +105,7 @@ namespace Beatmup {
 				\param min			channelwise multiplexed magnitude minima, (resolution) points per channel
 				\param max			channelwise multiplexed magnitude maxima, (resolution) points per channel
 			*/
-			template<typename sample> void measure(int len, int resolution, sample min[], sample max[]);
+			template<typename sample> void measure(dtime len, int resolution, sample min[], sample max[]);
 
 			inline void setMode(MeasuringMode newMode) { mode = newMode; }
 		};
@@ -153,7 +153,7 @@ namespace Beatmup {
 
 		AudioSampleFormat format;			//!< sample format
 
-		const int defaultFragmentSize;
+		const dtime defaultFragmentSize;
 		int sampleRate;						//!< sampling frequency
 		unsigned char channelCount;			//!< number of channels
 
@@ -165,12 +165,12 @@ namespace Beatmup {
 
 		AudioSignal(Environment& env, AudioSampleFormat format, int sampleRate, unsigned char channels, float defaultFragmentLenSec = DEFAULT_FRAGMENT_LENGTH_SEC);
 
-		void insert(const AudioSignal& sequence, int time);
+		void insert(const AudioSignal& sequence, dtime time);
 
 		/**
 			Prolongates the sequence if necessary, to ensure given length
 		*/
-		void reserve(int length);
+		void reserve(dtime length);
 
 		/**
 			Stores the signal to a PCM-encoded WAV file
