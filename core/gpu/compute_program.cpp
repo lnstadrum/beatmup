@@ -13,35 +13,35 @@ ComputeProgram::Shader::Shader(const GraphicPipeline& gpu) : GL::Shader(gpu, GL_
 ComputeProgram::ComputeProgram(const GraphicPipeline& gpu) : AbstractProgram(gpu), shader(gpu) {}
 
 ComputeProgram::ComputeProgram(const GraphicPipeline& gpu, const char* source): ComputeProgram(gpu) {
-	make(gpu, source);
+    make(gpu, source);
 }
 
 void ComputeProgram::link(const GraphicPipeline& gpu) {
-	glAttachShader(getHandle(), shader.getHandle());
-	glLinkProgram(getHandle());
-	assertLinked();
+    glAttachShader(getHandle(), shader.getHandle());
+    glLinkProgram(getHandle());
+    assertLinked();
 }
 
 
 void ComputeProgram::make(const GraphicPipeline& gpu, const char* source) {
-	shader.compile(gpu, source);
-	link(gpu);
+    shader.compile(gpu, source);
+    link(gpu);
 }
 
 
 void ComputeProgram::make(const GraphicPipeline& gpu, const std::string& source) {
-	make(gpu, source.c_str());
+    make(gpu, source.c_str());
 }
 
 
 void ComputeProgram::dispatch(const GraphicPipeline& gpu, msize w, msize h, msize d) const {
-	glDispatchCompute(w, h, d);
+    glDispatchCompute(w, h, d);
 #ifdef BEATMUP_DEBUG
-	GL::GLException::check("dispatching compute");
+    GL::GLException::check("dispatching compute");
 #endif
-	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+    glMemoryBarrier(GL_ALL_BARRIER_BITS);
 #ifdef BEATMUP_DEBUG
-	GL::GLException::check("memory barrier");
+    GL::GLException::check("memory barrier");
 #endif
-	glFinish();	// fixme: this helps my Radeon not to crash
+    glFinish();	// fixme: this helps my Radeon not to crash
 }

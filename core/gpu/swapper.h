@@ -1,5 +1,5 @@
 /*
-	Swapping pixel data from GPU to CPU
+    Swapping pixel data from GPU to CPU
 */
 #pragma once
 
@@ -7,16 +7,16 @@
 #include "../bitmap/abstract_bitmap.h"
 
 namespace Beatmup {
-	class Swapper : public GpuTask {
-	private:
-		AbstractBitmap* bitmap;
+    class Swapper : public GpuTask {
+    private:
+        AbstractBitmap* bitmap;
 
-		bool processOnGPU(GraphicPipeline& gpu, TaskThread&);
+        bool processOnGPU(GraphicPipeline& gpu, TaskThread&);
 
-	public:
-		Swapper();
-		void setBitmap(AbstractBitmap&);
+    public:
+        Swapper();
+        void setBitmap(AbstractBitmap&);
 
-		static void grabPixels(AbstractBitmap& bitmap);
-	};
+        static void grabPixels(AbstractBitmap& bitmap);
+    };
 }

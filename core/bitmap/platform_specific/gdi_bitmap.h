@@ -2,41 +2,41 @@
 
 #include "../abstract_bitmap.h"
 #ifndef BEATMUP_PLATFORM_WINDOWS
-	#error GDI bitmap is Windows-specific.
+    #error GDI bitmap is Windows-specific.
 #endif
 
 namespace Beatmup {
 
-	/**
-		A simple wrapper of GDI bitmap
-	*/
-	class GDIBitmap : public AbstractBitmap {
-	private:
-		class Impl;
-		Impl* impl;
+    /**
+        A simple wrapper of GDI bitmap
+    */
+    class GDIBitmap : public AbstractBitmap {
+    private:
+        class Impl;
+        Impl* impl;
 
-	public:
-		GDIBitmap(Environment &env, const wchar_t* filename);
+    public:
+        GDIBitmap(Environment &env, const wchar_t* filename);
 
-		GDIBitmap(Environment &env, PixelFormat format, int width, int height);
+        GDIBitmap(Environment &env, PixelFormat format, int width, int height);
 
-		const PixelFormat getPixelFormat() const;
+        const PixelFormat getPixelFormat() const;
 
-		const int getWidth() const;
+        const int getWidth() const;
 
-		const int getHeight() const;
+        const int getHeight() const;
 
-		int getStride() const;
+        int getStride() const;
 
-		const msize getMemorySize() const;
+        const msize getMemorySize() const;
 
-		void lockPixelData();
+        void lockPixelData();
 
-		void unlockPixelData();
+        void unlockPixelData();
 
-		const pixbyte* getData(int x, int y) const;
+        const pixbyte* getData(int x, int y) const;
 
-		void save(const wchar_t* filename);
-	};
+        void save(const wchar_t* filename);
+    };
 
 }

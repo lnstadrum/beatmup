@@ -7,10 +7,10 @@
 #include "../environment.h"
 
 namespace Beatmup {
-	/**
-		Template of a task using GPU
-	*/
-	class GpuTask : public AbstractTask {
+    /**
+        Template of a task using GPU
+    */
+    class GpuTask : public AbstractTask {
     private:
         ExecutionTarget getExecutionTarget() const;
         ThreadIndex maxAllowedThreads() const;

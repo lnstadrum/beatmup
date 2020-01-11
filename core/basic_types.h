@@ -1,5 +1,5 @@
 /*
-	Basic datatypes
+    Basic datatypes
 */
 
 #pragma once
@@ -11,32 +11,32 @@
 
 // fast floorf (no range check)
 inline int floorf_fast(float x) {
-	int i = (int)x;
-	return i - (i > x);
+    int i = (int)x;
+    return i - (i > x);
 }
 
 // modulus
 inline float modf(float x, float y) {
-	return x - y * (int)(x / y);
+    return x - y * (int)(x / y);
 }
 
 
 namespace Beatmup {
 
 #ifdef BEATMUP_PLATFORM_64BIT_
-	const double pi = 3.141592653589793238462643383279502884;
-	typedef uint64_t msize;			//!< memory size
+    const double pi = 3.141592653589793238462643383279502884;
+    typedef uint64_t msize;			//!< memory size
     typedef uint64_t pixint_platform;
 #else
-	const float pi = 3.141592653589793238462643383279502884f;
-	typedef uint32_t msize;				//!< memory size
-	typedef uint32_t pixint_platform;
+    const float pi = 3.141592653589793238462643383279502884f;
+    typedef uint32_t msize;				//!< memory size
+    typedef uint32_t pixint_platform;
 #endif
 
-	typedef uint8_t pixbyte;
-	typedef float pixfloat;
+    typedef uint8_t pixbyte;
+    typedef float pixfloat;
 
-	typedef int dtime;
+    typedef int dtime;
 
     typedef struct {
         uint8_t r, g, b;
@@ -54,17 +54,17 @@ namespace Beatmup {
         float r, g, b, a;
     } color4f;
 
-	enum ProcessingTarget {CPU = 0, GPU};		//!< where to process the stuff
+    enum ProcessingTarget {CPU = 0, GPU};		//!< where to process the stuff
 
-	namespace GL {
-		typedef unsigned int glhandle;
-	}
+    namespace GL {
+        typedef unsigned int glhandle;
+    }
 
-	/**
-		Object base
-	*/
-	class Object {
-	public:
-		virtual ~Object() {}
-	};
+    /**
+        Object base
+    */
+    class Object {
+    public:
+        virtual ~Object() {}
+    };
 }

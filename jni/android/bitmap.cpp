@@ -35,11 +35,11 @@ Bitmap::~Bitmap() {
 
 
 AndroidBitmapInfo Bitmap::getInfo() const {
-	AndroidBitmapInfo info;
-	int result = AndroidBitmap_getInfo(getEnv(), bitmap, &info);
-	if (result < 0)
-		throw RuntimeError("AndroidBitmap_getInfo() failed");
-	return info;
+    AndroidBitmapInfo info;
+    int result = AndroidBitmap_getInfo(getEnv(), bitmap, &info);
+    if (result < 0)
+        throw RuntimeError("AndroidBitmap_getInfo() failed");
+    return info;
 }
 
 
@@ -96,10 +96,10 @@ void Bitmap::unlockPixels() {
 
 
 pixbyte* Bitmap::getData(int x, int y) const {
-	RuntimeError::check(lockedPixels, "No pixel data available. Forget to lock the bitmap?");
-	if (x < 0 || y < 0 || x >= lockedWidth || y >= lockedHeight)
-		return nullptr;
-	msize n = y * lockedWidth + x;
+    RuntimeError::check(lockedPixels, "No pixel data available. Forget to lock the bitmap?");
+    if (x < 0 || y < 0 || x >= lockedWidth || y >= lockedHeight)
+        return nullptr;
+    msize n = y * lockedWidth + x;
     return (pixbyte*)( (unsigned char*)lockedPixels + n * BITS_PER_PIXEL[lockedPixelFormat] / 8 );
 }
 

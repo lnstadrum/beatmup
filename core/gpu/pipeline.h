@@ -1,5 +1,5 @@
 /*
-	Low-level graphic pipeline manipulation
+    Low-level graphic pipeline manipulation
 */
 
 #pragma once
@@ -15,57 +15,57 @@
 
 
 namespace Beatmup {
-	class GraphicPipeline {
-		friend class GL::TextureHandler;
-	private:
-		class Impl;
-		Impl* impl;
-		std::mutex access;
+    class GraphicPipeline {
+        friend class GL::TextureHandler;
+    private:
+        class Impl;
+        Impl* impl;
+        std::mutex access;
 
-		RenderingPrograms renderingPrograms;
+        RenderingPrograms renderingPrograms;
 
-		GraphicPipeline(const GraphicPipeline&) = delete;				//!< disabling copy constructor
+        GraphicPipeline(const GraphicPipeline&) = delete;				//!< disabling copy constructor
 
-	public:
-		enum class Limit {
-			LOCAL_GROUPS_X,
-			LOCAL_GROUPS_Y,
-			LOCAL_GROUPS_Z,
-			LOCAL_GROUPS_TOTAL,
-			SHARED_MEM,
-		};
+    public:
+        enum class Limit {
+            LOCAL_GROUPS_X,
+            LOCAL_GROUPS_Y,
+            LOCAL_GROUPS_Z,
+            LOCAL_GROUPS_TOTAL,
+            SHARED_MEM,
+        };
 
-		GraphicPipeline();
-		~GraphicPipeline();
+        GraphicPipeline();
+        ~GraphicPipeline();
 
-		void lock();
+        void lock();
 
-		void unlock();
+        void unlock();
 
-		void switchDisplay(void* data);
+        void switchDisplay(void* data);
 
-		void swapBuffers();
+        void swapBuffers();
 
 
-		/**
-			Binds a texture handler to the pipeline output
-		*/
-		void bindOutput(AbstractBitmap&);
+        /**
+            Binds a texture handler to the pipeline output
+        */
+        void bindOutput(AbstractBitmap&);
 
-		/**
-			Unbinds a bitmap from output and switches to screen
-		*/
-		void unbindOutput();
-		
-		ImageResolution getOutputResolution() const;
+        /**
+            Unbinds a bitmap from output and switches to screen
+        */
+        void unbindOutput();
+        
+        ImageResolution getOutputResolution() const;
 
-		void bind(GL::TextureHandler& texture, size_t texUnit, const TextureParam param);
-		void bind(GL::TextureHandler& texture, size_t imageUnit, bool read, bool write);
+        void bind(GL::TextureHandler& texture, size_t texUnit, const TextureParam param);
+        void bind(GL::TextureHandler& texture, size_t imageUnit, bool read, bool write);
 
-		void fetchPixels(AbstractBitmap& bitmap);
+        void fetchPixels(AbstractBitmap& bitmap);
 
-		int getLimit(Limit limit) const;
+        int getLimit(Limit limit) const;
 
-		inline RenderingPrograms & getRenderingPrograms() { return renderingPrograms; }
-	};
+        inline RenderingPrograms & getRenderingPrograms() { return renderingPrograms; }
+    };
 }

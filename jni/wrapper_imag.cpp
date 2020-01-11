@@ -559,16 +559,16 @@ JNIMETHOD(jint, getOutputReferenceWidth,
 
 
 JNIMETHOD(void, setOutputPixelsFetching, Java_Beatmup_Rendering_SceneRenderer, setOutputPixelsFetching)(JNIEnv * jenv, jobject, jlong hRenderer, jboolean fetch) {
-	BEATMUP_ENTER;
-	BEATMUP_OBJ(Beatmup::SceneRenderer, renderer, hRenderer);
-	renderer->setOutputPixelsFetching(fetch == JNI_TRUE);
+    BEATMUP_ENTER;
+    BEATMUP_OBJ(Beatmup::SceneRenderer, renderer, hRenderer);
+    renderer->setOutputPixelsFetching(fetch == JNI_TRUE);
 }
 
 
 JNIMETHOD(jboolean, getOutputPixelsFetching, Java_Beatmup_Rendering_SceneRenderer, getOutputPixelsFetching)(JNIEnv * jenv, jobject, jlong hRenderer) {
-	BEATMUP_ENTER;
-	BEATMUP_OBJ(Beatmup::SceneRenderer, renderer, hRenderer);
-	return renderer->getOutputPixelsFetching() ? JNI_TRUE : JNI_FALSE;
+    BEATMUP_ENTER;
+    BEATMUP_OBJ(Beatmup::SceneRenderer, renderer, hRenderer);
+    return renderer->getOutputPixelsFetching() ? JNI_TRUE : JNI_FALSE;
 }
 
 
