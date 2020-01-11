@@ -5,8 +5,7 @@
 #include "jniheaders/Beatmup_Audio_Playback.h"
 #include "jniheaders/Beatmup_Audio_Source_Harmonic.h"
 
-#include "android/sles_playback.h"
-
+#include <core/audio/playback/android/sles_playback.h>
 #include <core/audio/audio_signal.h>
 #include <core/audio/audio_signal_plot.h>
 #include <core/color/packing.h>

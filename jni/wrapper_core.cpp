@@ -1,4 +1,3 @@
-#include <core/gpu/swapper.h>
 #include "wrapper.h"
 
 #include "jniheaders/Beatmup_Object.h"
@@ -12,14 +11,16 @@
 #include "jniheaders/Beatmup_Sequence.h"
 
 #include "android/environment.h"
-#include "android/gl_utils.h"
 #include "context_event_listener.h"
 
+#include <android/native_window_jni.h>
 #include <core/bitmap/tools.h>
 #include <core/pipelining/custom_pipeline.h>
 #include <core/pipelining/multitask.h>
 #include <core/fragments/sequence.h>
 #include <core/gpu/variables_bundle.h>
+#include <core/gpu/swapper.h>
+#include <core/gpu/display_switch.h>
 
 // defining the pool
 BeatmupJavaObjectPool $pool;
@@ -63,12 +64,19 @@ JNIMETHOD(jboolean, bindSurfaceToContext, Java_Beatmup_Visual_Android_BasicDispl
     if (surface) {
         // bind the new one
         jenv->SetObjectField(jCtx, surfaceFieldID, surface);
-        return Beatmup::Android::switchDisplay(*env, jenv, surface) ? JNI_TRUE : JNI_FALSE;
+        ANativeWindow *wnd = ANativeWindow_fromSurface(jenv, surface);
+        if (!wnd) {
+            LOG_E("Empty surface window got when switching GL display.");
+            return JNI_FALSE;
+        }
+        const bool result = Beatmup::DisplaySwitch::run(*env, wnd);
+        ANativeWindow_release(wnd);
+        return result ? JNI_TRUE : JNI_FALSE;
     }
     // just removing an old one
     else {
         jenv->SetObjectField(jCtx, surfaceFieldID, NULL);
-        return Beatmup::Android::switchDisplay(*env, jenv, NULL) ? JNI_TRUE : JNI_FALSE;
+        return Beatmup::DisplaySwitch::run(*env, NULL) ? JNI_TRUE : JNI_FALSE;
     }
 
     return JNI_FALSE;   // never happens

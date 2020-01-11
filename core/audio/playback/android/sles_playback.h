@@ -3,7 +3,7 @@
  */
 #pragma once
 
-#include <core/audio/playback/realtime_playback.h>
+#include "../realtime_playback.h"
 
 namespace Beatmup {
     namespace Android {
