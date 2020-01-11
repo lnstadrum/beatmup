@@ -14,28 +14,28 @@ private:
     AbstractTask::ExecutionTarget executionMode;
     ThreadIndex maxThreadCount;
     bool measured;                          //!< if `true`, the execution mode and the thread count are determined
-	bool abort;                             //!< if `true`, one of threads executing the current task caused its aborting
+    bool abort;                             //!< if `true`, one of threads executing the current task caused its aborting
 
 public:
     Impl():
         measured(false)
     {}
 
-	virtual ~Impl() {
-		// destroying taskholders
-		for (auto task : tasks)
-			delete task;
-	}
+    virtual ~Impl() {
+        // destroying taskholders
+        for (auto task : tasks)
+            delete task;
+    }
 
     const TaskHolder& getCurrentTask() const {
         return **currentTask;
     }
 
     void runTask() {
-		TaskHolder& task = **currentTask;
+        TaskHolder& task = **currentTask;
         task.getTask().beforeProcessing(
-				task.threadCount,
-				task.executionMode != AbstractTask::ExecutionTarget::doNotUseGPU && gpu ?
+                task.threadCount,
+                task.executionMode != AbstractTask::ExecutionTarget::doNotUseGPU && gpu ?
                     gpu : NULL
         );
 
@@ -44,10 +44,10 @@ public:
 
         // perform the task
         bool result;
-		if (task.executionMode != AbstractTask::ExecutionTarget::doNotUseGPU && gpu)
-			result = task.getTask().processOnGPU(*gpu, *thread);
+        if (task.executionMode != AbstractTask::ExecutionTarget::doNotUseGPU && gpu)
+            result = task.getTask().processOnGPU(*gpu, *thread);
         else
-			result = task.getTask().process(*thread);
+            result = task.getTask().process(*thread);
 
         if (!result)
             abort = true;
@@ -55,7 +55,7 @@ public:
         // wait for other workers
         thread->synchronize();
 
-		task.getTask().afterProcessing(task.threadCount, !abort);
+        task.getTask().afterProcessing(task.threadCount, !abort);
     }
 
     void goToNextTask() {
@@ -96,13 +96,13 @@ public:
         tasks.push_back(taskHolder);
     }
 
-	void insertTask(TaskHolder* newbie, const TaskHolder* succeedingHoder) {
+    void insertTask(TaskHolder* newbie, const TaskHolder* succeedingHoder) {
         std::lock_guard<std::mutex> lock(tasksAccess);
-		const auto& nextHolder = std::find(tasks.cbegin(), tasks.cend(), succeedingHoder);
-		if (nextHolder == tasks.cend())
+        const auto& nextHolder = std::find(tasks.cbegin(), tasks.cend(), succeedingHoder);
+        if (nextHolder == tasks.cend())
             throw RuntimeError("Reference task holder is not found in the task list");
         measured = false;
-		tasks.insert(nextHolder - 1, newbie);
+        tasks.insert(nextHolder - 1, newbie);
     }
 
     bool removeTask(const TaskHolder* target) {
@@ -111,8 +111,8 @@ public:
         if (pointer == tasks.cend())
             return false;
         tasks.erase(pointer);
-		delete *pointer;
-		return true;
+        delete *pointer;
+        return true;
     }
 
     /**
@@ -152,20 +152,20 @@ public:
         return maxThreadCount;
     }
 
-	void beforeProcessing() {
-		abort = false;
-	}
+    void beforeProcessing() {
+        abort = false;
+    }
 
     /**
      * Processing entry point
      */
     bool process(GraphicPipeline* gpu, TaskThread& thread, CustomPipeline & pipeline) {
         // managing worker thread
-		if (thread.isManaging()) {
+        if (thread.isManaging()) {
             this->thread = &thread;
-			this->gpu = gpu;
-			std::lock_guard<std::mutex> lock(tasksAccess);
-			currentTask = tasks.begin();
+            this->gpu = gpu;
+            std::lock_guard<std::mutex> lock(tasksAccess);
+            currentTask = tasks.begin();
             pipeline.route(*this);
             thread.synchronize();
         }
@@ -178,7 +178,7 @@ public:
                     break;
 
                 if (thread.currentThread() < (*currentTask)->threadCount)
-					if (!(*currentTask)->getTask().process(thread))
+                    if (!(*currentTask)->getTask().process(thread))
                         abort = true;
 
                 thread.synchronize();
@@ -198,7 +198,7 @@ ThreadIndex CustomPipeline::maxAllowedThreads() const {
 }
 
 void CustomPipeline::beforeProcessing(ThreadIndex threadCount, GraphicPipeline *gpu) {
-	impl->beforeProcessing();
+    impl->beforeProcessing();
 }
 
 void CustomPipeline::afterProcessing(ThreadIndex threadCount, bool aborted) {
@@ -241,7 +241,7 @@ CustomPipeline::TaskHolder& CustomPipeline::addTask(AbstractTask &task) {
 
 CustomPipeline::TaskHolder& CustomPipeline::insertTask(AbstractTask &task, const TaskHolder& goesAfter) {
     TaskHolder* holder = createTaskHolder(task);
-	impl->insertTask(holder, &goesAfter);
+    impl->insertTask(holder, &goesAfter);
     return *holder;
 }
 
@@ -250,7 +250,7 @@ bool CustomPipeline::removeTask(const TaskHolder& task) {
 }
 
 void CustomPipeline::measure() {
-	impl->measure();
+    impl->measure();
 }
 
 CustomPipeline::TaskHolder::TaskHolder(CustomPipeline::TaskHolder &&holder):
@@ -261,5 +261,5 @@ CustomPipeline::TaskHolder::TaskHolder(CustomPipeline::TaskHolder &&holder):
 
 
 bool Beatmup::operator == (const CustomPipeline::TaskHolder& left, const CustomPipeline::TaskHolder& right) {
-	return &left == &right;
+    return &left == &right;
 }
