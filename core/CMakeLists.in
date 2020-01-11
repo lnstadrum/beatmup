@@ -95,6 +95,9 @@ if (PROFILE_AUDIO)
         ${BEATMUP_SRC_DIR}/audio/playback/abstract_playback.cpp
         ${BEATMUP_SRC_DIR}/audio/playback/realtime_playback.cpp
     )
+    if (PLATFORM_ANDROID)
+        set(BEATMUP_SOURCES ${BEATMUP_SOURCES} ${BEATMUP_SRC_DIR}/audio/playback/android/sles_playback.cpp)
+    endif()
 endif()
 
 
