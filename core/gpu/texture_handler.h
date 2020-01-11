@@ -44,7 +44,7 @@ namespace Beatmup {
 
             /**
                 Prepares (eventually uploads) texture data on GPU.
-                Called only by the environment managing thread.
+                Called only by the context managing thread.
             */
             virtual void prepare(GraphicPipeline& gpu);
 

@@ -2,7 +2,7 @@
     Abstraction form OpenGL's shared storage buffer object (SSBO)
  */
 #pragma once
-#include "../environment.h"
+#include "../context.h"
 #include "../gpu/gpu_task.h"
 namespace Beatmup {
     namespace GL {
@@ -10,10 +10,10 @@ namespace Beatmup {
             friend class AbstractProgram;
         private:
             const size_t width, height, depth, entrySize;
-            Environment& env;
+            Context& ctx;
             glhandle handle;
         public:
-            StorageBuffer(Environment& env, size_t width, size_t height, size_t depth, const size_t entrySize);
+            StorageBuffer(Context& ctx, size_t width, size_t height, size_t depth, const size_t entrySize);
             ~StorageBuffer();
             void allocate(GraphicPipeline& gpu, const void* data = nullptr);
             void bind(GraphicPipeline& gpu, int unit) const;

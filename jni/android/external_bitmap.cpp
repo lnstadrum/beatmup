@@ -1,5 +1,5 @@
 #include "external_bitmap.h"
-#include <core/environment.h>
+#include <core/context.h>
 #include <core/gpu/bgl.h>
 #include <core/debug.h>
 
@@ -9,11 +9,11 @@ using namespace Android;
 
 class TextureHandleFactory : public AbstractTask {
 private:
-    Environment& env;
+    Context& ctx;
     Beatmup::GL::glhandle textureHandle;
 
-    TextureHandleFactory(Environment& env):
-        env(env)
+    TextureHandleFactory(Context& ctx):
+        ctx(ctx)
     {}
 
     bool processOnGPU(GraphicPipeline& gpu, TaskThread&) {
@@ -30,17 +30,17 @@ private:
     }
 
 public:
-    inline static Beatmup::GL::glhandle makeHandle(Environment& env) {
-        TextureHandleFactory me(env);
-        env.performTask(me);
+    inline static Beatmup::GL::glhandle makeHandle(Context& ctx) {
+        TextureHandleFactory me(ctx);
+        ctx.performTask(me);
         return me.textureHandle;
     }
 };
 
 
-ExternalBitmap::ExternalBitmap(Environment& env) : AbstractBitmap(env) {
+ExternalBitmap::ExternalBitmap(Context& ctx) : AbstractBitmap(ctx) {
     width = height = 0;
-    this->textureHandle = TextureHandleFactory::makeHandle(env);
+    this->textureHandle = TextureHandleFactory::makeHandle(ctx);
     textureUpdated = false;
     persistentJEnv = nullptr;
     jvm = nullptr;

@@ -1,5 +1,5 @@
 #include "abstract_bitmap.h"
-#include "../environment.h"
+#include "../context.h"
 #include "../gpu/pipeline.h"
 #include "internal_bitmap.h"
 #include "converter.h"
@@ -130,7 +130,7 @@ void AbstractBitmap::unlockPixels() {
 void AbstractBitmap::invalidate(ProcessingTarget target) {
     upToDate[target] = false;
     if (target == ProcessingTarget::GPU)
-        GL::TextureHandler::invalidate(*env.getGpuRecycleBin());
+        GL::TextureHandler::invalidate(*ctx.getGpuRecycleBin());
 }
 
 
@@ -217,7 +217,7 @@ std::string AbstractBitmap::toString() const {
 }
 
 
-AbstractBitmap::AbstractBitmap(Environment& env) : env(env) {
+AbstractBitmap::AbstractBitmap(Context& ctx) : ctx(ctx) {
     upToDate[ProcessingTarget::CPU] = true;
     upToDate[ProcessingTarget::GPU] = false;
     pixelDataLocked = false;
@@ -226,7 +226,7 @@ AbstractBitmap::AbstractBitmap(Environment& env) : env(env) {
 
 AbstractBitmap::~AbstractBitmap() {
     if (hasValidHandle()) {
-        TextureHandler::invalidate(*env.getGpuRecycleBin());
+        TextureHandler::invalidate(*ctx.getGpuRecycleBin());
     }
 }
 
@@ -236,8 +236,8 @@ const ImageResolution AbstractBitmap::getSize() const {
 }
 
 
-Environment& AbstractBitmap::getEnvironment() const {
-    return env;
+Context& AbstractBitmap::getContext() const {
+    return ctx;
 }
 
 

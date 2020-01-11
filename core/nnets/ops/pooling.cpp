@@ -9,7 +9,7 @@ using namespace Ops;
 
         
 Pooling::Pooling(
-    Environment& env,
+    Context& ctx,
     const std::string& name,
     const Mode mode,
     const Size& inputSize,
@@ -18,7 +18,7 @@ Pooling::Pooling(
     const Size& stride,
     Size::Padding padding
 ):
-    Feedforward2DGPUOperation(env, name, inputSize, outChannelsNum, kernelSize, stride, padding),
+    Feedforward2DGPUOperation(ctx, name, inputSize, outChannelsNum, kernelSize, stride, padding),
     mode(mode)
 {
     if (mode == Mode::AVERAGE && padding != Size::Padding::VALID)

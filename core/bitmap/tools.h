@@ -23,7 +23,7 @@ namespace Beatmup {
         /**
             Generates a chessboard
         */
-        AbstractBitmap* chessboard(Environment& env, int width, int height, int cellSize, PixelFormat pixelFormat = BinaryMask);
+        AbstractBitmap* chessboard(Context& ctx, int width, int height, int cellSize, PixelFormat pixelFormat = BinaryMask);
                 
         /**
             Makes a bitmap area opaque

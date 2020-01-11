@@ -5,7 +5,7 @@
 #include <android/bitmap.h>
 
 #include <core/bitmap/abstract_bitmap.h>
-#include <core/environment.h>
+#include <core/context.h>
 
 namespace Beatmup {
     namespace Android {
@@ -34,7 +34,7 @@ namespace Beatmup {
             /**
                 Creates the bitmap from Android Bitmap java object
             */
-            Bitmap(Beatmup::Environment &, JNIEnv *, jobject);
+            Bitmap(Beatmup::Context &, JNIEnv *, jobject);
 
             ~Bitmap();
 

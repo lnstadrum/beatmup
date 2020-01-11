@@ -22,28 +22,28 @@ enum TypeCoverage{
 };
 
 
-Storage::Storage(Environment& env, const int width, const int height, const int scalarDepth, const Type type) :
+Storage::Storage(Context& ctx, const int width, const int height, const int scalarDepth, const Type type) :
     type(type),
     size(width, height, scalarDepth)
 {
     switch (type) {
     case Type::TENSOR:
-        tensor = new GL::Tensor(env, width, height, scalarDepth);
+        tensor = new GL::Tensor(ctx, width, height, scalarDepth);
         break;
 
     case Type::TENSOR_8FP_SIGNED:
     case Type::TENSOR_8FP_BRELU6:
-        buffer = new GL::StorageBuffer(env, width, height, ceili(scalarDepth, 4) * 4, 1);
+        buffer = new GL::StorageBuffer(ctx, width, height, ceili(scalarDepth, 4) * 4, 1);
         break;
 
     case Type::TENSOR_16FP_BRELU6:
-        buffer = new GL::StorageBuffer(env, width, height, ceili(scalarDepth, 4) * 4, 2);
+        buffer = new GL::StorageBuffer(ctx, width, height, ceili(scalarDepth, 4) * 4, 2);
         break;
 
     case Type::BUFFER_1D:
         if (size[0] != 1 || size[1] != 1)
             throw DimensionsMismatch(Type::BUFFER_1D);
-        buffer = new GL::StorageBuffer(env, size[0], size[1], size[2], sizeof(float));
+        buffer = new GL::StorageBuffer(ctx, size[0], size[1], size[2], sizeof(float));
         break;
 
     default:
@@ -52,11 +52,11 @@ Storage::Storage(Environment& env, const int width, const int height, const int 
 }
 
 
-Storage::Storage(Environment& env, const int length) :
+Storage::Storage(Context& ctx, const int length) :
     type(Type::BUFFER_1D),
     size(1, 1, length)
 {
-    buffer = new GL::StorageBuffer(env, size[0], size[1], size[2], sizeof(float));
+    buffer = new GL::StorageBuffer(ctx, size[0], size[1], size[2], sizeof(float));
 }
 
 

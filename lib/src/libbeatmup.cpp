@@ -8,7 +8,7 @@
 #include "../../core/bitmap/internal_bitmap.h"
 #include "../../core/shading/image_shader.h"
 #include "../../core/bitmap/resampler.h"
-#include "../../core/environment.h"
+#include "../../core/context.h"
 #include "../../core/scene/rendering_context.h"
 #include "../../core/parallelism.h"
 #include "../../core/geometry.h"
@@ -31,130 +31,130 @@
 
 
 void BeatmupEnvironmentCreate1(handle_t * handle) {
-    *handle = static_cast<handle_t>(new Beatmup::Environment());
+    *handle = static_cast<handle_t>(new Beatmup::Context());
 }
 
 
 void BeatmupEnvironmentCreate2(handle_t * handle, const beatmup_pool_index_t _numThreadPools, const char* _swapFilePrefix, const char* _swapFileSuffix) {
-    *handle = static_cast<handle_t>(new Beatmup::Environment(_numThreadPools, _swapFilePrefix, _swapFileSuffix));
+    *handle = static_cast<handle_t>(new Beatmup::Context(_numThreadPools, _swapFilePrefix, _swapFileSuffix));
 }
 
 
 void BeatmupEnvironmentDestroy(handle_t handle) {
-    if (handle) delete static_cast<Beatmup::Environment*>(handle);
+    if (handle) delete static_cast<Beatmup::Context*>(handle);
 }
 
 
 float BeatmupEnvironmentPerformTask(handle_t handle, handle_t _task, const beatmup_pool_index_t _pool) {
-    return static_cast<Beatmup::Environment*>(handle)->performTask(*static_cast<Beatmup::AbstractTask*>(_task), _pool);
+    return static_cast<Beatmup::Context*>(handle)->performTask(*static_cast<Beatmup::AbstractTask*>(_task), _pool);
 }
 
 
 void BeatmupEnvironmentRepeatTask(handle_t handle, handle_t _task, bool _abortCurrent, const beatmup_pool_index_t _pool) {
-    static_cast<Beatmup::Environment*>(handle)->repeatTask(*static_cast<Beatmup::AbstractTask*>(_task), _abortCurrent, _pool);
+    static_cast<Beatmup::Context*>(handle)->repeatTask(*static_cast<Beatmup::AbstractTask*>(_task), _abortCurrent, _pool);
 }
 
 
 beatmup_job_t BeatmupEnvironmentSubmitTask(handle_t handle, handle_t _task, const beatmup_pool_index_t _pool) {
-    unsigned int result = static_cast<Beatmup::Environment*>(handle)->submitTask(*static_cast<Beatmup::AbstractTask*>(_task), _pool);
+    unsigned int result = static_cast<Beatmup::Context*>(handle)->submitTask(*static_cast<Beatmup::AbstractTask*>(_task), _pool);
     return result;
 }
 
 
 beatmup_job_t BeatmupEnvironmentSubmitPersistentTask(handle_t handle, handle_t _task, const beatmup_pool_index_t _pool) {
-    unsigned int result = static_cast<Beatmup::Environment*>(handle)->submitPersistentTask(*static_cast<Beatmup::AbstractTask*>(_task), _pool);
+    unsigned int result = static_cast<Beatmup::Context*>(handle)->submitPersistentTask(*static_cast<Beatmup::AbstractTask*>(_task), _pool);
     return result;
 }
 
 
 void BeatmupEnvironmentWaitForJob(handle_t handle, beatmup_job_t _job, const beatmup_pool_index_t _pool) {
-    static_cast<Beatmup::Environment*>(handle)->waitForJob(_job, _pool);
+    static_cast<Beatmup::Context*>(handle)->waitForJob(_job, _pool);
 }
 
 
 bool BeatmupEnvironmentAbortJob(handle_t handle, beatmup_job_t _job, const beatmup_pool_index_t _pool) {
-    return static_cast<Beatmup::Environment*>(handle)->abortJob(_job, _pool);
+    return static_cast<Beatmup::Context*>(handle)->abortJob(_job, _pool);
 }
 
 
 void BeatmupEnvironmentWait(handle_t handle, const beatmup_pool_index_t _pool) {
-    static_cast<Beatmup::Environment*>(handle)->wait(_pool);
+    static_cast<Beatmup::Context*>(handle)->wait(_pool);
 }
 
 
 bool BeatmupEnvironmentBusy(handle_t handle, const beatmup_pool_index_t _pool) {
-    return static_cast<Beatmup::Environment*>(handle)->busy(_pool);
+    return static_cast<Beatmup::Context*>(handle)->busy(_pool);
 }
 
 
 const beatmup_thread_index_t BeatmupEnvironmentMaxAllowedWorkerCount(chandle_t handle, const beatmup_pool_index_t _pool) {
-    unsigned char result = static_cast<const Beatmup::Environment*>(handle)->maxAllowedWorkerCount(_pool);
+    unsigned char result = static_cast<const Beatmup::Context*>(handle)->maxAllowedWorkerCount(_pool);
     return result;
 }
 
 
 void BeatmupEnvironmentLimitWorkerCount(handle_t handle, beatmup_thread_index_t _maxValue, const beatmup_pool_index_t _pool) {
-    static_cast<Beatmup::Environment*>(handle)->limitWorkerCount(_maxValue, _pool);
+    static_cast<Beatmup::Context*>(handle)->limitWorkerCount(_maxValue, _pool);
 }
 
 
 const beatmup_memchunk_t BeatmupEnvironmentAllocateMemory(handle_t handle, beatmup_msize_t _size) {
-    unsigned int result = static_cast<Beatmup::Environment*>(handle)->allocateMemory(_size);
+    unsigned int result = static_cast<Beatmup::Context*>(handle)->allocateMemory(_size);
     return result;
 }
 
 
 void* BeatmupEnvironmentAcquireMemory(handle_t handle, beatmup_memchunk_t _chunk) {
-    void* result = static_cast<Beatmup::Environment*>(handle)->acquireMemory(_chunk);
+    void* result = static_cast<Beatmup::Context*>(handle)->acquireMemory(_chunk);
     return result;
 }
 
 
 void BeatmupEnvironmentReleaseMemory(handle_t handle, beatmup_memchunk_t _chunk, bool _unusedAnymore) {
-    static_cast<Beatmup::Environment*>(handle)->releaseMemory(_chunk, _unusedAnymore);
+    static_cast<Beatmup::Context*>(handle)->releaseMemory(_chunk, _unusedAnymore);
 }
 
 
 void BeatmupEnvironmentFreeMemory(handle_t handle, beatmup_memchunk_t _chunk) {
-    static_cast<Beatmup::Environment*>(handle)->freeMemory(_chunk);
+    static_cast<Beatmup::Context*>(handle)->freeMemory(_chunk);
 }
 
 
 beatmup_msize_t BeatmupEnvironmentSwapOnDisk(handle_t handle, beatmup_msize_t _howMuch) {
-    unsigned int result = static_cast<Beatmup::Environment*>(handle)->swapOnDisk(_howMuch);
+    unsigned int result = static_cast<Beatmup::Context*>(handle)->swapOnDisk(_howMuch);
     return result;
 }
 
 
 bool BeatmupEnvironmentIsGpuQueried(chandle_t handle) {
-    return static_cast<const Beatmup::Environment*>(handle)->isGpuQueried();
+    return static_cast<const Beatmup::Context*>(handle)->isGpuQueried();
 }
 
 
 bool BeatmupEnvironmentIsGpuReady(chandle_t handle) {
-    return static_cast<const Beatmup::Environment*>(handle)->isGpuReady();
+    return static_cast<const Beatmup::Context*>(handle)->isGpuReady();
 }
 
 
 bool BeatmupEnvironmentIsManagingThread(chandle_t handle) {
-    return static_cast<const Beatmup::Environment*>(handle)->isManagingThread();
+    return static_cast<const Beatmup::Context*>(handle)->isManagingThread();
 }
 
 
 handle_t BeatmupEnvironmentGetGpuRecycleBin(chandle_t handle) {
-    Beatmup::GL::RecycleBin* result = static_cast<const Beatmup::Environment*>(handle)->getGpuRecycleBin();
+    Beatmup::GL::RecycleBin* result = static_cast<const Beatmup::Context*>(handle)->getGpuRecycleBin();
     return static_cast<handle_t>(result);
 }
 
 
 beatmup_msize_t BeatmupEnvironmentGetTotalRam() {
-    unsigned int result = Beatmup::Environment::getTotalRam();
+    unsigned int result = Beatmup::Context::getTotalRam();
     return result;
 }
 
 
 void BeatmupEnvironmentWarmUpGpu(handle_t handle) {
-    static_cast<Beatmup::Environment*>(handle)->warmUpGpu();
+    static_cast<Beatmup::Context*>(handle)->warmUpGpu();
 }
 
 
@@ -267,7 +267,7 @@ const beatmup_image_resolution_t BeatmupAbstractBitmapGetSize(chandle_t handle) 
 
 
 handle_t BeatmupAbstractBitmapGetEnvironment(chandle_t handle) {
-    Beatmup::Environment& result = static_cast<const Beatmup::AbstractBitmap*>(handle)->getEnvironment();
+    Beatmup::Context& result = static_cast<const Beatmup::AbstractBitmap*>(handle)->getContext();
     return static_cast<handle_t>(&result);
 }
 
@@ -312,13 +312,13 @@ void BeatmupAbstractBitmapDestroy(handle_t handle) {
 }
 
 
-void BeatmupInternalBitmapCreate1(handle_t * handle, handle_t _env, beatmup_pixel_format_t _pixelFormat, int _width, int _height, bool _allocate) {
-    *handle = static_cast<handle_t>(new Beatmup::InternalBitmap(*static_cast<Beatmup::Environment*>(_env), static_cast<Beatmup::PixelFormat>(_pixelFormat), _width, _height, _allocate));
+void BeatmupInternalBitmapCreate1(handle_t * handle, handle_t _ctx, beatmup_pixel_format_t _pixelFormat, int _width, int _height, bool _allocate) {
+    *handle = static_cast<handle_t>(new Beatmup::InternalBitmap(*static_cast<Beatmup::Context*>(_ctx), static_cast<Beatmup::PixelFormat>(_pixelFormat), _width, _height, _allocate));
 }
 
 
-void BeatmupInternalBitmapCreate2(handle_t * handle, handle_t _env, const char* _filename) {
-    *handle = static_cast<handle_t>(new Beatmup::InternalBitmap(*static_cast<Beatmup::Environment*>(_env), _filename));
+void BeatmupInternalBitmapCreate2(handle_t * handle, handle_t _ctx, const char* _filename) {
+    *handle = static_cast<handle_t>(new Beatmup::InternalBitmap(*static_cast<Beatmup::Context*>(_ctx), _filename));
 }
 
 
@@ -587,8 +587,8 @@ handle_t BeatmupBitmapToolsMakeCopy2(handle_t _source) {
 }
 
 
-handle_t BeatmupBitmapToolsChessboard(handle_t _env, int _width, int _height, int _cellSize, beatmup_pixel_format_t _pixelFormat) {
-    Beatmup::AbstractBitmap* result = Beatmup::BitmapTools::chessboard(*static_cast<Beatmup::Environment*>(_env), _width, _height, _cellSize, static_cast<Beatmup::PixelFormat>(_pixelFormat));
+handle_t BeatmupBitmapToolsChessboard(handle_t _ctx, int _width, int _height, int _cellSize, beatmup_pixel_format_t _pixelFormat) {
+    Beatmup::AbstractBitmap* result = Beatmup::BitmapTools::chessboard(*static_cast<Beatmup::Context*>(_ctx), _width, _height, _cellSize, static_cast<Beatmup::PixelFormat>(_pixelFormat));
     return static_cast<handle_t>(result);
 }
 
@@ -1446,8 +1446,8 @@ void BeatmupSceneRendererSetRenderingEventListener(handle_t handle, handle_t _ev
 }
 
 
-void BeatmupImageShaderCreate(handle_t * handle, handle_t _env) {
-    *handle = static_cast<handle_t>(new Beatmup::ImageShader(*static_cast<Beatmup::Environment*>(_env)));
+void BeatmupImageShaderCreate(handle_t * handle, handle_t _ctx) {
+    *handle = static_cast<handle_t>(new Beatmup::ImageShader(*static_cast<Beatmup::Context*>(_ctx)));
 }
 
 

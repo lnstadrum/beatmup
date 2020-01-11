@@ -1,6 +1,6 @@
 #pragma once
 #include "../fragments/sequence.h"
-#include "../environment.h"
+#include "../context.h"
 #include "sample_arithmetic.h"
 #include "source.h"
 
@@ -85,7 +85,7 @@ namespace Beatmup {
             /**
                 Precomputes the dynamics lookup all over the signal, where needed
                 \param signal		the signal to process
-                \param runTask		if `true`, a task will be run in the environment of the signal allowing to process it in parallel;
+                \param runTask		if `true`, a task will be run in the context of the signal allowing to process it in parallel;
                                     otherwise the computation is done directly in the calling thread
             */
             static void prepareSignal(AudioSignal& signal, bool runTask = true);
@@ -149,7 +149,7 @@ namespace Beatmup {
         };
 
     private:
-        Environment& env;
+        Context& ctx;
 
         AudioSampleFormat format;			//!< sample format
 
@@ -163,7 +163,7 @@ namespace Beatmup {
     public:
         static const int DEFAULT_FRAGMENT_LENGTH_SEC = 5.0f;
 
-        AudioSignal(Environment& env, AudioSampleFormat format, int sampleRate, unsigned char channels, float defaultFragmentLenSec = DEFAULT_FRAGMENT_LENGTH_SEC);
+        AudioSignal(Context& ctx, AudioSampleFormat format, int sampleRate, unsigned char channels, float defaultFragmentLenSec = DEFAULT_FRAGMENT_LENGTH_SEC);
 
         void insert(const AudioSignal& sequence, dtime time);
 
@@ -177,10 +177,10 @@ namespace Beatmup {
         */
         void saveWAV(const char* filename);
 
-        static AudioSignal* loadWAV(Environment& env, const char* fileName);
+        static AudioSignal* loadWAV(Context& ctx, const char* fileName);
 
         unsigned char getChannelCount() const { return channelCount; }
         AudioSampleFormat getSampleFormat() const { return format; }
-        Environment& getEnvironment() const { return env; }
+        Context& getContext() const { return ctx; }
     };
 }

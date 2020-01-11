@@ -47,7 +47,7 @@ Convolution2D::ComputingMode Convolution2D::chooseMode(Size kernel, int outputCh
 
 
 Convolution2D::Convolution2D(
-    Environment& env,
+    Context& ctx,
     const std::string& name,
     const Size& inputSize,
     const int outChannelsNum,
@@ -57,12 +57,12 @@ Convolution2D::Convolution2D(
     Size::Padding padding,
     ActivationFunc actFunc
 ) :
-    Feedforward2DGPUOperation(env, name, inputSize, outChannelsNum, kernelSize, stride, padding),
+    Feedforward2DGPUOperation(ctx, name, inputSize, outChannelsNum, kernelSize, stride, padding),
     mode(chooseMode(kernelSize, outChannelsNum, depthwise)),
     actFunc(actFunc),
     depthwise(depthwise),
-    weights(env, kernelSize[0], kernelSize[1], kernelSize[2] * outChanNumRoundUp4, sizeof(float)),
-    biases(env, 1, 1, outChanNumRoundUp4, sizeof(float))
+    weights(ctx, kernelSize[0], kernelSize[1], kernelSize[2] * outChanNumRoundUp4, sizeof(float)),
+    biases(ctx, 1, 1, outChanNumRoundUp4, sizeof(float))
 {}
 
 

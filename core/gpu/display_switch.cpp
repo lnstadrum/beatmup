@@ -26,9 +26,9 @@ AbstractTask::ExecutionTarget DisplaySwitch::getExecutionTarget() const {
 DisplaySwitch::DisplaySwitch() : switchingData(nullptr), gpuIsOk(false) {}
 
 
-bool DisplaySwitch::run(Environment& env, void* switchingData) {
+bool DisplaySwitch::run(Context& ctx, void* switchingData) {
     DisplaySwitch task;
     task.switchingData = switchingData;
-    env.performTask(task);
+    ctx.performTask(task);
     return task.gpuIsOk;
 }

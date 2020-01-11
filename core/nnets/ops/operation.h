@@ -95,14 +95,14 @@ namespace Beatmup {
             std::vector<GL::Object<GL::ComputeProgram>*> programs;
             void perform(GraphicPipeline& gpu);
         protected:
-            Environment& env;
+            Context& ctx;
             ~GPUOperation();
             void store(GraphicPipeline& gpu, ChunkFile::Writer& cache, ProgressTracking& progress);
             void load(GraphicPipeline& gpu, ChunkFile& cache, ProgressTracking& progress);
             virtual std::vector<std::string> generateCode(GraphicPipeline& gpu, ChunkFile& data) = 0;
             virtual void perform(GraphicPipeline& gpu, GL::ComputeProgram& program, const int workerIdx) const = 0;
         public:
-            GPUOperation(Environment& env, const std::string& name);
+            GPUOperation(Context& ctx, const std::string& name);
             void prepare(GraphicPipeline& gpu, ChunkFile& data, ProgressTracking& progress);
             Storage* allocateOutput(int outputIndex = 0) const;
         };
@@ -115,7 +115,7 @@ namespace Beatmup {
                 std::vector<std::string> generateCode(GraphicPipeline& gpu, ChunkFile& data);
                 void perform(GraphicPipeline& gpu, GL::ComputeProgram &program, const int workerIdx) const;
             public:
-                ImageInput(Environment& env, const std::string& name, const Size& size);
+                ImageInput(Context& ctx, const std::string& name, const Size& size);
                 int getInputCount()  const { return 1; }
                 int getOutputCount() const { return 1; }
                 Size getInputSize(int inputIndex = 0)   const { return size; }
@@ -138,7 +138,7 @@ namespace Beatmup {
             Storage* input;
             Storage* output;
             FeedforwardGPUOperation(
-                Environment& env,
+                Context& ctx,
                 const std::string& name,
                 const Size& inputSize,
                 const int outChannelsNum
@@ -156,7 +156,7 @@ namespace Beatmup {
             Size stride;
             Size::Padding padding;
             Feedforward2DGPUOperation(
-                Environment& env,
+                Context& ctx,
                 const std::string& name,
                 const Size& inputSize,
                 const int outChannelsNum,
@@ -180,7 +180,7 @@ namespace Beatmup {
             void setOutput(Storage& storage, int outputIndex = 0);
             Storage* allocateOutput(int outputIndex = 0) const;
         public:
-            Probe(Environment& env, const std::string& name, const Size& size, int laneIndex);
+            Probe(Context& ctx, const std::string& name, const Size& size, int laneIndex);
             ~Probe();
             int getInputCount()  const { return 1; }
             int getOutputCount() const { return 1; }

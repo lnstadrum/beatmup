@@ -15,11 +15,11 @@
 #include "jniheaders/Beatmup_Imaging_Filters_Local_Sepia.h"
 #include "jniheaders/Beatmup_Imaging_ColorMatrix.h"
 
-#include "android/environment.h"
+#include "android/context.h"
 #include "android/bitmap.h"
 #include "android/external_bitmap.h"
 
-#include <core/environment.h>
+#include <core/context.h>
 #include <core/geometry.h>
 #include <core/bitmap/internal_bitmap.h>
 #include <core/bitmap/resampler.h>
@@ -499,7 +499,7 @@ JNIMETHOD(void, setShadedBitmapLayerShader, Java_Beatmup_Rendering_Scene, setSha
 
 JNIMETHOD(jlong, newSceneRenderer, Java_Beatmup_Rendering_SceneRenderer, newSceneRenderer)(JNIEnv * jenv, jclass, jobject jEnv) {
     BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Android::Environment, env, jEnv);
+    BEATMUP_OBJ(Beatmup::Android::Context, ctx, jEnv);
     Beatmup::SceneRenderer* renderer = new Beatmup::SceneRenderer();
     return (jlong)renderer;
 }
@@ -598,9 +598,9 @@ JNIMETHOD(jobject, pickLayer, Java_Beatmup_Rendering_SceneRenderer, pickLayer)(J
 */
 JNIMETHOD(jlong, newInternalBitmap, Java_Beatmup_Bitmap, newInternalBitmap)(JNIEnv * jenv, jclass, jobject jCtx, jint width, jint height, jint pixelFormat) {
     BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Environment, env, jCtx);
-    Beatmup::InternalBitmap* bitmap = new Beatmup::InternalBitmap(*env, (Beatmup::PixelFormat)pixelFormat, (int)width, (int)height);
-    // env is used in internal bitmap destructor, so add an internal ref
+    BEATMUP_OBJ(Beatmup::Context, ctx, jCtx);
+    Beatmup::InternalBitmap* bitmap = new Beatmup::InternalBitmap(*ctx, (Beatmup::PixelFormat)pixelFormat, (int)width, (int)height);
+    // ctx is used in internal bitmap destructor, so add an internal ref
     $pool.addJavaReference(jenv, jCtx, bitmap);
     return (jlong) bitmap;
 }
@@ -610,8 +610,8 @@ JNIMETHOD(jlong, newInternalBitmap, Java_Beatmup_Bitmap, newInternalBitmap)(JNIE
 */
 JNIMETHOD(jlong, newNativeBitmap, Java_Beatmup_Bitmap, newNativeBitmap)(JNIEnv * jenv, jclass, jobject jCtx, jobject bitmap) {
     BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Environment, env, jCtx);
-    return (jlong) new Beatmup::Android::Bitmap(*env, jenv, bitmap);
+    BEATMUP_OBJ(Beatmup::Context, ctx, jCtx);
+    return (jlong) new Beatmup::Android::Bitmap(*ctx, jenv, bitmap);
 }
 
 
@@ -663,7 +663,7 @@ JNIMETHOD(void, crop, Java_Beatmup_Bitmap, crop)(JNIEnv *jenv, jobject, jlong hI
     crop.setOutput(output);
     crop.setCropRect(rect);
     crop.setOutputOrigin(outOrigin);
-    input->getEnvironment().performTask(crop);
+    input->getContext().performTask(crop);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -672,9 +672,9 @@ JNIMETHOD(void, crop, Java_Beatmup_Bitmap, crop)(JNIEnv *jenv, jobject, jlong hI
 
 JNIMETHOD(jlong, newExternalImage, Java_Beatmup_Android_ExternalBitmap, newExternalImage)(JNIEnv *jenv, jclass, jobject jCtx) {
     BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Environment, env, jCtx);
-    Beatmup::Android::ExternalBitmap* bitmap = new Beatmup::Android::ExternalBitmap(*env);
-    // env is used in internal bitmap destructor, so add an internal ref
+    BEATMUP_OBJ(Beatmup::Context, ctx, jCtx);
+    Beatmup::Android::ExternalBitmap* bitmap = new Beatmup::Android::ExternalBitmap(*ctx);
+    // ctx is used in internal bitmap destructor, so add an internal ref
     $pool.addJavaReference(jenv, jCtx, bitmap);
     return (jlong) bitmap;
 }
@@ -1161,8 +1161,8 @@ JNIMETHOD(void, setElement, Java_Beatmup_Imaging_ColorMatrix, setElement)(JNIEnv
 
 JNIMETHOD(jlong, newShader, Java_Beatmup_Shading_Shader, newShader)(JNIEnv * jenv, jclass, jobject jCtx) {
     BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Environment, env, jCtx);
-    return (jlong) new Beatmup::ImageShader(*env);
+    BEATMUP_OBJ(Beatmup::Context, ctx, jCtx);
+    return (jlong) new Beatmup::ImageShader(*ctx);
 }
 
 

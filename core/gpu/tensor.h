@@ -15,7 +15,7 @@ namespace Beatmup {
             const TextureFormat format;
             const bool arrayTexture;
             const int width, height, depth;
-            Environment& env;
+            Context& ctx;
             bool allocated;
 
             void load(GraphicPipeline& gpu, int channel, const AbstractBitmap& bitmap);
@@ -25,8 +25,8 @@ namespace Beatmup {
             void prepare(GraphicPipeline& gpu);
 
         public:
-            Tensor(Environment& env, const int width, const int height, const int scalarDepth);
-            Tensor(Environment& env, GraphicPipeline& gpu, const int unpackedWidth, const int height, const float* data);
+            Tensor(Context& ctx, const int width, const int height, const int scalarDepth);
+            Tensor(Context& ctx, GraphicPipeline& gpu, const int unpackedWidth, const int height, const float* data);
             ~Tensor();
 
             const int getWidth()  const { return width; }

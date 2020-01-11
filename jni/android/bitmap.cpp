@@ -6,15 +6,15 @@ using namespace Beatmup;
 using namespace Android;
 
 
-JNIEnv*Bitmap::getEnv() const {
+JNIEnv* Bitmap::getEnv() const {
     JNIEnv *env;
     jvm->AttachCurrentThread(&env, NULL);
     return env;
 }
 
 
-Bitmap::Bitmap(Environment& env, JNIEnv * jenv, jobject bitmap) :
-    AbstractBitmap(env), lockedPixels(NULL)
+Bitmap::Bitmap(Context& ctx, JNIEnv * jenv, jobject bitmap) :
+    AbstractBitmap(ctx), lockedPixels(NULL)
 {
     jenv->GetJavaVM(&this->jvm);
     this->bitmap = jenv->NewGlobalRef(bitmap);

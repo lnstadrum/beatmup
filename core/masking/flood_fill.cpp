@@ -123,7 +123,7 @@ void FloodFill::beforeProcessing(ThreadIndex threadCount, GraphicPipeline* gpu) 
         delete contour;
     contours.clear();
     if (computeContours) {
-        ignoredSeeds = new InternalBitmap(input->getEnvironment(), PixelFormat::BinaryMask, output->getWidth(), output->getHeight());
+        ignoredSeeds = new InternalBitmap(input->getContext(), PixelFormat::BinaryMask, output->getWidth(), output->getHeight());
         ignoredSeeds->zero();
         ignoredSeeds->lockPixels(ProcessingTarget::CPU);
     }

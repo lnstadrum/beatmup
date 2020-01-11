@@ -1,5 +1,5 @@
 #include "swapper.h"
-#include "../environment.h"
+#include "../context.h"
 #include "../gpu/pipeline.h"
 
 using namespace Beatmup;
@@ -26,6 +26,6 @@ void Swapper::grabPixels(AbstractBitmap& bitmap) {
     if (!bitmap.isUpToDate(ProcessingTarget::CPU) && bitmap.isUpToDate(ProcessingTarget::GPU)) {
         Swapper me;
         me.setBitmap(bitmap);
-        bitmap.getEnvironment().performTask(me);
+        bitmap.getContext().performTask(me);
     }
 }

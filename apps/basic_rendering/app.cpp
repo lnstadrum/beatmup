@@ -10,7 +10,7 @@
 #include <iostream>
 int main(int argc, char* argv[]) {
     // Creating a context: it is necessary to have at least one of those.
-    Beatmup::Environment env;
+    Beatmup::Context ctx;
     // Instantiating a scene to render. It will be feed with some content later on.
     Beatmup::Scene scene;
     // A second scene will be added to the first scene as a sub-layer.
@@ -18,25 +18,25 @@ int main(int argc, char* argv[]) {
     // Instantiating a renderer. This will be feed with the scene to produce an image.
     Beatmup::SceneRenderer renderer;
     // Loading image data to be used to construct a scene
-    Beatmup::InternalBitmap fecamp(env, "images/fecamp.bmp");
-    Beatmup::InternalBitmap bg(env, "images/bg.bmp");
+    Beatmup::InternalBitmap fecamp(ctx, "images/fecamp.bmp");
+    Beatmup::InternalBitmap bg(ctx, "images/bg.bmp");
     // Initializing a bitmap the scene will be rendered onto.
     // Whe running GLES 2.0, QuadByte is the optimal format to transfer from GPU memory.
-    Beatmup::InternalBitmap output(env, Beatmup::PixelFormat::QuadByte, 1024, 1024);
+    Beatmup::InternalBitmap output(ctx, Beatmup::PixelFormat::QuadByte, 1024, 1024);
     // Converting input texture to a 1-channel (grayscale) and a 3-channel (RGB) internal bitmaps.
     // No specific reason to do so; it is done here to showcase InternalBitmaps instantiation and BitmapConverter.
-    Beatmup::InternalBitmap bitmap1(env, Beatmup::PixelFormat::SingleByte,  fecamp.getWidth(), fecamp.getHeight());
-    Beatmup::InternalBitmap bitmap3(env, Beatmup::PixelFormat::TripleByte,  fecamp.getWidth(), fecamp.getHeight());
+    Beatmup::InternalBitmap bitmap1(ctx, Beatmup::PixelFormat::SingleByte,  fecamp.getWidth(), fecamp.getHeight());
+    Beatmup::InternalBitmap bitmap3(ctx, Beatmup::PixelFormat::TripleByte,  fecamp.getWidth(), fecamp.getHeight());
     Beatmup::BitmapConverter::convert(fecamp, bitmap3);
     Beatmup::BitmapConverter::convert(fecamp, bitmap1);
     // Creating a chessboard-like pattern
-    Beatmup::AbstractBitmap* chess = Beatmup::BitmapTools::chessboard(env, 512, 512, 32, Beatmup::PixelFormat::BinaryMask);
+    Beatmup::AbstractBitmap* chess = Beatmup::BitmapTools::chessboard(ctx, 512, 512, 32, Beatmup::PixelFormat::BinaryMask);
     // Producing the inverse of the chessboard to make a fancy pattern later
-    Beatmup::InternalBitmap chessInv(env, Beatmup::PixelFormat::BinaryMask, 512, 512);
+    Beatmup::InternalBitmap chessInv(ctx, Beatmup::PixelFormat::BinaryMask, 512, 512);
     Beatmup::BitmapTools::invert(*chess, chessInv);
     // The scene will contain custom shaders.
     // Setting up a radial image distortion shader: it stretches the image pulling its corners away of the center.
-    Beatmup::ImageShader distortShader(env);
+    Beatmup::ImageShader distortShader(ctx);
     distortShader.setSourceCode(BEATMUP_SHADER_CODE(
         beatmupInputImage image;
         varying highp vec2 texCoord;
@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
         }
     ));
     // Setting up a color channel shifting shader
-    Beatmup::ImageShader grayShiftShader(env);
+    Beatmup::ImageShader grayShiftShader(ctx);
     grayShiftShader.setSourceCode(BEATMUP_SHADER_CODE(
         beatmupInputImage image;
         varying highp vec2 texCoord;
@@ -127,9 +127,9 @@ int main(int argc, char* argv[]) {
     // Ready to render.
     float time;
     std::cout << "Rendering..." << std::endl;
-    time = env.performTask(renderer);
+    time = ctx.performTask(renderer);
     std::cout << "  First run: " << time << " ms" << std::endl;
-    time = env.performTask(renderer);
+    time = ctx.performTask(renderer);
     std::cout << "  Second run: " << time << " ms" << std::endl;
     // Second run is much likely faster: it has the shaders compiled and all the
     // bitmap data ready to be used by GPU. So will be any further render pass if

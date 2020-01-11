@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../basic_types.h"
-#include "../environment.h"
+#include "../context.h"
 #include "abstract_bitmap.h"
 #include <vector>
 
@@ -24,7 +24,7 @@ namespace Beatmup {
     public:
         /**
             Creates an empty bitmap
-            \param env            A Beatmup context
+            \param ctx            A Beatmup context
             \param pixelFormat    Pixel format
             \param width          Bitmap width in pixels
             \param height         Bitmap height in pixels
@@ -33,9 +33,9 @@ namespace Beatmup {
                                   if the bitmap is only used as a texture handler to store intremediate data when
                                   processing on GPU.
         */
-        InternalBitmap(Environment& env, PixelFormat pixelFormat, int width, int height, bool allocate = true);
+        InternalBitmap(Context& ctx, PixelFormat pixelFormat, int width, int height, bool allocate = true);
 
-        InternalBitmap(Environment& env, const char* filename);
+        InternalBitmap(Context& ctx, const char* filename);
 
         virtual ~InternalBitmap();
 

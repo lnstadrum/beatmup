@@ -217,25 +217,25 @@ AudioSignalFragment::DynamicsLookup::~DynamicsLookup() {
 }
 
 
-AudioSignalFragment::AudioSignalFragment(Environment& env, AudioSampleFormat format, unsigned char channels, int samples) :
-env(env), format(format), channelCount(channels)
+AudioSignalFragment::AudioSignalFragment(Context& ctx, AudioSampleFormat format, unsigned char channels, int samples) :
+ctx(ctx), format(format), channelCount(channels)
 {
     blockSize = channelCount * AUDIO_SAMPLE_SIZE[format];
     sampleCount = samples;
-    data = env.allocateMemory(getSizeBytes());
+    data = ctx.allocateMemory(getSizeBytes());
 }
 
 
 AudioSignalFragment::~AudioSignalFragment() {
-    env.freeMemory(data);
+    ctx.freeMemory(data);
 }
 
 
 AudioSignalFragment* AudioSignalFragment::clone() const {
-    AudioSignalFragment* copy = new AudioSignalFragment(env, format, channelCount, getSampleCount());
-    memcpy(env.acquireMemory(copy->data), env.acquireMemory(data), getSizeBytes());
-    env.releaseMemory(data, false);
-    env.releaseMemory(copy->data, false);
+    AudioSignalFragment* copy = new AudioSignalFragment(ctx, format, channelCount, getSampleCount());
+    memcpy(ctx.acquireMemory(copy->data), ctx.acquireMemory(data), getSizeBytes());
+    ctx.releaseMemory(data, false);
+    ctx.releaseMemory(copy->data, false);
     copy->plot.fineLevelStep = plot.fineLevelStep;
     copy->plot.coarserLevelStep = plot.coarserLevelStep;
     // do not copy the lookup; it will be recomputed when needed
@@ -245,9 +245,9 @@ AudioSignalFragment* AudioSignalFragment::clone() const {
 
 
 void AudioSignalFragment::zero() {
-    void* ptr = env.acquireMemory(data);
+    void* ptr = ctx.acquireMemory(data);
     memchr(ptr, 0, getSizeBytes());
-    env.releaseMemory(data, false);
+    ctx.releaseMemory(data, false);
 }
 
 
@@ -259,7 +259,7 @@ void AudioSignalFragment::updateDynamicsLookup() {
         plot.coarserLevelStep
     );
 
-    const void* dataPtr = env.acquireMemory(data);
+    const void* dataPtr = ctx.acquireMemory(data);
     switch (format) {
     case Int8:
         plot.lookup.updateTree<sample8>((sample8*)dataPtr, sampleCount);
@@ -276,7 +276,7 @@ void AudioSignalFragment::updateDynamicsLookup() {
     default:
         Insanity::insanity("Unknown sample format");
     }
-    env.releaseMemory(data, false);
+    ctx.releaseMemory(data, false);
 }
 
 
@@ -298,7 +298,7 @@ template<typename sample> void AudioSignalFragment::measureDynamics(int time0, i
         mode == AudioSignal::Meter::MeasuringMode::preciseUsingSamples ||
         mode == AudioSignal::Meter::MeasuringMode::preciseUsingLookupAndSamples
     )
-        sampleData = env.acquireMemory(data);
+        sampleData = ctx.acquireMemory(data);
 
     // use lookup
     if (useLookup)
@@ -317,7 +317,7 @@ template<typename sample> void AudioSignalFragment::measureDynamics(int time0, i
     }
 
     if (sampleData)
-        env.releaseMemory(data, false);
+        ctx.releaseMemory(data, false);
 }
 
 template void AudioSignalFragment::measureDynamics(int time0, int time1, sample8* min, sample8* max, AudioSignal::Meter::MeasuringMode mode);

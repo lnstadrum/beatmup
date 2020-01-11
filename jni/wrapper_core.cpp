@@ -10,7 +10,7 @@
 #include "jniheaders/Beatmup_Utils_VariablesBundle.h"
 #include "jniheaders/Beatmup_Sequence.h"
 
-#include "android/environment.h"
+#include "android/context.h"
 #include "context_event_listener.h"
 
 #include <android/native_window_jni.h>
@@ -53,7 +53,7 @@ JNIMETHOD(jboolean, bindSurfaceToContext, Java_Beatmup_Visual_Android_BasicDispl
     jenv->DeleteLocalRef(cls);
 
     // retrieving the context
-    Beatmup::Environment * env = $pool.getObject<Beatmup::Environment>(jenv, jCtx);
+    Beatmup::Context * ctx = $pool.getObject<Beatmup::Context>(jenv, jCtx);
 
     // check if the context already has a surface
     jobject actualSurface = jenv->GetObjectField(jCtx, surfaceFieldID);
@@ -69,14 +69,14 @@ JNIMETHOD(jboolean, bindSurfaceToContext, Java_Beatmup_Visual_Android_BasicDispl
             LOG_E("Empty surface window got when switching GL display.");
             return JNI_FALSE;
         }
-        const bool result = Beatmup::DisplaySwitch::run(*env, wnd);
+        const bool result = Beatmup::DisplaySwitch::run(*ctx, wnd);
         ANativeWindow_release(wnd);
         return result ? JNI_TRUE : JNI_FALSE;
     }
     // just removing an old one
     else {
         jenv->SetObjectField(jCtx, surfaceFieldID, NULL);
-        return Beatmup::DisplaySwitch::run(*env, NULL) ? JNI_TRUE : JNI_FALSE;
+        return Beatmup::DisplaySwitch::run(*ctx, NULL) ? JNI_TRUE : JNI_FALSE;
     }
 
     return JNI_FALSE;   // never happens
@@ -87,22 +87,22 @@ JNIMETHOD(jboolean, bindSurfaceToContext, Java_Beatmup_Visual_Android_BasicDispl
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
-    Initializes a context event listener and attaches it to the environment
+    Initializes a context event listener and attaches it to the context
 */
 JNIMETHOD(jlong, attachEventListener, Java_Beatmup_Context, attachEventListener)(JNIEnv * jenv, jclass, jlong hEnv) {
     BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Environment, env, hEnv);
-    Beatmup::Environment::EventListener* listener = env->getEventListener();
+    BEATMUP_OBJ(Beatmup::Context, ctx, hEnv);
+    Beatmup::Context::EventListener* listener = ctx->getEventListener();
     if (listener)
         delete listener;
     listener = new Beatmup::ContextEventListener(jenv);
-    env->setEventListener(listener);
+    ctx->setEventListener(listener);
     return (jlong) (listener);
 }
 
 
 /**
-    Removes a context event listener bind to the environment
+    Removes a context event listener bind to the context
 */
 JNIMETHOD(void, detachEventListener, Java_Beatmup_Context, detachEventListener)(JNIEnv * jenv, jclass, jlong h) {
     BEATMUP_ENTER;
@@ -115,7 +115,7 @@ JNIMETHOD(void, detachEventListener, Java_Beatmup_Context, detachEventListener)(
 */
 JNIMETHOD(jlong, getTotalRam, Java_Beatmup_Context, getTotalRam)(JNIEnv * jenv, jclass) {
     BEATMUP_ENTER;
-    return (jlong) Beatmup::Environment::getTotalRam();
+    return (jlong) Beatmup::Context::getTotalRam();
 }
 
 
@@ -126,10 +126,10 @@ JNIMETHOD(jfloat, performTask, Java_Beatmup_Context, performTask)
     (JNIEnv * jenv, jobject, jlong hEnv, jint poolIdx, jobject jTask)
 {
     BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Android::Environment, env, hEnv);
+    BEATMUP_OBJ(Beatmup::Android::Context, ctx, hEnv);
     BEATMUP_OBJ(Beatmup::AbstractTask, task, jTask);
     BEATMUP_CATCH({
-        return env->performTask(*task, (Beatmup::PoolIndex)poolIdx);
+        return ctx->performTask(*task, (Beatmup::PoolIndex)poolIdx);
     });
     return -1;
 }
@@ -141,10 +141,10 @@ JNIMETHOD(jint, submitTask, Java_Beatmup_Context, submitTask)
 (JNIEnv * jenv, jobject, jlong hEnv, jint poolIdx, jobject jTask)
 {
     BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Android::Environment, env, hEnv);
+    BEATMUP_OBJ(Beatmup::Android::Context, ctx, hEnv);
     BEATMUP_OBJ(Beatmup::AbstractTask, task, jTask);
     BEATMUP_CATCH({
-        return (jint)env->submitTask(*task, (Beatmup::PoolIndex)poolIdx);
+        return (jint)ctx->submitTask(*task, (Beatmup::PoolIndex)poolIdx);
     });
     return 0;
 }
@@ -154,10 +154,10 @@ JNIMETHOD(jint, submitPersistentTask, Java_Beatmup_Context, submitPersistentTask
 (JNIEnv * jenv, jobject, jlong hEnv, jint poolIdx, jobject jTask)
 {
     BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Android::Environment, env, hEnv);
+    BEATMUP_OBJ(Beatmup::Android::Context, ctx, hEnv);
     BEATMUP_OBJ(Beatmup::AbstractTask, task, jTask);
     BEATMUP_CATCH({
-        return env->submitPersistentTask(*task, (Beatmup::PoolIndex) poolIdx);
+        return ctx->submitPersistentTask(*task, (Beatmup::PoolIndex) poolIdx);
     });
     return 0;
 }
@@ -169,10 +169,10 @@ JNIMETHOD(void, repeatTask, Java_Beatmup_Context, repeatTask)
     (JNIEnv * jenv, jobject, jlong hEnv, jint poolIdx, jobject jTask, jboolean abort)
 {
     BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Android::Environment, env, hEnv);
+    BEATMUP_OBJ(Beatmup::Android::Context, ctx, hEnv);
     BEATMUP_OBJ(Beatmup::AbstractTask, task, jTask);
     BEATMUP_CATCH({
-        env->repeatTask(*task, abort == JNI_TRUE, (Beatmup::PoolIndex)poolIdx);
+        ctx->repeatTask(*task, abort == JNI_TRUE, (Beatmup::PoolIndex)poolIdx);
     });
 }
 
@@ -180,9 +180,9 @@ JNIMETHOD(void, waitForJob, Java_Beatmup_Context, waitForJob)
     (JNIEnv * jenv, jobject, jlong hEnv, jint poolIdx, jint job)
 {
     BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Android::Environment, env, hEnv);
+    BEATMUP_OBJ(Beatmup::Android::Context, ctx, hEnv);
     BEATMUP_CATCH({
-        env->waitForJob(job, (Beatmup::PoolIndex) poolIdx);
+        ctx->waitForJob(job, (Beatmup::PoolIndex) poolIdx);
     });
 }
 
@@ -190,9 +190,9 @@ JNIMETHOD(jboolean, abortJob, Java_Beatmup_Context, abortJob)
 (JNIEnv * jenv, jobject, jlong hEnv, jint poolIdx, jint job)
 {
     BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Android::Environment, env, hEnv);
+    BEATMUP_OBJ(Beatmup::Android::Context, ctx, hEnv);
     BEATMUP_CATCH({
-        return env->abortJob(job, (Beatmup::PoolIndex) poolIdx) ? JNI_TRUE : JNI_FALSE;
+        return ctx->abortJob(job, (Beatmup::PoolIndex) poolIdx) ? JNI_TRUE : JNI_FALSE;
     });
     return JNI_FALSE;
 }
@@ -201,9 +201,9 @@ JNIMETHOD(void, waitForAllJobs, Java_Beatmup_Context, waitForAllJobs)
 (JNIEnv * jenv, jobject, jlong hEnv, jint poolIdx)
 {
     BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Android::Environment, env, hEnv);
+    BEATMUP_OBJ(Beatmup::Android::Context, ctx, hEnv);
     BEATMUP_CATCH({
-        env->wait((Beatmup::PoolIndex) poolIdx);
+        ctx->wait((Beatmup::PoolIndex) poolIdx);
     });
 }
 
@@ -211,9 +211,9 @@ JNIMETHOD(jboolean, busy, Java_Beatmup_Context, busy)
 (JNIEnv * jenv, jobject, jlong hEnv, jint poolIdx)
 {
     BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Android::Environment, env, hEnv);
+    BEATMUP_OBJ(Beatmup::Android::Context, ctx, hEnv);
     BEATMUP_CATCH({
-        return env->busy((Beatmup::PoolIndex) poolIdx) ? JNI_TRUE : JNI_FALSE;
+        return ctx->busy((Beatmup::PoolIndex) poolIdx) ? JNI_TRUE : JNI_FALSE;
     });
     return JNI_FALSE;
 }
@@ -222,8 +222,8 @@ JNIMETHOD(jlong, renderChessboard, Java_Beatmup_Context, renderChessboard)(JNIEn
     jint width, jint height, jint cell, jint pixelFormat)
 {
     BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Android::Environment, env, hEnv);
-    return (jlong) Beatmup::BitmapTools::chessboard(*env, (int)width, (int)height, (int)cell, (Beatmup::PixelFormat)pixelFormat);
+    BEATMUP_OBJ(Beatmup::Android::Context, ctx, hEnv);
+    return (jlong) Beatmup::BitmapTools::chessboard(*ctx, (int)width, (int)height, (int)cell, (Beatmup::PixelFormat)pixelFormat);
 }
 
 
@@ -231,7 +231,7 @@ JNIMETHOD(jlong, copyBitmap, Java_Beatmup_Context, copyBitmap)(JNIEnv * jenv, jo
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::AbstractBitmap, bitmap, jBitmap);
     Beatmup::AbstractBitmap* copy = Beatmup::BitmapTools::makeCopy(*bitmap, (Beatmup::PixelFormat)pixelFormat);
-    // env is used in internal bitmap destructor, so add an internal ref
+    // ctx is used in internal bitmap destructor, so add an internal ref
     BEATMUP_REFERENCE(jCtx, copy);
     return (jlong) copy;
 }
@@ -265,8 +265,8 @@ JNIMETHOD(jint, maxAllowedWorkerCount, Java_Beatmup_Context, maxAllowedWorkerCou
     (JNIEnv * jenv, jobject, jlong hEnv, jint poolIdx)
 {
     BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Android::Environment, env, hEnv);
-    return env->maxAllowedWorkerCount((Beatmup::PoolIndex) poolIdx);
+    BEATMUP_OBJ(Beatmup::Android::Context, ctx, hEnv);
+    return ctx->maxAllowedWorkerCount((Beatmup::PoolIndex) poolIdx);
 }
 
 
@@ -274,15 +274,15 @@ JNIMETHOD(void, limitWorkerCount, Java_Beatmup_Context, limitWorkerCount)
     (JNIEnv * jenv, jobject, jlong hEnv, jint poolIdx, jint count)
 {
     BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Android::Environment, env, hEnv);
-    env->limitWorkerCount(Beatmup::AbstractTask::validThreadCount(count), (Beatmup::PoolIndex) poolIdx );
+    BEATMUP_OBJ(Beatmup::Android::Context, ctx, hEnv);
+    ctx->limitWorkerCount(Beatmup::AbstractTask::validThreadCount(count), (Beatmup::PoolIndex) poolIdx );
 }
 
 
 JNIMETHOD(jlong, swapOnDisk, Java_Beatmup_Context, swapOnDisk)(JNIEnv * jenv, jobject, jlong hEnv, jlong howMuch) {
     BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Android::Environment, env, hEnv);
-    return (jlong) env->swapOnDisk((Beatmup::msize)howMuch);
+    BEATMUP_OBJ(Beatmup::Android::Context, ctx, hEnv);
+    return (jlong) ctx->swapOnDisk((Beatmup::msize)howMuch);
 }
 
 
@@ -295,22 +295,22 @@ JNIMETHOD(void, fetchPixelsFromGPU, Java_Beatmup_Context, fetchPixelsFromGPU)(JN
 
 JNIMETHOD(jboolean, isGpuQueried, Java_Beatmup_Context, isGpuQueried)(JNIEnv * jenv, jobject, jlong hEnv) {
     BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Android::Environment, env, hEnv);
-    return (jboolean) env->isGpuQueried();
+    BEATMUP_OBJ(Beatmup::Android::Context, ctx, hEnv);
+    return (jboolean) ctx->isGpuQueried();
 }
 
 
 JNIMETHOD(jboolean, isGpuReady, Java_Beatmup_Context, isGpuReady)(JNIEnv * jenv, jobject, jlong hEnv) {
     BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Android::Environment, env, hEnv);
-    return (jboolean) env->isGpuReady();
+    BEATMUP_OBJ(Beatmup::Android::Context, ctx, hEnv);
+    return (jboolean) ctx->isGpuReady();
 }
 
 
 JNIMETHOD(void, recycleGPUGarbage, Java_Beatmup_Context, recycleGPUGarbage)(JNIEnv * jenv, jobject, jlong hEnv) {
     BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Android::Environment, env, hEnv);
-    env->getGpuRecycleBin()->emptyBin();
+    BEATMUP_OBJ(Beatmup::Android::Context, ctx, hEnv);
+    ctx->getGpuRecycleBin()->emptyBin();
 }
 
 
@@ -319,7 +319,7 @@ JNIMETHOD(void, recycleGPUGarbage, Java_Beatmup_Context, recycleGPUGarbage)(JNIE
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
-    Creates new Beatmup environment
+    Creates new Beatmup context
 */
 JNIMETHOD(jlong, newEnvironment, Java_Beatmup_Android_Context, newEnvironment)(JNIEnv * jenv, jclass, jint poolCount, jstring filesDir)
 {
@@ -333,7 +333,7 @@ JNIMETHOD(jlong, newEnvironment, Java_Beatmup_Android_Context, newEnvironment)(J
             $pool.throwToJava(jenv, "Slash-ended path is expected");
             return -1;
         }
-        return (jlong) new Beatmup::Android::Environment(
+        return (jlong) new Beatmup::Android::Context(
                 jenv,
                 (Beatmup::PoolIndex) poolCount,
                 (swapPrefix + "swap").c_str(),
@@ -342,7 +342,7 @@ JNIMETHOD(jlong, newEnvironment, Java_Beatmup_Android_Context, newEnvironment)(J
     }
 
     else
-        return (jlong) new Beatmup::Android::Environment(
+        return (jlong) new Beatmup::Android::Context(
                 jenv,
                 (Beatmup::PoolIndex) poolCount,
                 nullptr, nullptr

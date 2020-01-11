@@ -4,7 +4,7 @@
 
 #pragma once
 #include "../parallelism.h"
-#include "../environment.h"
+#include "../context.h"
 
 namespace Beatmup {
     class DisplaySwitch : public AbstractTask {
@@ -16,6 +16,6 @@ namespace Beatmup {
         ExecutionTarget getExecutionTarget() const;
         DisplaySwitch();
     public:
-        static bool run(Environment& env, void* switchingData = NULL);
+        static bool run(Context& ctx, void* switchingData = NULL);
     };
 }

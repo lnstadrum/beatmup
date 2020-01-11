@@ -1,11 +1,11 @@
 cd ../core
 
-### Environment-related
+### Context-related
 input basic_types.h
 input parallelism.h
 input exception.h
-input environment.h
-scope Beatmup::Environment
+input context.h
+scope Beatmup::Context
 export
 ignore EventListener
 ignore setEventListener

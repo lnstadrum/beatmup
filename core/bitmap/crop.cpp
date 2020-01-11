@@ -107,7 +107,7 @@ bool Crop::isFit() const {
 
 
 AbstractBitmap* Crop::run(AbstractBitmap& bitmap, IntRectangle clipRect) {
-    AbstractBitmap* out = new InternalBitmap(bitmap.getEnvironment(), bitmap.getPixelFormat(), clipRect.width(), clipRect.height());
+    AbstractBitmap* out = new InternalBitmap(bitmap.getContext(), bitmap.getPixelFormat(), clipRect.width(), clipRect.height());
     // after byte-aligning out must be zeroed (not very optimal...)
     if (out->getSize().numPixels() != clipRect.getArea())
         out->zero();
@@ -115,6 +115,6 @@ AbstractBitmap* Crop::run(AbstractBitmap& bitmap, IntRectangle clipRect) {
     clip.setInput(&bitmap);
     clip.setOutput(out);
     clip.setCropRect(clipRect);
-    bitmap.getEnvironment().performTask(clip);
+    bitmap.getContext().performTask(clip);
     return out;
 }

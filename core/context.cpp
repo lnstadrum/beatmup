@@ -1,4 +1,4 @@
-#include "environment.h"
+#include "context.h"
 #include "parallelism.h"
 #include "gpu/pipeline.h"
 #include "gpu/recycle_bin.h"
@@ -81,44 +81,44 @@ msize getAvailableMemory() {
 
 
 /**
-    Environment class implementation (pimpl)
+    Context class implementation (pimpl)
 */
-class Environment::Impl {
+class Context::Impl {
 private:
     /**
         Thread pool event listener
     */
     class ThreadPoolEventListener : public ThreadPool::EventListener {
     private:
-        const Environment::Impl& env;
+        const Context::Impl& ctx;
 
     public:
-        ThreadPoolEventListener(const Environment::Impl& env) : env(env) {}
+        ThreadPoolEventListener(const Context::Impl& ctx) : ctx(ctx) {}
 
         inline void threadCreated(PoolIndex pool) {
-            if (env.eventListener)
-                env.eventListener->threadCreated(pool);
+            if (ctx.eventListener)
+                ctx.eventListener->threadCreated(pool);
         };
 
         inline void threadTerminating(PoolIndex pool) {
-            if (env.eventListener)
-                env.eventListener->threadTerminating(pool);
+            if (ctx.eventListener)
+                ctx.eventListener->threadTerminating(pool);
         };
 
         inline bool taskDone(PoolIndex pool, AbstractTask& task, bool aborted) {
-            if (env.eventListener)
-                return env.eventListener->taskDone(pool, task, aborted);
+            if (ctx.eventListener)
+                return ctx.eventListener->taskDone(pool, task, aborted);
             return false;
         };
 
         inline void taskFail(PoolIndex pool, AbstractTask& task, const std::exception& ex) {
-            if (env.eventListener)
-                env.eventListener->taskFail(pool, task, ex);
+            if (ctx.eventListener)
+                ctx.eventListener->taskFail(pool, task, ex);
         }
 
         inline void gpuInitFail(PoolIndex pool, const std::exception& ex) {
-            if (env.eventListener)
-                env.eventListener->gpuInitFail(pool, ex);
+            if (ctx.eventListener)
+                ctx.eventListener->gpuInitFail(pool, ex);
         }
     };
 
@@ -235,7 +235,7 @@ private:
 protected:
     /**
         Performs swapping of allocated but not currently used memory on disk.
-        \param howMuch	required memory size in bytes to free; the environment attempts to free at least the required size
+        \param howMuch	required memory size in bytes to free; the context attempts to free at least the required size
         \return actual swapped memory size
     */
     inline msize doSwapping(msize howMuch) {
@@ -300,7 +300,7 @@ protected:
 
 
 public:
-    Environment::EventListener* eventListener;	//!< an event listener
+    Context::EventListener* eventListener;	//!< an event listener
 
     Impl(const PoolIndex numThreadPools, const char* swapFilePrefix, const char* swapFileSuffix) :
         optimalThreadCount(std::max<ThreadIndex>(1, ThreadPool::hardwareConcurrency() / numThreadPools)),
@@ -486,105 +486,105 @@ public:
 };
 
 
-Environment::Environment() : Environment(1, "swap", ".tmp") {}
-Environment::Environment(const PoolIndex numThreadPools, const char* swapFilePrefix, const char* swapFileSuffix) {
+Context::Context() : Context(1, "swap", ".tmp") {}
+Context::Context(const PoolIndex numThreadPools, const char* swapFilePrefix, const char* swapFileSuffix) {
     impl = new Impl(numThreadPools, swapFilePrefix, swapFileSuffix);
     recycleBin = new GL::RecycleBin(*this);
 }
 
 
-Environment::~Environment() {
+Context::~Context() {
     delete impl;
     delete recycleBin;
 }
 
-float Environment::performTask(AbstractTask& task, const PoolIndex pool) {
+float Context::performTask(AbstractTask& task, const PoolIndex pool) {
     return impl->performTask(pool, task);
 }
 
-void Environment::repeatTask(AbstractTask& task, bool abortCurrent, const PoolIndex pool) {
+void Context::repeatTask(AbstractTask& task, bool abortCurrent, const PoolIndex pool) {
     return impl->repeatTask(pool, task, abortCurrent);
 }
 
-Job Environment::submitTask(AbstractTask& task, const PoolIndex pool) {
+Job Context::submitTask(AbstractTask& task, const PoolIndex pool) {
     return impl->submitTask(pool, task);
 }
 
-Job Environment::submitPersistentTask(AbstractTask& task, const PoolIndex pool) {
+Job Context::submitPersistentTask(AbstractTask& task, const PoolIndex pool) {
     return impl->submitPersistentTask(pool, task);
 }
 
-void Environment::waitForJob(Job job, const PoolIndex pool) {
+void Context::waitForJob(Job job, const PoolIndex pool) {
     impl->waitForJob(pool, job);
 }
 
-bool Environment::abortJob(Job job, const PoolIndex pool) {
+bool Context::abortJob(Job job, const PoolIndex pool) {
     return impl->abortJob(pool, job);
 }
 
-void Environment::wait(const PoolIndex pool) {
+void Context::wait(const PoolIndex pool) {
     impl->wait(pool);
 }
 
-bool Environment::busy(const PoolIndex pool) {
+bool Context::busy(const PoolIndex pool) {
     return impl->busy(pool);
 }
 
-const ThreadIndex Environment::maxAllowedWorkerCount(const PoolIndex pool) const {
+const ThreadIndex Context::maxAllowedWorkerCount(const PoolIndex pool) const {
     return impl->maxAllowedWorkerCount(pool);
 }
 
-void Environment::limitWorkerCount(ThreadIndex maxValue, const PoolIndex pool) {
+void Context::limitWorkerCount(ThreadIndex maxValue, const PoolIndex pool) {
     impl->limitWorkerCount(pool, maxValue);
 }
 
-const memchunk Environment::allocateMemory(msize size) {
+const memchunk Context::allocateMemory(msize size) {
     return impl->allocateMemory(size);
 }
 
-void* Environment::acquireMemory(memchunk chunk) {
+void* Context::acquireMemory(memchunk chunk) {
     return impl->acquireMemory(chunk);
 }
 
-void Environment::releaseMemory(memchunk chunk, bool unusedAnymore) {
+void Context::releaseMemory(memchunk chunk, bool unusedAnymore) {
     impl->releaseMemory(chunk, unusedAnymore);
 }
 
-void Environment::freeMemory(memchunk chunk) {
+void Context::freeMemory(memchunk chunk) {
     impl->freeMemory(chunk);
 }
 
-msize Environment::swapOnDisk(msize howMuch) {
+msize Context::swapOnDisk(msize howMuch) {
     return impl->swapOnDisk(howMuch);
 }
 
-void Environment::setEventListener(EventListener* eventListener) {
+void Context::setEventListener(EventListener* eventListener) {
     impl->eventListener = eventListener;
 }
 
-Environment::EventListener* Environment::getEventListener() const {
+Context::EventListener* Context::getEventListener() const {
     return impl->eventListener;
 }
 
-bool Environment::isGpuQueried() const {
+bool Context::isGpuQueried() const {
     return impl->isGpuQueried();
 }
 
-bool Environment::isGpuReady() const {
+bool Context::isGpuReady() const {
     return impl->isGpuReady();
 }
 
-bool Environment::isManagingThread() const {
+bool Context::isManagingThread() const {
     return impl->isManagingThread();
 }
 
 
-GL::RecycleBin* Environment::getGpuRecycleBin() const {
+GL::RecycleBin* Context::getGpuRecycleBin() const {
     return recycleBin;
 }
 
 
-msize Environment::getTotalRam() {
+msize Context::getTotalRam() {
 #if BEATMUP_PLATFORM_WINDOWS
     MEMORYSTATUSEX status;
     status.dwLength = sizeof(status);
@@ -598,7 +598,7 @@ msize Environment::getTotalRam() {
 }
 
 
-void Environment::warmUpGpu() {
+void Context::warmUpGpu() {
     if (!isGpuReady()) {
         GpuTask task;
         performTask(task);

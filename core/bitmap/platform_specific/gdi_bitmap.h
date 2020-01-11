@@ -16,9 +16,9 @@ namespace Beatmup {
         Impl* impl;
 
     public:
-        GDIBitmap(Environment &env, const wchar_t* filename);
+        GDIBitmap(Context &ctx, const wchar_t* filename);
 
-        GDIBitmap(Environment &env, PixelFormat format, int width, int height);
+        GDIBitmap(Context &ctx, PixelFormat format, int width, int height);
 
         const PixelFormat getPixelFormat() const;
 

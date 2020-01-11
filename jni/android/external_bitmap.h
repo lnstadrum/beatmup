@@ -29,7 +29,7 @@ namespace Beatmup {
              * Instantiates external image.
              * This must not be called from Beatmup internal threads.
              */
-            ExternalBitmap(Beatmup::Environment& env);
+            ExternalBitmap(Beatmup::Context& ctx);
 
             ~ExternalBitmap();
 

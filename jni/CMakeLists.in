@@ -29,7 +29,7 @@ if (PLATFORM_ANDROID)
     set(BEATMUP_SOURCES ${BEATMUP_SOURCES}
         ${JNI_SOURCES_DIR}/android/bitmap.cpp
         ${JNI_SOURCES_DIR}/android/external_bitmap.cpp
-        ${JNI_SOURCES_DIR}/android/environment.cpp
+        ${JNI_SOURCES_DIR}/android/context.cpp
     )
 endif()
 

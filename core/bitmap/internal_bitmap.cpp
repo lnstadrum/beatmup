@@ -5,8 +5,8 @@
 using namespace Beatmup;
 
 
-InternalBitmap::InternalBitmap(Environment& env, PixelFormat pixelFormat, int width, int height, bool allocate) :
-    AbstractBitmap(env),
+InternalBitmap::InternalBitmap(Context& ctx, PixelFormat pixelFormat, int width, int height, bool allocate) :
+    AbstractBitmap(ctx),
     pixelFormat(pixelFormat), width(width), height(height),
     memory(0),
     data(nullptr)
@@ -16,12 +16,12 @@ InternalBitmap::InternalBitmap(Environment& env, PixelFormat pixelFormat, int wi
         this->width = ceili(width, n) * n;
     }
     if (allocate)
-        memory = env.allocateMemory(getMemorySize());
+        memory = ctx.allocateMemory(getMemorySize());
 }
 
 
-InternalBitmap::InternalBitmap(Environment& env, const char* filename) :
-    AbstractBitmap(env),
+InternalBitmap::InternalBitmap(Context& ctx, const char* filename) :
+    AbstractBitmap(ctx),
     data(nullptr)
 {
     // read header
@@ -49,15 +49,15 @@ InternalBitmap::InternalBitmap(Environment& env, const char* filename) :
     this->height = bmp.getHeight();
 
     // allocate & read
-    memory = env.allocateMemory(getMemorySize());
-    Environment::Mem mem(env, memory);
+    memory = ctx.allocateMemory(getMemorySize());
+    Context::Mem mem(ctx, memory);
     bmp.load(mem(), getMemorySize());
 }
 
 
 InternalBitmap::~InternalBitmap() {
     if (memory)
-        env.freeMemory(memory);
+        ctx.freeMemory(memory);
 }
 
 
@@ -89,16 +89,16 @@ pixbyte* InternalBitmap::getData(int x, int y) const {
 
 void InternalBitmap::lockPixelData() {
     if (!memory)
-        memory = env.allocateMemory(getMemorySize());
+        memory = ctx.allocateMemory(getMemorySize());
     if (!data)
-        data = (pixbyte*)env.acquireMemory(memory);
+        data = (pixbyte*)ctx.acquireMemory(memory);
 }
 
 
 void InternalBitmap::unlockPixelData() {
     if (data) {
         data = nullptr;
-        env.releaseMemory(memory, !isUpToDate(ProcessingTarget::CPU));
+        ctx.releaseMemory(memory, !isUpToDate(ProcessingTarget::CPU));
     }
 }
 
@@ -116,8 +116,8 @@ void InternalBitmap::unlockPixels() {
 
 void InternalBitmap::saveBmp(const char* filename) {
     if (!memory)
-        memory = env.allocateMemory(getMemorySize());
-    Environment::Mem mem(env, memory);
+        memory = ctx.allocateMemory(getMemorySize());
+    Context::Mem mem(ctx, memory);
     BmpFile::save(
         mem(),
         width, height,

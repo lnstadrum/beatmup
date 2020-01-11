@@ -7,7 +7,7 @@
 */
 
 //#pragma once
-#include "../environment.h"
+#include "../context.h"
 #include "../exception.h"
 #include "../fragments/fragment.h"
 #include "sample_arithmetic.h"
@@ -79,7 +79,7 @@ namespace Beatmup {
         };
 
     private:
-        Environment& env;
+        Context& ctx;
         AudioSampleFormat format;
         unsigned char channelCount;				//!< number of channels
         unsigned char blockSize;				//!< size in bytes of a channelwise-multiplexed sample (block containing 1 sample per channel)
@@ -92,14 +92,14 @@ namespace Beatmup {
         } plot;
 
     public:
-        AudioSignalFragment(Environment& env, AudioSampleFormat format, unsigned char channels, int samples);
+        AudioSignalFragment(Context& ctx, AudioSampleFormat format, unsigned char channels, int samples);
         ~AudioSignalFragment();
 
         virtual AudioSignalFragment* clone() const;
 
         inline memchunk getData() const { return data; }
         inline const AudioSampleFormat getAudioFormat() const { return format; }
-        inline Environment& getEnv() const { return env; }
+        inline Context& getEnv() const { return ctx; }
         inline msize getSizeBytes() const { return getSampleCount() * blockSize; }
         inline unsigned char getBlockSize() const { return blockSize; }
         inline unsigned char getChannelCount() const { return channelCount; }

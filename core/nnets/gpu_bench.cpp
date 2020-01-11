@@ -33,11 +33,11 @@ static const char* BENCHMARK_PROGRAM_SOURCE = BEATMUP_SHADER_CODE_V(
 static const int TEST_BITMAP_SIZE = 1024;
 
 
-GPUBenchmark::GPUBenchmark(Environment& env):
-    env(env),
+GPUBenchmark::GPUBenchmark(Context& ctx):
+    ctx(ctx),
     program(nullptr),
-    input(env, PixelFormat::QuadFloat, TEST_BITMAP_SIZE, TEST_BITMAP_SIZE),
-    output(env, PixelFormat::QuadFloat, TEST_BITMAP_SIZE, TEST_BITMAP_SIZE),
+    input(ctx, PixelFormat::QuadFloat, TEST_BITMAP_SIZE, TEST_BITMAP_SIZE),
+    output(ctx, PixelFormat::QuadFloat, TEST_BITMAP_SIZE, TEST_BITMAP_SIZE),
     error(0),
     score(0)
 {}
@@ -45,7 +45,7 @@ GPUBenchmark::GPUBenchmark(Environment& env):
 
 GPUBenchmark::~GPUBenchmark() {
     if (program)
-        program->destroy(*env.getGpuRecycleBin());
+        program->destroy(*ctx.getGpuRecycleBin());
 }
 
 
@@ -133,5 +133,5 @@ bool GPUBenchmark::processOnGPU(GraphicPipeline& gpu, TaskThread& thread) {
 
 
 void GPUBenchmark::run() {
-    env.performTask(*this);
+    ctx.performTask(*this);
 }

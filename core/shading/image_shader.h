@@ -4,7 +4,7 @@
 #pragma once
 #include "../gpu/variables_bundle.h"
 #include "../gpu/pipeline.h"
-#include "../environment.h"
+#include "../context.h"
 #include "../exception.h"
 #include <mutex>
 #include <string>
@@ -21,14 +21,14 @@ namespace Beatmup {
     class ImageShader : public GL::VariablesBundle {
         ImageShader(const ImageShader&) = delete;			//!< disabling copying constructor
     private:
-        Environment& env;
+        Context& ctx;
         GL::Program* program;
         GL::FragmentShader* fragmentShader;
         std::string sourceCode;                             //!< last passed fragment shader source code
         GL::TextureHandler::TextureFormat inputFormat;		//!< last used input texture format; when changed, the shader is recompiled
         bool fragmentShaderReady;                           //!< if `true`, shader is ready to go
     public:
-        ImageShader(Environment& env);
+        ImageShader(Context& ctx);
         ~ImageShader();
         /**
             Passes new source code to the fragment shader.
