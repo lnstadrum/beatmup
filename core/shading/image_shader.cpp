@@ -24,8 +24,8 @@ bool str_replace(std::string& str, const std::string& from, const std::string& t
 }
 
 
-ImageShader::ImageShader(Environment& env) :
-    env(env),
+ImageShader::ImageShader(Context& ctx) :
+    ctx(ctx),
     program(nullptr),
     fragmentShader(nullptr),
     sourceCode(),
@@ -51,7 +51,7 @@ ImageShader::~ImageShader() {
         }
     };
 
-    env.getGpuRecycleBin()->put(new Deleter(program, fragmentShader));
+    ctx.getGpuRecycleBin()->put(new Deleter(program, fragmentShader));
 }
 
 

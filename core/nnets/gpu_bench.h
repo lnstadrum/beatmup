@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../environment.h"
+#include "../context.h"
 #include "../gpu/compute_program.h"
 #include "../gpu/gpu_task.h"
 #include "../bitmap/internal_bitmap.h"
@@ -15,7 +15,7 @@ namespace Beatmup {
         private:
             static const int CONTROL_POINTS_NUM = 100;
             
-            Environment& env;
+            Context& ctx;
             GL::Object<GL::ComputeProgram>* program;
             InternalBitmap input, output;
             
@@ -30,7 +30,7 @@ namespace Beatmup {
             bool processOnGPU(GraphicPipeline& gpu, TaskThread& thread);
 
         public:
-            GPUBenchmark(Environment& env);
+            GPUBenchmark(Context& ctx);
             ~GPUBenchmark();
 
             void run();

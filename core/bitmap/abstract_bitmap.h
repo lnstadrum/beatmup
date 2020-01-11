@@ -13,7 +13,7 @@
 
 namespace Beatmup {
 
-    class Environment;
+    class Context;
 
     enum PixelFormat {
         SingleByte = 0,		//!< single channel of 8 bits per pixel (like grayscale), unsigned integer values
@@ -38,9 +38,9 @@ namespace Beatmup {
         bool upToDate[2];									//!< bitmap up-to-date state on CPU and GPU
 
     protected:
-        AbstractBitmap(Environment& env);
+        AbstractBitmap(Context& ctx);
 
-        Environment& env;									//!< environment managing this bitmap
+        Context& ctx;									//!< context managing this bitmap
 
         // overridden methods from TextureHandler
         virtual void prepare(GraphicPipeline& gpu);
@@ -124,7 +124,7 @@ namespace Beatmup {
         */
         const ImageResolution getSize() const;
 
-        Environment& getEnvironment() const;
+        Context& getContext() const;
 
         /**
             Sets all the pixels to zero

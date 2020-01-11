@@ -10,12 +10,12 @@ using namespace Beatmup;
 
 
 AudioSignal* AudioSignal::createEmpty() const {
-    return new AudioSignal(env, format, sampleRate, channelCount, (float)defaultFragmentSize / sampleRate);
+    return new AudioSignal(ctx, format, sampleRate, channelCount, (float)defaultFragmentSize / sampleRate);
 }
 
 
-AudioSignal::AudioSignal(Environment& env, AudioSampleFormat format, int sampleRate, unsigned char channels, float defaultFragmentLenSec) :
-    env(env),
+AudioSignal::AudioSignal(Context& ctx, AudioSampleFormat format, int sampleRate, unsigned char channels, float defaultFragmentLenSec) :
+    ctx(ctx),
     format(format),
     defaultFragmentSize(floorf_fast(defaultFragmentLenSec * sampleRate)),
     sampleRate(sampleRate),
@@ -35,14 +35,14 @@ void AudioSignal::insert(const AudioSignal& sequence, dtime time) {
 void AudioSignal::reserve(dtime length) {
     int currentLength;
     while ((currentLength = getLength()) < length) {
-        AudioSignalFragment* newbie = new AudioSignalFragment(env, format, channelCount, defaultFragmentSize);
+        AudioSignalFragment* newbie = new AudioSignalFragment(ctx, format, channelCount, defaultFragmentSize);
         newbie->zero();
         concatenate(*newbie, 0, std::min(defaultFragmentSize, length - currentLength));
     }
 }
 
 
-AudioSignal* AudioSignal::loadWAV(Environment& env, const char* filename) {
+AudioSignal* AudioSignal::loadWAV(Context& ctx, const char* filename) {
     // open file
     std::ifstream file(filename, std::ifstream::in | std::ifstream::binary);
     if (!file.is_open())
@@ -74,7 +74,7 @@ AudioSignal* AudioSignal::loadWAV(Environment& env, const char* filename) {
         throw WAV::InvalidWavFile("Incorrect WAV file: unsupported channel count");
 
     // create signal
-    AudioSignal* signal = new AudioSignal(env, format, header.sampleRate, header.numChannels);
+    AudioSignal* signal = new AudioSignal(ctx, format, header.sampleRate, header.numChannels);
     dtime totalTime = header.dataSizeBytes / (header.numChannels * header.bitsPerSample / 8);
     signal->reserve(totalTime);
 
@@ -199,7 +199,7 @@ void AudioSignal::Meter::prepareSignal(AudioSignal& signal, bool runTask) {
         };
 
         DynamicsLookupPreparation task(signal);
-        signal.getEnvironment().performTask(task);
+        signal.getContext().performTask(task);
     }
     else
         Meter::prepare(signal);

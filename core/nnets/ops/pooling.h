@@ -21,7 +21,7 @@ namespace Beatmup {
 
             public:
                 Pooling(
-                    Environment& env,
+                    Context& ctx,
                     const std::string& name,
                     const Mode mode,
                     const Size& inputSize,

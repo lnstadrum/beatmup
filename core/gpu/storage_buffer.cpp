@@ -6,9 +6,9 @@
 using namespace Beatmup;
 using namespace GL;
 
-StorageBuffer::StorageBuffer(Environment& env, size_t width, size_t height, size_t depth, const size_t entrySize):
+StorageBuffer::StorageBuffer(Context& ctx, size_t width, size_t height, size_t depth, const size_t entrySize):
     width(width), height(height), depth(depth), entrySize(entrySize),
-    env(env), handle(0)
+    ctx(ctx), handle(0)
 {}
 
 
@@ -24,7 +24,7 @@ StorageBuffer::~StorageBuffer() {
     };
 
     if (handle)
-        env.getGpuRecycleBin()->put(new Deleter(handle));
+        ctx.getGpuRecycleBin()->put(new Deleter(handle));
 }
 
 

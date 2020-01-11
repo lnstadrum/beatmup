@@ -1,7 +1,7 @@
 #include "wrapper.h"
 
 #include "jniheaders/Beatmup_NNets_GPUBenchmark.h"
-#include "android/environment.h"
+#include "android/context.h"
 
 #include <core/nnets/gpu_bench.h>
 #include <core/nnets/model.h>
@@ -18,8 +18,8 @@
 
 JNIMETHOD(jlong, newGpuBenchmark, Java_Beatmup_NNets_GPUBenchmark, newGpuBenchmark)(JNIEnv * jenv, jclass, jobject jEnv) {
     BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Android::Environment, env, jEnv);
-    return (jlong) (new Beatmup::NNets::GPUBenchmark(*env));
+    BEATMUP_OBJ(Beatmup::Android::Context, ctx, jEnv);
+    return (jlong) (new Beatmup::NNets::GPUBenchmark(*ctx));
 }
 
 
@@ -39,7 +39,7 @@ JNIMETHOD(jfloat, getError, Java_Beatmup_NNets_GPUBenchmark, getError)(JNIEnv * 
 
 JNIMETHOD(jfloat, test, Java_Beatmup_NNets_GPUBenchmark, test)(JNIEnv * jenv, jclass, jobject jEnv, jobject jTest) {
     BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Android::Environment, env, jEnv);
+    BEATMUP_OBJ(Beatmup::Android::Context, ctx, jEnv);
     BEATMUP_OBJ(Beatmup::AbstractBitmap, test, jTest);
 
     std::fstream teststr("/storage/emulated/0/testmodel.chunks", std::ios::in | std::ios::binary);
@@ -48,10 +48,10 @@ JNIMETHOD(jfloat, test, Java_Beatmup_NNets_GPUBenchmark, test)(JNIEnv * jenv, jc
 
     if (true){
         Beatmup::NNets::Model model("/storage/emulated/0/testmodel.chunks");
-        model.addOperation(new Beatmup::NNets::Ops::ImageInput(*env, "in", Beatmup::NNets::Size(224, 224, 3)));
+        model.addOperation(new Beatmup::NNets::Ops::ImageInput(*ctx, "in", Beatmup::NNets::Size(224, 224, 3)));
 
         model.addOperation(new Beatmup::NNets::Ops::Convolution2D(
-                *env, "MobilenetV1/MobilenetV1/Conv2d_0/Conv2D",
+                *ctx, "MobilenetV1/MobilenetV1/Conv2d_0/Conv2D",
                 Beatmup::NNets::Size(224, 224, 3), 32,
                 Beatmup::NNets::Size(3, 3, 3),
                 false,
@@ -59,20 +59,20 @@ JNIMETHOD(jfloat, test, Java_Beatmup_NNets_GPUBenchmark, test)(JNIEnv * jenv, jc
         ));
 
         model.addOperation(new Beatmup::NNets::Ops::Convolution2D(
-                *env, "MobilenetV1/MobilenetV1/Conv2d_1_depthwise/depthwise",
+                *ctx, "MobilenetV1/MobilenetV1/Conv2d_1_depthwise/depthwise",
                 Beatmup::NNets::Size(112, 112, 32), 32,
                 Beatmup::NNets::Size(3, 3, 1),
                 true
         ));
 
         model.addOperation(new Beatmup::NNets::Ops::Convolution2D(
-                *env, "MobilenetV1/MobilenetV1/Conv2d_1_pointwise/Conv2D",
+                *ctx, "MobilenetV1/MobilenetV1/Conv2d_1_pointwise/Conv2D",
                 Beatmup::NNets::Size(112, 112, 32), 64,
                 Beatmup::NNets::Size(1, 1, 32)
         ));
 
         model.addOperation(new Beatmup::NNets::Ops::Convolution2D(
-                *env, "MobilenetV1/MobilenetV1/Conv2d_2_depthwise/depthwise",
+                *ctx, "MobilenetV1/MobilenetV1/Conv2d_2_depthwise/depthwise",
                 Beatmup::NNets::Size(112, 112, 64), 64,
                 Beatmup::NNets::Size(3, 3, 1),
                 true,
@@ -81,26 +81,26 @@ JNIMETHOD(jfloat, test, Java_Beatmup_NNets_GPUBenchmark, test)(JNIEnv * jenv, jc
         ));
 
         model.addOperation(new Beatmup::NNets::Ops::Convolution2D(
-                *env, "MobilenetV1/MobilenetV1/Conv2d_2_pointwise/Conv2D",
+                *ctx, "MobilenetV1/MobilenetV1/Conv2d_2_pointwise/Conv2D",
                 Beatmup::NNets::Size(56, 56, 64), 128,
                 Beatmup::NNets::Size(1, 1, 64)
         ));
 
         model.addOperation(new Beatmup::NNets::Ops::Convolution2D(
-                *env, "MobilenetV1/MobilenetV1/Conv2d_3_depthwise/depthwise",
+                *ctx, "MobilenetV1/MobilenetV1/Conv2d_3_depthwise/depthwise",
                 Beatmup::NNets::Size(56, 56, 128), 128,
                 Beatmup::NNets::Size(3, 3, 1),
                 true
         ));
 
         model.addOperation(new Beatmup::NNets::Ops::Convolution2D(
-                *env, "MobilenetV1/MobilenetV1/Conv2d_3_pointwise/Conv2D",
+                *ctx, "MobilenetV1/MobilenetV1/Conv2d_3_pointwise/Conv2D",
                 Beatmup::NNets::Size(56, 56, 128), 128,
                 Beatmup::NNets::Size(1, 1, 128)
         ));
 
         model.addOperation(new Beatmup::NNets::Ops::Convolution2D(
-                *env, "MobilenetV1/MobilenetV1/Conv2d_4_depthwise/depthwise",
+                *ctx, "MobilenetV1/MobilenetV1/Conv2d_4_depthwise/depthwise",
                 Beatmup::NNets::Size(56, 56, 128), 128,
                 Beatmup::NNets::Size(3, 3, 1),
                 true,
@@ -108,28 +108,28 @@ JNIMETHOD(jfloat, test, Java_Beatmup_NNets_GPUBenchmark, test)(JNIEnv * jenv, jc
         ));
 
         model.addOperation(new Beatmup::NNets::Ops::Convolution2D(
-                *env, "MobilenetV1/MobilenetV1/Conv2d_4_pointwise/Conv2D",
+                *ctx, "MobilenetV1/MobilenetV1/Conv2d_4_pointwise/Conv2D",
                 Beatmup::NNets::Size(28, 28, 128), 256,
                 Beatmup::NNets::Size(1, 1, 128),
                 false
         ));
 
         model.addOperation(new Beatmup::NNets::Ops::Convolution2D(
-                *env, "MobilenetV1/MobilenetV1/Conv2d_5_depthwise/depthwise",
+                *ctx, "MobilenetV1/MobilenetV1/Conv2d_5_depthwise/depthwise",
                 Beatmup::NNets::Size(28, 28, 256), 256,
                 Beatmup::NNets::Size(3, 3, 1),
                 true
         ));
 
         model.addOperation(new Beatmup::NNets::Ops::Convolution2D(
-                *env, "MobilenetV1/MobilenetV1/Conv2d_5_pointwise/Conv2D",
+                *ctx, "MobilenetV1/MobilenetV1/Conv2d_5_pointwise/Conv2D",
                 Beatmup::NNets::Size(28, 28, 256), 256,
                 Beatmup::NNets::Size(1, 1, 256),
                 false
         ));
 
         model.addOperation(new Beatmup::NNets::Ops::Convolution2D(
-                *env, "MobilenetV1/MobilenetV1/Conv2d_6_depthwise/depthwise",
+                *ctx, "MobilenetV1/MobilenetV1/Conv2d_6_depthwise/depthwise",
                 Beatmup::NNets::Size(28, 28, 256), 256,
                 Beatmup::NNets::Size(3, 3, 1),
                 true,
@@ -137,84 +137,84 @@ JNIMETHOD(jfloat, test, Java_Beatmup_NNets_GPUBenchmark, test)(JNIEnv * jenv, jc
         ));
 
         model.addOperation(new Beatmup::NNets::Ops::Convolution2D(
-                *env, "MobilenetV1/MobilenetV1/Conv2d_6_pointwise/Conv2D",
+                *ctx, "MobilenetV1/MobilenetV1/Conv2d_6_pointwise/Conv2D",
                 Beatmup::NNets::Size(14, 14, 256), 512,
                 Beatmup::NNets::Size(1, 1, 256),
                 false
         ));
 
         model.addOperation(new Beatmup::NNets::Ops::Convolution2D(
-                *env, "MobilenetV1/MobilenetV1/Conv2d_7_depthwise/depthwise",
+                *ctx, "MobilenetV1/MobilenetV1/Conv2d_7_depthwise/depthwise",
                 Beatmup::NNets::Size(14, 14, 512), 512,
                 Beatmup::NNets::Size(3, 3, 1),
                 true
         ));
 
         model.addOperation(new Beatmup::NNets::Ops::Convolution2D(
-                *env, "MobilenetV1/MobilenetV1/Conv2d_7_pointwise/Conv2D",
+                *ctx, "MobilenetV1/MobilenetV1/Conv2d_7_pointwise/Conv2D",
                 Beatmup::NNets::Size(14, 14, 512), 512,
                 Beatmup::NNets::Size(1, 1, 512),
                 false
         ));
 
         model.addOperation(new Beatmup::NNets::Ops::Convolution2D(
-                *env, "MobilenetV1/MobilenetV1/Conv2d_8_depthwise/depthwise",
+                *ctx, "MobilenetV1/MobilenetV1/Conv2d_8_depthwise/depthwise",
                 Beatmup::NNets::Size(14, 14, 512), 512,
                 Beatmup::NNets::Size(3, 3, 1),
                 true
         ));
 
         model.addOperation(new Beatmup::NNets::Ops::Convolution2D(
-                *env, "MobilenetV1/MobilenetV1/Conv2d_8_pointwise/Conv2D",
+                *ctx, "MobilenetV1/MobilenetV1/Conv2d_8_pointwise/Conv2D",
                 Beatmup::NNets::Size(14, 14, 512), 512,
                 Beatmup::NNets::Size(1, 1, 512),
                 false
         ));
 
         model.addOperation(new Beatmup::NNets::Ops::Convolution2D(
-                *env, "MobilenetV1/MobilenetV1/Conv2d_9_depthwise/depthwise",
+                *ctx, "MobilenetV1/MobilenetV1/Conv2d_9_depthwise/depthwise",
                 Beatmup::NNets::Size(14, 14, 512), 512,
                 Beatmup::NNets::Size(3, 3, 1),
                 true
         ));
 
         model.addOperation(new Beatmup::NNets::Ops::Convolution2D(
-                *env, "MobilenetV1/MobilenetV1/Conv2d_9_pointwise/Conv2D",
+                *ctx, "MobilenetV1/MobilenetV1/Conv2d_9_pointwise/Conv2D",
                 Beatmup::NNets::Size(14, 14, 512), 512,
                 Beatmup::NNets::Size(1, 1, 512),
                 false
         ));
 
         model.addOperation(new Beatmup::NNets::Ops::Convolution2D(
-                *env, "MobilenetV1/MobilenetV1/Conv2d_10_depthwise/depthwise",
+                *ctx, "MobilenetV1/MobilenetV1/Conv2d_10_depthwise/depthwise",
                 Beatmup::NNets::Size(14, 14, 512), 512,
                 Beatmup::NNets::Size(3, 3, 1),
                 true
         ));
 
         model.addOperation(new Beatmup::NNets::Ops::Convolution2D(
-                *env, "MobilenetV1/MobilenetV1/Conv2d_10_pointwise/Conv2D",
+                *ctx, "MobilenetV1/MobilenetV1/Conv2d_10_pointwise/Conv2D",
                 Beatmup::NNets::Size(14, 14, 512), 512,
                 Beatmup::NNets::Size(1, 1, 512),
                 false
         ));
 
         model.addOperation(new Beatmup::NNets::Ops::Convolution2D(
-                *env, "MobilenetV1/MobilenetV1/Conv2d_11_depthwise/depthwise",
+                *ctx, "MobilenetV1/MobilenetV1/Conv2d_11_depthwise/depthwise",
                 Beatmup::NNets::Size(14, 14, 512), 512,
                 Beatmup::NNets::Size(3, 3, 1),
                 true
         ));
 
         model.addOperation(new Beatmup::NNets::Ops::Convolution2D(
-                *env, "MobilenetV1/MobilenetV1/Conv2d_11_pointwise/Conv2D",
+                *ctx, "MobilenetV1/MobilenetV1/Conv2d_11_pointwise/Conv2D",
                 Beatmup::NNets::Size(14, 14, 512), 512,
                 Beatmup::NNets::Size(1, 1, 512),
                 false
         ));
 
         model.addOperation(new Beatmup::NNets::Ops::Convolution2D(
-                *env, "MobilenetV1/MobilenetV1/Conv2d_12_depthwise/depthwise",
+                *ctx, "MobilenetV1/MobilenetV1/Conv2d_12_depthwise/depthwise",
                 Beatmup::NNets::Size(14, 14, 512), 512,
                 Beatmup::NNets::Size(3, 3, 1),
                 true,
@@ -222,28 +222,28 @@ JNIMETHOD(jfloat, test, Java_Beatmup_NNets_GPUBenchmark, test)(JNIEnv * jenv, jc
         ));
 
         model.addOperation(new Beatmup::NNets::Ops::Convolution2D(
-                *env, "MobilenetV1/MobilenetV1/Conv2d_12_pointwise/Conv2D",
+                *ctx, "MobilenetV1/MobilenetV1/Conv2d_12_pointwise/Conv2D",
                 Beatmup::NNets::Size(7, 7, 512), 1024,
                 Beatmup::NNets::Size(1, 1, 512),
                 false
         ));
 
         model.addOperation(new Beatmup::NNets::Ops::Convolution2D(
-                *env, "MobilenetV1/MobilenetV1/Conv2d_13_depthwise/depthwise",
+                *ctx, "MobilenetV1/MobilenetV1/Conv2d_13_depthwise/depthwise",
                 Beatmup::NNets::Size(7, 7, 1024), 1024,
                 Beatmup::NNets::Size(3, 3, 1),
                 true
         ));
 
         model.addOperation(new Beatmup::NNets::Ops::Convolution2D(
-                *env, "MobilenetV1/MobilenetV1/Conv2d_13_pointwise/Conv2D",
+                *ctx, "MobilenetV1/MobilenetV1/Conv2d_13_pointwise/Conv2D",
                 Beatmup::NNets::Size(7, 7, 1024), 1024,
                 Beatmup::NNets::Size(1, 1, 1024),
                 false
         ));
 
         model.addOperation(new Beatmup::NNets::Ops::Pooling(
-                *env, "MobilenetV1/Logits/AvgPool_1a/AvgPool",
+                *ctx, "MobilenetV1/Logits/AvgPool_1a/AvgPool",
                 Beatmup::NNets::Ops::Pooling::Mode::AVERAGE,
                 Beatmup::NNets::Size(7, 7, 1024), 1024,
                 Beatmup::NNets::Size(7, 7, 1024),
@@ -252,7 +252,7 @@ JNIMETHOD(jfloat, test, Java_Beatmup_NNets_GPUBenchmark, test)(JNIEnv * jenv, jc
         ));
 
         model.addOperation(new Beatmup::NNets::Ops::Convolution2D(
-                *env, "MobilenetV1/Logits/Conv2d_1c_1x1/Conv2D",
+                *ctx, "MobilenetV1/Logits/Conv2d_1c_1x1/Conv2D",
                 Beatmup::NNets::Size(1, 1, 1024), 1001,
                 Beatmup::NNets::Size(1, 1, 1024),
                 false,
@@ -262,7 +262,7 @@ JNIMETHOD(jfloat, test, Java_Beatmup_NNets_GPUBenchmark, test)(JNIEnv * jenv, jc
         ));
 
         /*Beatmup::NNets::Probe* probe = new Beatmup::NNets::Probe(
-            *env, "probe",
+            *ctx, "probe",
             Beatmup::NNets::Size(112, 112, 32), 7
         );
         model.addOperation(probe);*/
@@ -271,22 +271,22 @@ JNIMETHOD(jfloat, test, Java_Beatmup_NNets_GPUBenchmark, test)(JNIEnv * jenv, jc
         //inference.enableCache("inference_cache.chunks");
         inference.setModel(&model);
         inference.setPrepareOnly(true);
-        env->performTask(inference);
+        ctx->performTask(inference);
 
         LOG_I("INFERRING...");
         const Beatmup::NNets::Size outputSize = model.getLastAddedOp().getOutputSize();
-        Beatmup::GL::StorageBuffer output(*env, outputSize[0], outputSize[1], outputSize[2], sizeof(float));
+        Beatmup::GL::StorageBuffer output(*ctx, outputSize[0], outputSize[1], outputSize[2], sizeof(float));
         inference.supplyOutput(output, model.getLastAddedOp().getName());
         inference.supplyInput(*test, "in");
         test->lockPixels(Beatmup::ProcessingTarget::GPU);
         float totalTime = 0;
         for (int it = 0; it < 10; ++it)
-            totalTime += env->performTask(inference);
+            totalTime += ctx->performTask(inference);
         test->unlockPixels();
 
         std::vector<float> data(outputSize[2]);
         Beatmup::GL::StorageBufferFetcher fetch(output, data.data(), data.size() * sizeof(float));
-        env->performTask(fetch);
+        ctx->performTask(fetch);
         for (int i = 0; i < 10; i++)
             LOG_I("%0.5f ", data[i]);
 

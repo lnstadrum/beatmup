@@ -1,4 +1,4 @@
-#include <core/environment.h>
+#include <core/context.h>
 #include <jni.h>
 
 namespace Beatmup {
@@ -6,7 +6,7 @@ namespace Beatmup {
     /**
      * Needed for correct functioning of JNI
      */
-    class ContextEventListener : public Beatmup::Environment::EventListener {
+    class ContextEventListener : public Beatmup::Context::EventListener {
     private:
         JavaVM *jvm;
 

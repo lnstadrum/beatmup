@@ -4,7 +4,7 @@
 #pragma once
 #include <mutex>
 #include <vector>
-#include "../environment.h"
+#include "../context.h"
 #include "../utils/lockable_object.h"
 
 namespace Beatmup {
@@ -25,11 +25,11 @@ namespace Beatmup {
 
         private:
             std::vector<Item*> items;
-            Environment& env;
+            Context& ctx;
             AbstractTask* recycler;
 
         public:
-            RecycleBin(Environment& env);
+            RecycleBin(Context& ctx);
             ~RecycleBin();
 
             /**

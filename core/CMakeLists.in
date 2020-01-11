@@ -21,7 +21,7 @@ endif (WIN32)
 
 
 set(BEATMUP_SOURCES
-    ${BEATMUP_SRC_DIR}/environment.cpp
+    ${BEATMUP_SRC_DIR}/context.cpp
     ${BEATMUP_SRC_DIR}/exception.cpp
     ${BEATMUP_SRC_DIR}/geometry.cpp
     ${BEATMUP_SRC_DIR}/parallelism.cpp

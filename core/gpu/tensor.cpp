@@ -10,20 +10,20 @@ using namespace Beatmup;
 using namespace GL;
 
 
-Tensor::Tensor(Environment& env, const int width, const int height, const int scalarDepth) :
+Tensor::Tensor(Context& ctx, const int width, const int height, const int scalarDepth) :
     format(RGBAx32f), arrayTexture(true),
     width(width), height(height), depth(scalarDepth / 4),
-    env(env),
+    ctx(ctx),
     allocated(false)
 {
     RuntimeError::check(scalarDepth % 4 == 0 && depth > 0, "Unsupported scalar depth. Must be a positive factor of 4.");
 }
 
 
-Tensor::Tensor(Environment& env, GraphicPipeline& gpu, const int unpackedWidth, const int height, const float* data) :
+Tensor::Tensor(Context& ctx, GraphicPipeline& gpu, const int unpackedWidth, const int height, const float* data) :
     format(RGBAx32f), arrayTexture(false),
     width(unpackedWidth / 4), height(height), depth(1),
-    env(env),
+    ctx(ctx),
     allocated(true)
 {
     RuntimeError::check(unpackedWidth % 4 == 0, "Unsupported unpacked width. Must be a positive factor of 4.");
@@ -44,7 +44,7 @@ Tensor::Tensor(Environment& env, GraphicPipeline& gpu, const int unpackedWidth, 
 
 Tensor::~Tensor() {
     if (hasValidHandle()) {
-        TextureHandler::invalidate(*env.getGpuRecycleBin());
+        TextureHandler::invalidate(*ctx.getGpuRecycleBin());
     }
 }
 

@@ -10,16 +10,16 @@
 #include <iostream>
 
 int main(int argc, char* argv[]) {
-    Beatmup::Environment env;
+    Beatmup::Context ctx;
     Beatmup::Scene scene;
     Beatmup::SceneRenderer renderer;
     Beatmup::FloodFill floodFill;
     float time;
 
-    Beatmup::InternalBitmap fecamp(env, "images/fecamp.bmp");
-    Beatmup::InternalBitmap spiral(env, "images/spiral.bmp");
-    Beatmup::InternalBitmap mask(env, Beatmup::PixelFormat::HexMask, spiral.getWidth(), spiral.getHeight());
-    Beatmup::InternalBitmap output(env, Beatmup::PixelFormat::TripleByte, fecamp.getWidth(), fecamp.getHeight());
+    Beatmup::InternalBitmap fecamp(ctx, "images/fecamp.bmp");
+    Beatmup::InternalBitmap spiral(ctx, "images/spiral.bmp");
+    Beatmup::InternalBitmap mask(ctx, Beatmup::PixelFormat::HexMask, spiral.getWidth(), spiral.getHeight());
+    Beatmup::InternalBitmap output(ctx, Beatmup::PixelFormat::TripleByte, fecamp.getWidth(), fecamp.getHeight());
     Beatmup::IntPoint seeds[1] = { Beatmup::IntPoint(300, 20) };
 
     // floodfill
@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
         // It is important to zero the mask before going floodfill. By default it contains random stuff (what has been before
         // in RAM), and floodfill will likely not modify all its pixels.
     std::cout << "Running flood fill... ";
-    time = env.performTask(floodFill);
+    time = ctx.performTask(floodFill);
     std::cout << time << " ms" << std::endl;
 
     // configure renderer
@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
     renderer.setOutputPixelsFetching(true);
     renderer.setOutputMapping(Beatmup::SceneRenderer::OutputMapping::FIT_WIDTH_TO_TOP);
     renderer.setOutput(output);
-    env.warmUpGpu();
+    ctx.warmUpGpu();
 
     // construct the scene
     {
@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
     }
 
     std::cout << "Rendering..." << std::endl;
-    time = env.performTask(renderer);
+    time = ctx.performTask(renderer);
     std::cout << "Time: " << time << " ms" << std::endl;
 
     // saving output

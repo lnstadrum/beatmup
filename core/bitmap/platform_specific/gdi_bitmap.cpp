@@ -2,7 +2,7 @@
 #include <gdiplus.h>
 #include "gdi_bitmap.h"
 #include "../../gpu/pipeline.h"
-#include "../../environment.h"
+#include "../../context.h"
 #include "../../exception.h"
 
 
@@ -60,7 +60,7 @@ public:
     }
 
 
-    inline Impl(Environment &env, const wchar_t* filename)	{
+    inline Impl(Context &ctx, const wchar_t* filename)	{
         init();
         bitmap = new Gdiplus::Bitmap(filename, 1);
         size.X = size.Y = 0;
@@ -69,7 +69,7 @@ public:
     }
 
 
-    inline Impl(Environment &env, int width, int height, PixelFormat format) {
+    inline Impl(Context &ctx, int width, int height, PixelFormat format) {
         init();
         Gdiplus::PixelFormat pf;
         switch (format) {
@@ -146,15 +146,15 @@ public:
 };
 
 
-GDIBitmap::GDIBitmap(Environment &env, const wchar_t* filename) :
-    AbstractBitmap(env)
+GDIBitmap::GDIBitmap(Context &ctx, const wchar_t* filename) :
+    AbstractBitmap(ctx)
 {
-    impl = new Impl(env, filename);
+    impl = new Impl(ctx, filename);
 }
 
 
-GDIBitmap::GDIBitmap(Environment &env, PixelFormat format, int width, int height) : AbstractBitmap(env) {
-    impl = new Impl(env, width, height, format);
+GDIBitmap::GDIBitmap(Context &ctx, PixelFormat format, int width, int height) : AbstractBitmap(ctx) {
+    impl = new Impl(ctx, width, height, format);
 }
 
 

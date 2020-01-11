@@ -166,25 +166,25 @@ namespace Beatmup {
 
                 inline std::string get() const { return code; }
             };
-            
+
             /**
                 Creates a storage.
-                \param[in] env		An environment
+                \param[in] ctx		An context
                 \param[in] width	Storage width
                 \param[in] height	Storage height
                 \param[in] depth	Storage depth
                 \param[in] type		Storage type
             */
-            Storage(Environment& env, const int width, const int height, const int scalarDepth, const Type type);
+            Storage(Context& ctx, const int width, const int height, const int scalarDepth, const Type type);
 
-            Storage(Environment& env, const int length);
-            
+            Storage(Context& ctx, const int length);
+
             /**
                 Creates a 2D storage pointing to an externally managed texture.
                 \param[in] texture		The texture
             */
             Storage(GL::TextureHandler* texture);
-            
+
             /**
                 Creates a 2D storage pointing to an externally managed buffer.
                 \param[in] buffer		The buffer

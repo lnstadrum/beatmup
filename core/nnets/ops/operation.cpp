@@ -93,13 +93,13 @@ int AbstractOperation::getInputCount() const {
 int AbstractOperation::getOutputCount() const {
     return 1;
 }
-GPUOperation::GPUOperation(Environment& env, const std::string& name) :
-    AbstractOperation(name), env(env)
+GPUOperation::GPUOperation(Context& ctx, const std::string& name) :
+    AbstractOperation(name), ctx(ctx)
 {}
 GPUOperation::~GPUOperation() {
     for (auto& program: programs)
         if (program)
-            program->destroy(*env.getGpuRecycleBin());
+            program->destroy(*ctx.getGpuRecycleBin());
 }
 void GPUOperation::store(GraphicPipeline& gpu, ChunkFile::Writer& cache, ProgressTracking& progress) {
     if (programs.empty())
@@ -121,7 +121,7 @@ void GPUOperation::load(GraphicPipeline& gpu, ChunkFile& cache, ProgressTracking
     // free existing programs
     for (auto& program : programs)
         if (program)
-            program->destroy(*env.getGpuRecycleBin());
+            program->destroy(*ctx.getGpuRecycleBin());
     programs.clear();
     const size_t numPrograms = cache.fetch<size_t>(getName());
     programs.resize(numPrograms, nullptr);
@@ -160,10 +160,10 @@ Storage* GPUOperation::allocateOutput(int outputIndex) const {
     BEATMUP_ASSERT_DEBUG(outputIndex < getOutputCount());
     const Size size = getOutputSize(outputIndex);
     const Storage::Type type = getOutputType(outputIndex);
-    return new Storage(env, size.getWidth(), size.getHeight(), size.getDepth(), type);
+    return new Storage(ctx, size.getWidth(), size.getHeight(), size.getDepth(), type);
 }
-Ops::ImageInput::ImageInput(Environment& env, const std::string& name, const Size& size) :
-    GPUOperation(env, name), input(nullptr), output(nullptr), size(size)
+Ops::ImageInput::ImageInput(Context& ctx, const std::string& name, const Size& size) :
+    GPUOperation(ctx, name), input(nullptr), output(nullptr), size(size)
 {}
 void Ops::ImageInput::setInput(Storage& storage, int inputIndex) {
     BEATMUP_ASSERT_DEBUG(inputIndex == 0);
@@ -177,7 +177,7 @@ void Ops::ImageInput::setOutput(Storage& storage, int outputIndex) {
 }
 Storage* Ops::ImageInput::allocateOutput(int outputIndex) const {
     BEATMUP_ASSERT_DEBUG(outputIndex == 0);
-    return new Storage(env, size.getWidth(), size.getHeight(), 4, getOutputType());
+    return new Storage(ctx, size.getWidth(), size.getHeight(), 4, getOutputType());
 }
 Storage::Type Ops::ImageInput::getOutputType(int outputIndex) const {
     return Storage::Type::TENSOR_8FP_SIGNED;
@@ -214,12 +214,12 @@ void Ops::ImageInput::perform(GraphicPipeline& gpu, GL::ComputeProgram& program,
     program.dispatch(gpu, outputSize.getWidth(), outputSize.getHeight(), 1);
 }
 FeedforwardGPUOperation::FeedforwardGPUOperation(
-    Environment& env,
+    Context& ctx,
     const std::string& name,
     const Size& inputSize,
     const int outChannelsNum
 ) :
-    GPUOperation(env, name),
+    GPUOperation(ctx, name),
     outChannelsNum(outChannelsNum),
     outChanNumRoundUp4(4 * ceili(outChannelsNum, 4)),
     inputType(Storage::getDefaultType(inputSize)),
@@ -251,7 +251,7 @@ void FeedforwardGPUOperation::perform(GraphicPipeline& gpu, GL::ComputeProgram& 
     output->bind(gpu, program, 1, false, true);
 }
 Feedforward2DGPUOperation::Feedforward2DGPUOperation(
-    Environment& env,
+    Context& ctx,
     const std::string& name,
     const Size& inputSize,
     const int outChannelsNum,
@@ -259,17 +259,17 @@ Feedforward2DGPUOperation::Feedforward2DGPUOperation(
     const Size& stride,
     const Size::Padding& padding
 ) :
-    FeedforwardGPUOperation(env, name, inputSize, outChannelsNum),
+    FeedforwardGPUOperation(ctx, name, inputSize, outChannelsNum),
     kernelSize(kernelSize), stride(stride), padding(padding)
 {}
 Size Feedforward2DGPUOperation::getOutputSize(int outputIndex) const {
     BEATMUP_ASSERT_DEBUG(outputIndex == 0);
     return inputSize.transform(kernelSize, stride, padding, outChannelsNum);
-}Probe::Probe(Environment& env, const std::string& name, const Size& size, int laneIndex) :
-    GPUOperation(env, name), input(nullptr), size(size), laneIndex(laneIndex)
+}Probe::Probe(Context& ctx, const std::string& name, const Size& size, int laneIndex) :
+    GPUOperation(ctx, name), input(nullptr), size(size), laneIndex(laneIndex)
 {
     BEATMUP_ASSERT_DEBUG(laneIndex * 4 < size.getDepth());
-    output = new InternalBitmap(env, PixelFormat::QuadFloat, size.getWidth(), size.getHeight());
+    output = new InternalBitmap(ctx, PixelFormat::QuadFloat, size.getWidth(), size.getHeight());
 }
 Probe::~Probe() {
     delete output;

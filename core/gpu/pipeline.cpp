@@ -532,7 +532,7 @@ public:
 
         // copy data with a buffer
         if (buffered) {
-            InternalBitmap buffer(bitmap.getEnvironment(),
+            InternalBitmap buffer(bitmap.getContext(),
                 bitmap.isFloat() ? PixelFormat::QuadFloat : PixelFormat::QuadByte,
                 bitmap.getWidth(), bitmap.getHeight());
             buffer.lockPixels(ProcessingTarget::CPU);

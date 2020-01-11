@@ -116,7 +116,7 @@ extern "C" {
 #endif
 
 
-/* Beatmup::Environment */
+/* Beatmup::Context */
 void BeatmupEnvironmentCreate1(handle_t *);
 void BeatmupEnvironmentCreate2(handle_t *, const beatmup_pool_index_t numThreadPools, const char* swapFilePrefix, const char* swapFileSuffix);
 void BeatmupEnvironmentDestroy(handle_t);
@@ -202,8 +202,8 @@ bool BeatmupAbstractBitmapIsMask2(beatmup_pixel_format_t pixelFormat);
 void BeatmupAbstractBitmapDestroy(handle_t);
 
 /* Beatmup::InternalBitmap */
-void BeatmupInternalBitmapCreate1(handle_t *, handle_t env, beatmup_pixel_format_t pixelFormat, int width, int height, bool allocate);
-void BeatmupInternalBitmapCreate2(handle_t *, handle_t env, const char* filename);
+void BeatmupInternalBitmapCreate1(handle_t *, handle_t ctx, beatmup_pixel_format_t pixelFormat, int width, int height, bool allocate);
+void BeatmupInternalBitmapCreate2(handle_t *, handle_t ctx, const char* filename);
 void BeatmupInternalBitmapDestroy(handle_t);
 const beatmup_pixel_format_t BeatmupInternalBitmapGetPixelFormat(chandle_t);
 const int BeatmupInternalBitmapGetWidth(chandle_t);
@@ -264,7 +264,7 @@ void BeatmupBitmapResamplerDestroy(handle_t);
 /* Beatmup::BitmapTools */
 handle_t BeatmupBitmapToolsMakeCopy1(handle_t source, beatmup_pixel_format_t newPixelFormat);
 handle_t BeatmupBitmapToolsMakeCopy2(handle_t source);
-handle_t BeatmupBitmapToolsChessboard(handle_t env, int width, int height, int cellSize, beatmup_pixel_format_t pixelFormat);
+handle_t BeatmupBitmapToolsChessboard(handle_t ctx, int width, int height, int cellSize, beatmup_pixel_format_t pixelFormat);
 void BeatmupBitmapToolsMakeOpaque(handle_t, beatmup_int_rectangle_t);
 void BeatmupBitmapToolsInvert(handle_t input, handle_t output);
 
@@ -460,7 +460,7 @@ handle_t BeatmupSceneRendererPickLayer(chandle_t, float x, float y, bool normali
 void BeatmupSceneRendererSetRenderingEventListener(handle_t, handle_t eventListener);
 
 /* Beatmup::ImageShader */
-void BeatmupImageShaderCreate(handle_t *, handle_t env);
+void BeatmupImageShaderCreate(handle_t *, handle_t ctx);
 void BeatmupImageShaderDestroy(handle_t);
 void BeatmupImageShaderSetSourceCode1(handle_t, const char* sourceCode);
 void BeatmupImageShaderPrepare(handle_t, handle_t gpu, handle_t input, handle_t output, chandle_t mapping);

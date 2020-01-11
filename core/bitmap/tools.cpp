@@ -43,10 +43,10 @@ template<class writer> inline void renderChessboard(writer out, int width, int h
 
 
 AbstractBitmap* BitmapTools::makeCopy(AbstractBitmap& source, PixelFormat newPixelFormat) {
-    AbstractBitmap* copy = new Beatmup::InternalBitmap(source.getEnvironment(), newPixelFormat, source.getWidth(), source.getHeight());
+    AbstractBitmap* copy = new Beatmup::InternalBitmap(source.getContext(), newPixelFormat, source.getWidth(), source.getHeight());
     BitmapConverter converter;
     converter.setBitmaps(&source, copy);
-    source.getEnvironment().performTask(converter);
+    source.getContext().performTask(converter);
     return copy;
 }
 
@@ -56,10 +56,10 @@ AbstractBitmap* BitmapTools::makeCopy(AbstractBitmap& source) {
 }
 
 
-AbstractBitmap* BitmapTools::chessboard(Environment& env, int width, int height, int cellSize, PixelFormat pixelFormat) {
+AbstractBitmap* BitmapTools::chessboard(Context& ctx, int width, int height, int cellSize, PixelFormat pixelFormat) {
     RuntimeError::check(cellSize > 0, "Chessboard cell size must be positive");
     RuntimeError::check(AbstractBitmap::isMask(pixelFormat), "Mask pixel formats are supported only");
-    BitmapPtr chess = new Beatmup::InternalBitmap(env, pixelFormat, width, height);
+    BitmapPtr chess = new Beatmup::InternalBitmap(ctx, pixelFormat, width, height);
     chess->lockPixels(ProcessingTarget::CPU);
     switch (pixelFormat) {
     case BinaryMask:

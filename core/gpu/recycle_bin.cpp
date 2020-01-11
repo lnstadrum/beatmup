@@ -39,7 +39,7 @@ public:
 };
 
 
-RecycleBin::RecycleBin(Environment& env) : env(env)
+RecycleBin::RecycleBin(Context& ctx) : ctx(ctx)
 {
     recycler = new Recycler(items);
 }
@@ -60,6 +60,6 @@ void RecycleBin::put(RecycleBin::Item* item) {
 void RecycleBin::emptyBin() {
     lock();
     if (items.size() > 0)
-        env.performTask(*recycler);
+        ctx.performTask(*recycler);
     unlock();
 }

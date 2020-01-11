@@ -1,5 +1,5 @@
 /*
-    Beatmup environment
+    Beatmup context
 */
 
 #pragma once
@@ -20,8 +20,8 @@ namespace Beatmup {
     /**
         Basic class: task and memory management, any kind of static data
     */
-    class Environment : public Object {
-        Environment(const Environment&) = delete;	//!< disabling copying constructor
+    class Context : public Object {
+        Context(const Context&) = delete;	//!< disabling copying constructor
     private:
         class Impl;
         Impl* impl;
@@ -73,25 +73,25 @@ namespace Beatmup {
         */
         class Mem {
         private:
-            Environment& env;
+            Context& ctx;
             const memchunk mem;
             const bool garbage;
             void* data;
         public:
-            Mem(Environment& env, memchunk mem, bool garbageAfterRelease = false):
-                env(env), mem(mem), garbage(garbageAfterRelease)
+            Mem(Context& ctx, memchunk mem, bool garbageAfterRelease = false):
+                ctx(ctx), mem(mem), garbage(garbageAfterRelease)
             {
-                data = env.acquireMemory(mem);
+                data = ctx.acquireMemory(mem);
             }
             ~Mem() {
-                env.releaseMemory(mem, garbage);
+                ctx.releaseMemory(mem, garbage);
             }
             void* operator()() { return data; }
         };
 
-        Environment();
-        Environment(const PoolIndex numThreadPools, const char* swapFilePrefix, const char* swapFileSuffix);
-        ~Environment();
+        Context();
+        Context(const PoolIndex numThreadPools, const char* swapFilePrefix, const char* swapFileSuffix);
+        ~Context();
 
         /**
             Performs a given task.
@@ -191,7 +191,7 @@ namespace Beatmup {
 
         /**
             Performs swapping of allocated but not currently used memory on disk.
-            \param howMush	required memory size in bytes to free; the environment attempts to free at least the required size
+            \param howMush	required memory size in bytes to free; the context attempts to free at least the required size
             \return actual swapped memory size
         */
         msize swapOnDisk(msize howMuch);
@@ -218,7 +218,7 @@ namespace Beatmup {
 
         /**
             \internal
-            \return `true` if invoked from the environment managing thread
+            \return `true` if invoked from the context managing thread
         */
         bool isManagingThread() const;
 
@@ -234,7 +234,7 @@ namespace Beatmup {
         static msize getTotalRam();
 
         /**
-            \brief Initializes GPU within a given Environment.
+            \brief Initializes GPU within a given Context.
             GPU initialization may take some time and is done when a first task using GPU is being run. Warping up
             the GPU is useful to avoid the app get stucked for some time when it launches its first task on GPU.
         */

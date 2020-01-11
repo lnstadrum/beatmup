@@ -100,7 +100,7 @@ namespace Beatmup {
                 void perform(GraphicPipeline& gpu, GL::ComputeProgram& program, const int sliceIdx) const;
             public:
                 Convolution2D(
-                    Environment& env,
+                    Context& ctx,
                     const std::string& name,
                     const Size& inputSize,
                     const int outChannelsNum,

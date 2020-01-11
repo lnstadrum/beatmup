@@ -1,4 +1,4 @@
-#include "../environment.h"
+#include "../context.h"
 #include "../bitmap/converter.h"
 #include "../bitmap/bitmap_access.h"
 #include "../bitmap/mask_bitmap_access.h"
@@ -194,7 +194,7 @@ void BitmapConverter::convert(AbstractBitmap& input, AbstractBitmap& output) {
     BitmapConverter me;
     me.setBitmaps(&input, &output);
 
-    if (input.getEnvironment().isManagingThread()) {
+    if (input.getContext().isManagingThread()) {
         RuntimeError::check(input.getSize() == output.getSize(),
             "Input and output bitmap must be of the same size.");
 
@@ -203,5 +203,5 @@ void BitmapConverter::convert(AbstractBitmap& input, AbstractBitmap& output) {
 
     }
     else
-        input.getEnvironment().performTask(me);
+        input.getContext().performTask(me);
 }

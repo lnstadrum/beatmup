@@ -18,8 +18,8 @@ JNIMETHOD(jlong, newAudioSignal, Java_Beatmup_Audio_Signal, newAudioSignal)
     (JNIEnv * jenv, jclass, jobject jCtx, jint format, jint samplerate, jint channels, jfloat fragment)
 {
     BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Environment, env, jCtx);
-    return (jlong) new Beatmup::AudioSignal(*env, (Beatmup::AudioSampleFormat)format, samplerate, channels, fragment);
+    BEATMUP_OBJ(Beatmup::Context, ctx, jCtx);
+    return (jlong) new Beatmup::AudioSignal(*ctx, (Beatmup::AudioSampleFormat)format, samplerate, channels, fragment);
 }
 
 
@@ -32,9 +32,9 @@ JNIMETHOD(jlong, newAudioSignalFromWAV, Java_Beatmup_Audio_Signal, newAudioSigna
     jenv->ReleaseStringUTFChars(jsFilename, javaChar);
     // do the stuff then
     BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Environment, env, jCtx);
+    BEATMUP_OBJ(Beatmup::Context, ctx, jCtx);
     BEATMUP_CATCH({
-        return (jlong) Beatmup::AudioSignal::loadWAV(*env, filename.c_str());
+        return (jlong) Beatmup::AudioSignal::loadWAV(*ctx, filename.c_str());
     });
     return BeatmupJavaObjectPool::INVALID_HANDLE;
 }
@@ -44,7 +44,7 @@ JNIMETHOD(jlong, newAudioSignalSource, Java_Beatmup_Audio_Signal, newAudioSignal
     (JNIEnv * jenv, jclass, jobject jCtx, jlong handle)
 {
     BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Environment, env, jCtx);
+    BEATMUP_OBJ(Beatmup::Context, ctx, jCtx);
     BEATMUP_OBJ(Beatmup::AudioSignal, signal, handle);
     return (jlong) new Beatmup::AudioSignal::Source(*signal);
 }
@@ -166,7 +166,7 @@ JNIMETHOD(jlong, newPlayback, Java_Beatmup_Audio_Playback, newPlayback)
     (JNIEnv * jenv, jclass, jobject jCtx)
 {
     BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Environment, env, jCtx);
+    BEATMUP_OBJ(Beatmup::Context, ctx, jCtx);
     return (jlong) new Beatmup::Android::SLESPlayback();
 }
 
