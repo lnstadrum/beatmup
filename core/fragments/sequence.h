@@ -123,7 +123,7 @@ namespace Beatmup {
 				\param sequence		the thing to insert
 				\param time			the position
 			*/
-			virtual void insert(const Sequence& sequence, dtime time);
+			void insert(const Sequence& sequence, dtime time);
 
 			/**
 				Erases a part of a sequence between two given time moments

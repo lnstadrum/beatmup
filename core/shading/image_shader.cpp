@@ -26,11 +26,11 @@ bool str_replace(std::string& str, const std::string& from, const std::string& t
 
 ImageShader::ImageShader(Environment& env) :
 	env(env),
-	fragmentShaderReady(false),
-	sourceCode(),
-	fragmentShader(nullptr),
 	program(nullptr),
-	inputFormat(GL::TextureHandler::TextureFormat::RGBx8)
+    fragmentShader(nullptr),
+    sourceCode(),
+    inputFormat(GL::TextureHandler::TextureFormat::RGBx8),
+    fragmentShaderReady(false)
 {}
 
 

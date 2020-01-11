@@ -3,7 +3,7 @@
 using namespace Beatmup;
 
 RenderingContext::RenderingContext(GraphicPipeline& gpu, EventListener* eventListener, const float outputWidth, const bool renderingOnScreen) :
-	gpu(gpu), eventListener(eventListener), cameraFrame(nullptr), outputWidth(outputWidth), renderingOnScreen(renderingOnScreen)
+	eventListener(eventListener), outputWidth(outputWidth), renderingOnScreen(renderingOnScreen), gpu(gpu)
 {
 	mapping.setIdentity();
 }

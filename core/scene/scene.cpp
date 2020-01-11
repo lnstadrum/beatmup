@@ -157,16 +157,16 @@ Scene::Layer& Scene::getLayer(int index) const {
 
 Scene::Layer* Scene::getLayer(float x, float y, unsigned int recursionDepth) const {
     for (auto it = layers.crbegin(); it != layers.crend(); it++)
-		if (!(*it)->isPhantom())
+		if (!(*it)->isPhantom()) {
 			if ((*it)->getType() == Scene::Layer::Type::SceneLayer) {
-				Layer* result = (*it)->getChild(x, y, recursionDepth + 1);
+				Layer *result = (*it)->getChild(x, y, recursionDepth + 1);
 				if (result)
 					return result;
-			}
-			else {
+			} else {
 				if ((*it)->testPoint(x, y))
 					return *it;
 			}
+		}
 	return nullptr;
 }
 
@@ -218,7 +218,7 @@ Scene::Layer* Scene::detachLayer(int index) {
 }
 
 
-Scene::Layer::Layer(Type type) : type(type), visible(true), phantom(false) {}
+Scene::Layer::Layer(Type type) : visible(true), phantom(false), type(type) {}
 
 bool Scene::Layer::testPoint(float x, float y) const {
 	return mapping.isPointInside(Point(x, y));
@@ -376,7 +376,7 @@ bool Scene::MaskedBitmapLayer::testPoint(float x, float y) const {
 
 Scene::ShapedBitmapLayer::ShapedBitmapLayer() :
 	CustomMaskedBitmapLayer(Type::ShapedBitmapLayer),
-	slopeWidth(0), borderWidth(0), cornerRadius(0), inPixels(true)
+	borderWidth(0), slopeWidth(0), cornerRadius(0), inPixels(true)
 {}
 
 

@@ -1,4 +1,4 @@
-#include <core/debug.h>
+#include "../../debug.h"
 #include "abstract_playback.h"
 
 using namespace Beatmup;

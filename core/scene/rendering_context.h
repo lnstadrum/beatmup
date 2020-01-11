@@ -18,16 +18,10 @@ namespace Beatmup {
 		class EventListener {
 		public:
 			virtual void onRenderingStart() = 0;
-
-			/**
-				Called once per rendering session just before the camera frame is going to be rendered
-			*/
-			virtual void onCameraFrameRendering(GL::TextureHandler*& cameraFrame) = 0;
 		};
 
 	private:
 		std::map<BitmapPtr, int> lockedBitmaps;		//!< all the locked bitmaps with reference counters
-		GL::TextureHandler* cameraFrame;
 		EventListener* eventListener;
 		AffineMapping mapping;
 

@@ -318,7 +318,7 @@ void Sequence::split(int time, Sequence* left, Sequence* right) {
 
 
 
-Sequence::Pointer::Pointer(Sequence& sequence, dtime time, bool writing) : sequence(sequence), writing(writing), watching(false) {
+Sequence::Pointer::Pointer(Sequence& sequence, dtime time, bool writing) : writing(writing), watching(false), sequence(sequence) {
 	if (0 <= time && time < sequence.cumTimes[1]) {
 		// an heuristic to start quickly
 		if (writing)

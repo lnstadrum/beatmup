@@ -28,7 +28,7 @@ void ShaderApplicator::afterProcessing(ThreadIndex threadCount, bool aborted) {
 
 
 ShaderApplicator::ShaderApplicator():
-	input(nullptr), output(nullptr), shader(nullptr)
+	shader(nullptr), input(nullptr), output(nullptr)
 {}
 
 

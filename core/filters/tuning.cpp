@@ -31,7 +31,7 @@ public:
 
 Filters::ImageTuning::ImageTuning() :
 	hueOffset(0), saturationFactor(1), valueFactor(1),
-	brightness(0), contrast(1)
+	contrast(1), brightness(0)
 {}
 
 

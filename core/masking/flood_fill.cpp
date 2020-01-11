@@ -7,7 +7,7 @@ using namespace Beatmup;
 
 
 FloodFill::FloodFill():
-	input(NULL), output(NULL), borderMorphology(NONE), maskPos(0, 0), tolerance(0), borderHold(0), borderRelease(0), computeContours(false), bounds(0,0,0,0)
+	input(nullptr), output(nullptr), maskPos(0, 0), bounds(0,0,0,0), borderMorphology(NONE), tolerance(0), borderHold(0), borderRelease(0), computeContours(false)
 {}
 
 
@@ -92,6 +92,7 @@ bool FloodFill::process(TaskThread& thread) {
 			BitmapProcessing::writeToMask<CircularErosion>(*output, 0, 0, border, 255, borderHold, borderRelease);
 			bounds.grow(-(int) floorf(borderHold));
 			break;
+        default: break;
 		}
 
 	// updating bounds and merging contours

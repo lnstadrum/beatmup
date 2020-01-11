@@ -223,7 +223,7 @@ bool SceneRenderer::process(TaskThread& thread) {
 
 
 SceneRenderer::SceneRenderer():
-	scene(nullptr), output(nullptr), background(nullptr),
+	scene(nullptr), background(nullptr), output(nullptr),
 	outputMapping(FIT_WIDTH_TO_TOP),
 	referenceWidth(0),
 	outputPixelsFetching(false),

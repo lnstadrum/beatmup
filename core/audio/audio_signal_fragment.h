@@ -38,7 +38,7 @@ namespace Beatmup {
 			DynamicsLookup(const DynamicsLookup&) = delete;		//!< disabling copying constructor
 
 		public:
-			DynamicsLookup() : size(0), step(0), stepTime(0), minmax(NULL), prev(NULL), channelCount(0) {}
+			DynamicsLookup() : prev(nullptr), minmax(nullptr), channelCount(0), size(0), step(0), stepTime(0) {}
 			~DynamicsLookup();
 
 			/**

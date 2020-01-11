@@ -19,9 +19,11 @@ class ThreadPool {
     public:
         inline TaskThreadImpl(ThreadIndex current, ThreadPool& pool) :
                 TaskThread(current),
-                current(current), pool(pool), terminateFlag(false), running(false), syncPointIdx(0),
+                pool(pool), current(current), syncPointIdx(0), running(false), terminateFlag(false),
                 internalThread(&TaskThreadImpl::threadFunc, this)
         {}
+
+        virtual inline ~TaskThreadImpl() {}
 
 
         /**
@@ -389,7 +391,6 @@ private:
             abortExternally,		//!< if `true`, the task is aborted externally
             abortInternally,        //!< if `true`, the task aborts itself
             failFlag,				//!< communicates to all the threads that the current task is to skip because of a problem
-            runFlag,				//!< while `true`, the task will be repeated once it stops
             repeatFlag;				//!< if `true`, the current task is asked to be repeated
 
     EventListener& eventListener;
@@ -398,13 +399,16 @@ public:
     const PoolIndex myIndex;		//!< the index of the current pool
 
     inline ThreadPool(const PoolIndex index, const ThreadIndex limitThreadCount, EventListener& listener) :
-            myIndex(index),
-			jobCounter(1),
+            gpu(nullptr),
+            jobCounter(1),
             threadCount(limitThreadCount),
-            failFlag(false), abortExternally(false), abortInternally(false), repeatFlag(false),
-            currentWorkerCount(0), remainingWorkers(0), syncHits(0), syncPointCtr(0),
-            gpu(nullptr), isGpuTested(false),
-            eventListener(listener)
+            currentWorkerCount(0), remainingWorkers(0),
+            syncHits(0), syncPointCtr(0),
+            isGpuTested(false),
+            abortExternally(false), abortInternally(false),
+            failFlag(false), repeatFlag(false),
+            eventListener(listener),
+            myIndex(index)
     {
         workers = new TaskThreadImpl*[threadCount];
         // spawning workers

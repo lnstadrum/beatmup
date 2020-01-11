@@ -545,7 +545,11 @@ namespace Beatmup {
 	typedef CustomPoint<int> IntPoint;
 	typedef CustomRectangle<int> IntRectangle;
 
-	/**
+    template<> const Point Point::ZERO;
+    template<> const IntPoint IntPoint::ZERO;
+
+
+    /**
 		2x3 affine mapping regrouping Matrix2 and Point
 	*/
 	class AffineMapping {
