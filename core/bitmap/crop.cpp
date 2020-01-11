@@ -41,7 +41,7 @@ public:
 };
 
 
-Crop::Crop() : cropRect(0, 0, 0, 0), outOrigin(0, 0)
+Crop::Crop() : outOrigin(0, 0), cropRect(0, 0, 0, 0)
 {}
 
 

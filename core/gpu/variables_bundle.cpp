@@ -18,7 +18,7 @@ VariablesBundle::MatrixParameter& VariablesBundle::MatrixParameter::operator=(Va
 
 
 VariablesBundle::MatrixParameter::MatrixParameter():
-	width(0), height(0), count(0), data(nullptr), type(MatrixParameter::Type::UNDEFINED)
+	data(nullptr), width(0), height(0), count(0), type(MatrixParameter::Type::UNDEFINED)
 {}
 
 

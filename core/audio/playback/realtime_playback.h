@@ -4,9 +4,9 @@
 #pragma once
 
 #include "abstract_playback.h"
+#include "../../debug.h"
 #include <mutex>
 #include <malloc.h>
-#include <core/debug.h>
 
 namespace Beatmup {
     namespace Audio {

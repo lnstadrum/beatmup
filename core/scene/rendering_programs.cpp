@@ -174,12 +174,6 @@ static const char
 		"#endif\n";
 
 
-
-static const int
-	MASK_TEXTURE_UNIT = 3,
-	MASK_LOOKUP_TEXTURE_UNIT = 2;
-
-
 using namespace Beatmup;
 
 
@@ -200,7 +194,7 @@ private:
 	bool vertexAttrBufSet, maskLookupsSet;
 
 public:
-	Backend() : maskLookupsSet(false), vertexAttrBufSet(false) {}
+	Backend() : vertexAttrBufSet(false), maskLookupsSet(false) {}
 	~Backend() {}
 
 
@@ -320,10 +314,12 @@ GL::VertexShader& RenderingPrograms::getVertexShader(const GraphicPipeline* gpu,
 	case Program::MASKED_8BIT_BLEND_EXT:
 	case Program::SHAPED_BLEND_EXT:
 		return emplace(map, Program::MASKED_BLEND, gpu, VERTEX_SHADER_BLENDMASK);
-
 	default:
 		Insanity::insanity("Invalid vertex shader type encountered");
 	}
+
+	// never happens
+	return emplace(map, Program::BLEND, gpu, "");
 }
 
 
@@ -362,6 +358,9 @@ GL::FragmentShader& RenderingPrograms::getFragmentShader(const GraphicPipeline* 
 	default:
 		Insanity::insanity("Invalid vertex shader type encountered");
 	}
+
+	// never happens
+	return emplace(map, Program::BLEND, gpu, "");
 }
 
 
@@ -391,6 +390,7 @@ void RenderingPrograms::enableProgram(GraphicPipeline* gpu, Program program) {
 	case Program::MASKED_8BIT_BLEND:
 	case Program::MASKED_8BIT_BLEND_EXT:
 		glProgram.setInteger("mask", TextureUnits::MASK);
+	default: break;
 	}
 	maskSetUp = false;
 }

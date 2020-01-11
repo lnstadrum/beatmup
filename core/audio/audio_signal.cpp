@@ -17,9 +17,9 @@ AudioSignal* AudioSignal::createEmpty() const {
 AudioSignal::AudioSignal(Environment& env, AudioSampleFormat format, int sampleRate, unsigned char channels, float defaultFragmentLenSec) :
 	env(env),
 	format(format),
+	defaultFragmentSize(floorf_fast(defaultFragmentLenSec * sampleRate)),
 	sampleRate(sampleRate),
-	channelCount(channels),
-	defaultFragmentSize(floorf_fast(defaultFragmentLenSec * sampleRate))
+	channelCount(channels)
 {
 	BEATMUP_ASSERT_DEBUG(defaultFragmentSize > 0);
 }
@@ -356,10 +356,10 @@ void AudioSignal::Source::render(
 
 
 AudioSignal::IncompatibleFormat::IncompatibleFormat(const AudioSignal& source, const AudioSignal& dest):
-	sourceFormat(source.getSampleFormat()), destFormat(dest.getSampleFormat()), sourceChannelCount(source.getChannelCount()), destChannelCount(dest.getChannelCount()),
 	Exception(
-		"Incompatible format: %s @ %d channels vs <-> %s @ %d channels",
-		AUDIO_FORMAT_NAME[sourceFormat], sourceChannelCount,
-		AUDIO_FORMAT_NAME[destFormat], destChannelCount
-	)
+			"Incompatible format: %s @ %d channels vs <-> %s @ %d channels",
+			AUDIO_FORMAT_NAME[source.getSampleFormat()], source.getChannelCount(),
+			AUDIO_FORMAT_NAME[dest.getSampleFormat()], dest.getChannelCount()
+	),
+	sourceFormat(source.getSampleFormat()), destFormat(dest.getSampleFormat()), sourceChannelCount(source.getChannelCount()), destChannelCount(dest.getChannelCount())
 {}

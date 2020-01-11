@@ -34,6 +34,7 @@ namespace Beatmup {
 		protected:
 			Shader(const GraphicPipeline& gpu, const uint32_t type);
 			inline glhandle getHandle() const { return handle; }
+			inline uint32_t getType() const { return type; }
 			void assertCompiled() const;
 		public:
 			~Shader();

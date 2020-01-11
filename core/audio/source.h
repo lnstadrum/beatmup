@@ -71,7 +71,7 @@ namespace Beatmup {
             float amplitude, frequency, phase;
             unsigned char numChannels;
         public:
-            HarmonicSource() : frequency(800), phase(0), amplitude(0.05) {}
+            HarmonicSource() : amplitude(0.05), frequency(800), phase(0) {}
 
             void setFrequency(float hz) { frequency = hz; }
             float getFrequency() const { return frequency; }

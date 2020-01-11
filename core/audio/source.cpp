@@ -1,7 +1,7 @@
 #include "source.h"
 #include "../exception.h"
+#include "../debug.h"
 #include <cmath>
-#include <core/debug.h>
 
 using namespace Beatmup;
 using namespace Audio;

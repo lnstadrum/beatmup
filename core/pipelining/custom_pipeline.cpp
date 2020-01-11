@@ -21,7 +21,7 @@ public:
         measured(false)
     {}
 
-	~Impl() {
+	virtual ~Impl() {
 		// destroying taskholders
 		for (auto task : tasks)
 			delete task;
@@ -130,6 +130,8 @@ public:
                 case ExecutionTarget::useGPUIfAvailable:
                     if (executionMode == ExecutionTarget::doNotUseGPU)
                         executionMode = ExecutionTarget::useGPUIfAvailable;
+                    break;
+                default:
                     break;
             }
             it->threadCount = it->getTask().maxAllowedThreads();

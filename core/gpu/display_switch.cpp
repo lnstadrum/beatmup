@@ -23,7 +23,7 @@ AbstractTask::ExecutionTarget DisplaySwitch::getExecutionTarget() const {
 }
 
 
-DisplaySwitch::DisplaySwitch() : gpuIsOk(false), switchingData(NULL) {}
+DisplaySwitch::DisplaySwitch() : switchingData(nullptr), gpuIsOk(false) {}
 
 
 bool DisplaySwitch::run(Environment& env, void* switchingData) {
