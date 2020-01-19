@@ -2,9 +2,9 @@
 #include "audio_signal_fragment.h"
 #include "processing.h"
 #include "wav_utilities.h"
+#include "../utils/file_input_stream.h"
 #include "../exception.h"
 #include <algorithm>
-#include <fstream>
 
 using namespace Beatmup;
 
@@ -44,29 +44,32 @@ void AudioSignal::reserve(dtime length) {
 
 AudioSignal* AudioSignal::loadWAV(Context& ctx, const char* filename) {
     // open file
-    std::ifstream file(filename, std::ifstream::in | std::ifstream::binary);
-    if (!file.is_open())
+    FileInputStream stream(filename);
+    if (!stream.isOpen())
         throw IOError(filename, "Unable to open for reading");
+    return AudioSignal::loadWAV(ctx, stream);
+}
 
+AudioSignal *AudioSignal::loadWAV(Context &ctx, InputStream& stream) {
     // read header
     WAV::WavHeader header;
-    file.read((char*)&header, sizeof(header));
+    stream(&header, sizeof(header));
     WAV::InvalidWavFile::check(header);
 
     // get sample format
     AudioSampleFormat format;
     switch (header.bitsPerSample) {
-    case 8:
-        format = Int8;
-        break;
-    case 16:
-        format = Int16;
-        break;
-    case 32:
-        format = Int32;
-        break;
-    default:
-        throw WAV::InvalidWavFile("Incorrect WAV file: unsupported BPS");
+        case 8:
+            format = Int8;
+            break;
+        case 16:
+            format = Int16;
+            break;
+        case 32:
+            format = Int32;
+            break;
+        default:
+            throw WAV::InvalidWavFile("Incorrect WAV file: unsupported BPS");
     }
 
     // check number of channels (insanity check, basically)
@@ -80,12 +83,10 @@ AudioSignal* AudioSignal::loadWAV(Context& ctx, const char* filename) {
 
     // read data using pointer
     Writer pointer(*signal, 0);
-    while (pointer.hasData() && !file.eof()) {
-        if (file.fail())
-            throw IOError(filename, "Failed while reading");
+    while (pointer.hasData() && !stream.eof()) {
         void* data;
         dtime length = pointer.acquireBuffer(data);
-        file.read((char*)data, length * header.numChannels * AUDIO_SAMPLE_SIZE[format]);
+        stream(data, length * header.numChannels * AUDIO_SAMPLE_SIZE[format]);
         pointer.releaseBuffer();
         pointer.jump(length);
     }
