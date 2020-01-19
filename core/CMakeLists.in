@@ -63,11 +63,15 @@ set(BEATMUP_SOURCES
     ${BEATMUP_SRC_DIR}/shading/shader_applicator.cpp
     ${BEATMUP_SRC_DIR}/utils/bmp_file.cpp
     ${BEATMUP_SRC_DIR}/utils/chunkfile.cpp
+    ${BEATMUP_SRC_DIR}/utils/file_input_stream.cpp
     ${BEATMUP_SRC_DIR}/utils/image_resolution.cpp
     ${BEATMUP_SRC_DIR}/utils/profiler.cpp
     ${BEATMUP_SRC_DIR}/utils/progress_tracking.cpp
     ${BEATMUP_SRC_DIR}/utils/string_builder.cpp
 )
+if (PLATFORM_ANDROID)
+    set(BEATMUP_SOURCES ${BEATMUP_SOURCES} ${BEATMUP_SRC_DIR}/utils/android/asset.cpp)
+endif()
 
 if (PROFILE_NNETS)
     set(BEATMUP_SOURCES ${BEATMUP_SOURCES}

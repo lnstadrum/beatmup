@@ -3,6 +3,7 @@
 #include "../context.h"
 #include "sample_arithmetic.h"
 #include "source.h"
+#include "../utils/input_stream.h"
 
 namespace Beatmup {
 
@@ -178,6 +179,7 @@ namespace Beatmup {
         void saveWAV(const char* filename);
 
         static AudioSignal* loadWAV(Context& ctx, const char* fileName);
+        static AudioSignal* loadWAV(Context& ctx, InputStream& inputStream);
 
         unsigned char getChannelCount() const { return channelCount; }
         AudioSampleFormat getSampleFormat() const { return format; }
