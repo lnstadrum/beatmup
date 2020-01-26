@@ -6,27 +6,29 @@
 #include "../realtime_playback.h"
 
 namespace Beatmup {
-    namespace Android {
+    namespace Audio {
+        namespace Android {
 
-        class SLESPlayback : public Beatmup::Audio::BasicRealtimePlayback {
-        protected:
-            class SLESBackend;
+            class SLESPlayback : public Beatmup::Audio::BasicRealtimePlayback {
+            protected:
+                class SLESBackend;
 
-            SLESBackend *backend;
+                SLESBackend *backend;
 
-            void enqueueBuffer(psample *buffa, int bufferIndex);
+                void pushBuffer(sample8 *buffer, int bufferIndex);
 
-        public:
-            SLESPlayback();
+            public:
+                SLESPlayback();
 
-            ~SLESPlayback();
+                ~SLESPlayback();
 
-            void initialize(Mode mode);
+                void initialize(Mode mode);
 
-            void start();
+                void start();
 
-            void stop();
-        };
+                void stop();
+            };
 
+        }
     }
 }

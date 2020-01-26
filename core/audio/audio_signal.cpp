@@ -347,7 +347,7 @@ void AudioSignal::Source::setClock(dtime time) {
 
 void AudioSignal::Source::render(
     TaskThread& thread,
-    psample* buffer,
+    sample8* buffer,
     const dtime bufferLength
 ) {
     Reader ptr(*signal, time);

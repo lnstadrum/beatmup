@@ -137,7 +137,7 @@ namespace Beatmup {
 
             void render(
                 TaskThread& thread,
-                psample* buffer,
+                sample8* buffer,
                 const dtime bufferLength
             );
         };

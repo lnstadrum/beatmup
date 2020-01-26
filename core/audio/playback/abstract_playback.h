@@ -34,6 +34,11 @@ namespace Beatmup {
                 Mode(dtime sampleRate, AudioSampleFormat format, int numChannels, dtime bufferLength, int numBuffers);
                 Mode(dtime sampleRate, AudioSampleFormat format, int numChannels, dtime bufferLength);
                 Mode();
+
+                /**
+                 * @return mode latency in samples
+                 */
+                inline dtime getLatency() const { return bufferLength * numBuffers; }
             };
 
         protected:
@@ -60,8 +65,8 @@ namespace Beatmup {
 
         class PlaybackException : public Exception {
         public:
-            PlaybackException(const char *message, unsigned int resultCode);
-            PlaybackException(const char *message, unsigned int resultCode, const AbstractPlayback::Mode& mode);
+            PlaybackException(const char *message, int resultCode);
+            PlaybackException(const char *message, int resultCode, const AbstractPlayback::Mode& mode);
         };
     }
 }

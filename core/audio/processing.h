@@ -6,7 +6,7 @@ namespace Beatmup {
     namespace AudioProcessing {
 
         template<template<typename, typename> class Func, typename... Args>
-        inline void pipeline(const AudioSampleFormat inFormat, const AudioSampleFormat outFormat, const psample* input, psample* output, Args&&... args) {
+        inline void pipeline(const AudioSampleFormat inFormat, const AudioSampleFormat outFormat, const sample8* input, sample8* output, Args&&... args) {
 
 #define WRITING(IN_T)  \
             switch (outFormat) { \

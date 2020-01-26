@@ -12,15 +12,27 @@ namespace Beatmup {
     namespace Audio {
 
         class BasicRealtimePlayback : public AbstractPlayback {
+        protected:
+            /**
+             * The way the output audio signal is handled by the audio backend.
+             */
+            enum class OutputMode {
+                PULL,       //!< The output is requested by pullOutput(..) called by the audio backend.
+                PUSH,       //!< The output is sent to pushOutput(..) called by the rendering thread.
+            };
         private:
-            psample** buffers;      //<! buffers containing the data to play
+            const OutputMode outputMode;
+
+            sample8** buffers;          //!< buffers containing the data to play
             int numBuffers;
-            bool underrun;          //!< becomes true when underrun occurs
-            unsigned int
+            int
                     fillIndex,          //!< points to the buffer currently being filled
                     sendIndex,          //!< points to the first buffer ready for playing
                     playIndex;          //!< points to the buffer currently being played; updated only in the callback
-            std::mutex queueAccess;
+
+            dtime playingBufferOffset;     //!< when pulling output, offset in frames with respect to the currently playing buffer
+            dtime skipFrames;              //!< when pulling output, number of frames to skip to give some time to the rendering process
+
             /*
                       playIndex ----> sendIndex ----> fillIndex
                                   |               |
@@ -41,39 +53,42 @@ namespace Beatmup {
              */
             void freeBuffers();
 
+
         protected:
+            BasicRealtimePlayback(OutputMode);
+
             msize bufferSize;       //!< size of each buffer in bytes
 
             /**
              * Creates an atomic playing buffer
              * \param mode      the playback mode
              */
-            virtual psample* createBuffer(const AbstractPlayback::Mode& mode) const;
+            virtual sample8* createBuffer(const AbstractPlayback::Mode& mode) const;
 
             /**
              * Frees an atomic playing buffer
              */
-            virtual void freeBuffer(psample* buffa) const;
+            virtual void freeBuffer(sample8* buffer) const;
 
 
             /**
-             * Puts the buffer to send to the queue unconditionally
+             * Pushes some data to the output
              */
-            virtual void enqueueBuffer(psample *buffa, int bufferIndex) = 0;
+            virtual void pushBuffer(sample8 *buffer, int bufferIndex) {};
 
 
         public:
-            BasicRealtimePlayback();
-            ~BasicRealtimePlayback();
+            virtual ~BasicRealtimePlayback();
 
             void initialize(Mode mode);
+
             bool process(TaskThread& thread);
 
 
             /**
              * Starts playback
              */
-            virtual void start() = 0;
+            virtual void start();
 
 
             /**
@@ -82,36 +97,21 @@ namespace Beatmup {
             virtual void stop() = 0;
 
 
-            /**
-             * Returns the address of the buffer currently available for filling. If there is no such
-             * buffer available, returns null.
-             */
-            psample* getCurrentBuffer() const;
-
-
-            /**
-             * Switches the current buffer being filled to the next one, if possible.
-             * \returns `true` if possible.
-             */
-            bool goToNextBuffer();
-
-
-            /**
-             * Sends a filled buffer to the playing queue, if available.
-             * \return `true` if sent.
-             */
-            bool sendNextBuffer();
-
-
             inline void bufferQueueCallbackFunc() {
                 // a buffer is played, step forward
-                BEATMUP_DEBUG_I("Buffer played: %d", playIndex);
+                //BEATMUP_DEBUG_I("Buffer played: %d", playIndex);
                 playIndex++;
-                // send as many buffas as we can
-                while (sendNextBuffer()) {}
                 // check for underrun
-                underrun = (playIndex >= sendIndex);
+                //underrun = (playIndex >= sendIndex);
             }
+
+
+            /**
+             * Called in pulling output mode to send data to output.
+             * \param buffer        Pointer to a buffer to put data to
+             * \param numFrames     Number of "frames" (samples per single channel) to put to the buffer
+             */
+            void pullBuffer(sample8 *buffer, dtime numFrames);
         };
 
     }
