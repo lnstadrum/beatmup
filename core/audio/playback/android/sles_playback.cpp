@@ -6,6 +6,7 @@
 #include <SLES/OpenSLES_Android.h>
 
 using namespace Beatmup;
+using namespace Audio;
 using namespace Android;
 
 
@@ -85,7 +86,7 @@ public:
                 (SLuint32) mode.sampleRate * 1000,      //in "milliHertz"
                 (SLuint32) AUDIO_SAMPLE_SIZE[mode.sampleFormat] *8,
                 (SLuint32) AUDIO_SAMPLE_SIZE[mode.sampleFormat] *8,
-                0,
+                SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT,
                 SL_BYTEORDER_LITTLEENDIAN
         };
         SLDataSource audioSrc = {&bufferQueueConfig, &formatConfig};
@@ -135,7 +136,7 @@ public:
     }
 
 
-    inline void enqueueBuffer(psample *buffa) {
+    inline void pushBuffer(sample8 *buffa) {
         (*bufferQueueObj)->Enqueue(bufferQueueObj, buffa, bufferSize);
     }
 };
@@ -145,7 +146,7 @@ void playerCallback(SLAndroidSimpleBufferQueueItf queue, void *data) {
     ((Audio::BasicRealtimePlayback*)data)->bufferQueueCallbackFunc();
 }
 
-SLESPlayback::SLESPlayback() {
+SLESPlayback::SLESPlayback() : BasicRealtimePlayback(OutputMode::PUSH) {
     backend = new SLESBackend();
 }
 
@@ -159,6 +160,7 @@ void SLESPlayback::initialize(Mode mode) {
 }
 
 void SLESPlayback::start() {
+    BasicRealtimePlayback::start();
     backend->start();
 }
 
@@ -166,8 +168,8 @@ void SLESPlayback::stop() {
     backend->stop();
 }
 
-void SLESPlayback::enqueueBuffer(psample *buffa, int bufferIndex) {
-    backend->enqueueBuffer(buffa);
+void SLESPlayback::pushBuffer(sample8 *buffer, int bufferIndex) {
+    backend->pushBuffer(buffer);
 }
 
 #endif

@@ -34,9 +34,9 @@ add_library(beatmup SHARED ${BEATMUP_SOURCES})
 find_library(path_m            m)
 find_library(path_android      android)
 find_library(path_log          log)
-find_library(path_jnigraphics  jnigraphics)
 if (PROFILE_AUDIO)
     find_library(path_OpenSLES OpenSLES)
+    find_library(path_AAudio aaudio)
 endif()
 
 # platform-specific defines
@@ -51,9 +51,8 @@ target_link_libraries(beatmup
     ${path_m}
     ${path_android}
     ${path_log}
-    ${path_jnigraphics}
 )
 
 if (PROFILE_AUDIO)
-    target_link_libraries(beatmup ${path_OpenSLES})
+    target_link_libraries(beatmup ${path_OpenSLES} ${path_AAudio})
 endif()

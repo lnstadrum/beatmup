@@ -20,7 +20,6 @@ namespace Beatmup {
     struct sample16;
     struct sample32;
     struct sample32f;
-    typedef sample8* psample;
 
     struct sample8 {
         signed char x;

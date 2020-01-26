@@ -55,7 +55,7 @@ namespace Beatmup {
              */
             virtual void render(
                     TaskThread& thread,
-                    psample* buffer,
+                    sample8* buffer,
                     const dtime bufferLength
             ) = 0;
         };
@@ -91,7 +91,7 @@ namespace Beatmup {
 
             void render(
                     TaskThread& thread,
-                    psample* buffer,
+                    sample8* buffer,
                     const dtime bufferLength
             );
 

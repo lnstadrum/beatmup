@@ -5,7 +5,7 @@ using namespace Beatmup;
 using namespace Audio;
 
 
-BasicRealtimePlayback::BasicRealtimePlayback(): buffers(nullptr)
+BasicRealtimePlayback::BasicRealtimePlayback(OutputMode mode): outputMode(mode), buffers(nullptr)
 {}
 
 
@@ -27,53 +27,21 @@ void BasicRealtimePlayback::freeBuffers() {
 void BasicRealtimePlayback::prepareBuffers(const AbstractPlayback::Mode& mode) {
     freeBuffers();
     numBuffers = mode.numBuffers;
-    buffers = new psample*[numBuffers];
+    buffers = new sample8*[numBuffers];
     for (int i = 0; i < numBuffers; i++)
         buffers[i] = createBuffer(mode);
 }
 
 
-psample* BasicRealtimePlayback::createBuffer(const AbstractPlayback::Mode& mode) const {
-    psample* buffa = (psample*) malloc(bufferSize);
-    std::memset(buffa, 0, bufferSize);
-    return buffa;
+sample8* BasicRealtimePlayback::createBuffer(const AbstractPlayback::Mode& mode) const {
+    sample8* buffer = (sample8*) malloc(bufferSize);
+    std::memset(buffer, 0, bufferSize);
+    return buffer;
 }
 
 
-void BasicRealtimePlayback::freeBuffer(psample* buffa) const {
-    free(buffa);
-}
-
-
-bool BasicRealtimePlayback::sendNextBuffer() {
-    std::lock_guard<std::mutex> lock(queueAccess);
-    if (sendIndex >= fillIndex)
-        return false;
-    BEATMUP_DEBUG_I("Enqueueing buffer %d", sendIndex);
-    enqueueBuffer(buffers[sendIndex % numBuffers], sendIndex);
-    sendIndex++;
-    underrun = false;
-    return true;
-}
-
-
-psample *BasicRealtimePlayback::getCurrentBuffer() const {
-    if (!underrun && (fillIndex - playIndex) % numBuffers == 0)
-        return nullptr;
-    return buffers[fillIndex % numBuffers];
-}
-
-
-bool BasicRealtimePlayback::goToNextBuffer() {
-    if (!underrun && (fillIndex - playIndex) % numBuffers == 0)
-        return false;
-    fillIndex++;
-    BEATMUP_DEBUG_I("goToNextBuffer: fillIndex = %d", fillIndex);
-    advanceTime();
-    // if underrun, to continue playing we have to send something
-    if (underrun)
-        sendNextBuffer();
-    return true;
+void BasicRealtimePlayback::freeBuffer(sample8* buffer) const {
+    free(buffer);
 }
 
 
@@ -85,20 +53,81 @@ void BasicRealtimePlayback::initialize(Mode mode) {
 
     // prepare buffers
     prepareBuffers(mode);
+}
 
+
+void BasicRealtimePlayback::start() {
     // setting up control variables
     playIndex = sendIndex = fillIndex = 0;
-    underrun = true;
+    playingBufferOffset = 0;
+    skipFrames = mode.getLatency();
 }
 
 
 bool BasicRealtimePlayback::process(TaskThread &thread) {
-    if (source)
-        while (psample *buffa = getCurrentBuffer()) {
-            source->render(thread, buffa, mode.bufferLength);
-            if (thread.isManaging())
-                goToNextBuffer();
-            thread.synchronize();
+    if (!source)
+        return false;
+
+    int myFillIndex = 0;
+
+    while (!thread.isTaskAborted()) {
+        source->render(thread, buffers[myFillIndex % numBuffers], mode.bufferLength);
+        myFillIndex++;
+        if (thread.isManaging()) {
+            fillIndex = myFillIndex;
+            advanceTime();
+            // if pushing output mode, then push
+            if (outputMode == OutputMode::PUSH && fillIndex - sendIndex > 0) {
+                pushBuffer(buffers[sendIndex % numBuffers], sendIndex);
+                sendIndex++;
+            }
+            // wait till some buffers are available
+            while (fillIndex - playIndex >= numBuffers)
+                std::this_thread::yield();
         }
-    return source != nullptr;
+        thread.synchronize();
+    }
+
+    return true;
+}
+
+
+void BasicRealtimePlayback::pullBuffer(sample8 *buffer, dtime numFrames) {
+    const dtime frameSize = AUDIO_SAMPLE_SIZE[mode.sampleFormat] * mode.numChannels;
+
+    // skipping frames first
+    if (skipFrames > 0) {
+        if (numFrames < skipFrames) {
+            skipFrames -= numFrames;
+            return;
+        }
+        else {
+            buffer += skipFrames * frameSize;
+            numFrames -= skipFrames;
+            skipFrames = 0;
+        }
+    }
+
+    // copying data from internal buffers until the requested number of frames is reached or underrun occurs
+    const dtime playingBufferSize = mode.bufferLength;
+    while (numFrames > 0 && playIndex - fillIndex < 0) {
+        const dtime
+            chunk = std::min(numFrames, playingBufferSize - playingBufferOffset),
+            numBytes = chunk * frameSize;
+        std::memcpy(buffer, buffers[playIndex % numBuffers] + playingBufferOffset * frameSize, (size_t) numBytes);
+        numFrames -= chunk;
+        playingBufferOffset += chunk;
+        buffer += numBytes;
+        // switching to the next buffer if it is the moment
+        if (playingBufferOffset >= playingBufferSize) {
+            playIndex++;
+            playingBufferOffset = 0;
+        }
+    }
+
+    // check for underrun
+    if (playIndex - fillIndex >= 0 && numFrames > 0) {
+        skipFrames = mode.getLatency();
+        BEATMUP_DEBUG_I("UNDERRUN");
+    }
 }

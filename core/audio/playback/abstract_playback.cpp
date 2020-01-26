@@ -4,12 +4,12 @@
 using namespace Beatmup;
 using namespace Audio;
 
-PlaybackException::PlaybackException(const char *message, unsigned int resultCode, const AbstractPlayback::Mode& mode):
+PlaybackException::PlaybackException(const char *message, int resultCode, const AbstractPlayback::Mode& mode):
     Exception("%s\nResult code: %d\nSampling mode: %d\nSample format: %d\nChannels: %d\nBuffers: %d of %d samples\n",
               message, resultCode, mode.sampleRate, mode.sampleFormat, mode.numChannels, mode.numBuffers, mode.bufferLength)
 {}
 
-PlaybackException::PlaybackException(const char *message, unsigned int resultCode):
+PlaybackException::PlaybackException(const char *message, int resultCode):
     Exception("%s\nResult code: %d", message, resultCode)
 {}
 

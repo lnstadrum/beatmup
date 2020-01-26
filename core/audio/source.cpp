@@ -13,7 +13,7 @@ void Source::setClock(dtime time) {
 
 
 template <typename sample> inline void fillSin(
-        psample* buffer,
+        sample8* buffer,
         dtime time,
         dtime length,
         float volume,
@@ -47,7 +47,7 @@ void HarmonicSource::prepare(
 }
 
 
-void HarmonicSource::render(TaskThread& thread, psample* buffer, const dtime bufferLength) {
+void HarmonicSource::render(TaskThread& thread, sample8* buffer, const dtime bufferLength) {
     BEATMUP_DEBUG_I("FILLING BUFFER OF %d SAMPLES at time %d", bufferLength, time);
     switch (sampleFormat) {
         case Int8:
