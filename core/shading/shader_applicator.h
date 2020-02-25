@@ -6,6 +6,7 @@
 #include "../bitmap/abstract_bitmap.h"
 #include "../geometry.h"
 #include "image_shader.h"
+#include <map>
 
 namespace Beatmup {
 
@@ -14,8 +15,9 @@ namespace Beatmup {
     */
     class ShaderApplicator : public GpuTask {
     private:
+        std::map<std::string, AbstractBitmap*> samplers;
         ImageShader* shader;
-        AbstractBitmap *input, *output;
+        AbstractBitmap *mainInput, *output;
         AffineMapping mapping;
 
         bool processOnGPU(GraphicPipeline& gpu, TaskThread& thread);
@@ -24,12 +26,21 @@ namespace Beatmup {
 
     public:
         ShaderApplicator();
-        void setInputBitmap(AbstractBitmap* bitmap);
+
+        /**
+            Connects a bitmap to a shader uniform variable.
+            The bitmap connected to ImageShader::INPUT_IMAGE_ID is used to resolve the sampler type (ImageShader::INPUT_IMAGE_DECL_TYPE).
+        */
+        void addSampler(AbstractBitmap* bitmap, const std::string uniformName = ImageShader::INPUT_IMAGE_ID);
+
+        bool removeSampler(const std::string uniformName);
+        void clearSamplers();
+
         void setOutputBitmap(AbstractBitmap* bitmap);
         void setShader(ImageShader* shader);
 
-        AbstractBitmap* getInputBitmap() const { return input; }
         AbstractBitmap* getOutputBitmap() const { return output; }
-        ImageShader* getShader() const { return shader; }
+        ImageShader* getShader()          const { return shader; }
+        const size_t getSamplersCount()   const { return samplers.size(); }
     };
 }

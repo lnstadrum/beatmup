@@ -8,7 +8,10 @@ function(add_app APP_NAME APP_SOURCES)
   		add_dependencies(${APP_NAME} libglewmx_static)
 	endif (WIN32)
 endfunction()
+
 set(PROFILE_PLATFORM_SPECIFIC_BITMAP ON)
 include("../core/CMakeLists.in")
+
 add_app(BasicRendering    basic_rendering/app.cpp)
 add_app(FloodFill         flood_fill/app.cpp)
+add_app(Shaderer          shaderer/app.cpp)
