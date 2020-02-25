@@ -44,8 +44,12 @@ namespace Beatmup {
 
         void switchDisplay(void* data);
 
+      	/**
+        	To be called at the end of a rendering pass to ensure a proper state of the output.
+        */
+        void flush();
+        
         void swapBuffers();
-
 
         /**
             Binds a texture handler to the pipeline output

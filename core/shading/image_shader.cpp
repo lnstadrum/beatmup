@@ -137,4 +137,5 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, Abstr
 
 void ImageShader::process(GraphicPipeline& gpu) {
     gpu.getRenderingPrograms().blend(false);
+    gpu.flush();
 }
