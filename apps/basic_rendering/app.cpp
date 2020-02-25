@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
     Beatmup::InternalBitmap fecamp(ctx, "images/fecamp.bmp");
     Beatmup::InternalBitmap bg(ctx, "images/bg.bmp");
     // Initializing a bitmap the scene will be rendered onto.
-    // Whe running GLES 2.0, QuadByte is the optimal format to transfer from GPU memory.
+    // When running GLES 2.0, QuadByte is the optimal format to transfer from GPU memory.
     Beatmup::InternalBitmap output(ctx, Beatmup::PixelFormat::QuadByte, 1024, 1024);
     // Converting input texture to a 1-channel (grayscale) and a 3-channel (RGB) internal bitmaps.
     // No specific reason to do so; it is done here to showcase InternalBitmaps instantiation and BitmapConverter.
