@@ -101,6 +101,9 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, Abstr
                 throw UnsupportedInputTextureFormat(inputFormat);
             }
         }
+        else {
+            code = BEATMUP_SHADER_HEADER_VERSION + sourceCode;
+        }
         fragmentShader = new GL::FragmentShader(gpu, code);
     }
 
