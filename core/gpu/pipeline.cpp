@@ -26,7 +26,7 @@ private:
 
     GLuint hFrameBuffer;
 
-    bool onScreen;							//!< if `true` on-screen rendering is enabled
+    AbstractBitmap* output;
 
     ImageResolution
         displayResolution,					//!< width and height of a display obtained when switching
@@ -69,7 +69,7 @@ private:
 
 
 public:
-    Impl(GraphicPipeline& front) : front(front), onScreen(false)
+    Impl(GraphicPipeline& front) : front(front), output(nullptr)
     {
 #ifdef BEATMUP_OPENGLVERSION_GLES
         // Step 1 - Get the default display.
@@ -333,6 +333,14 @@ public:
         glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
         glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
+  
+  
+    void flush() {
+        if (output) {
+            output->upToDate[ProcessingTarget::GPU] = true;
+            output->upToDate[ProcessingTarget::CPU] = false;
+        }
+    }
 
 
     void swapBuffers() {
@@ -431,14 +439,16 @@ public:
 
 
     void bindOutput(AbstractBitmap& bitmap) {
+        output = &bitmap;
         if (bitmap.isMask())
             throw GL::GLException("Mask bitmaps can not be used as output");
 
         // setting up a texture
         glBindFramebuffer(GL_FRAMEBUFFER, hFrameBuffer);
-
         GLuint handle = useTexture(bitmap);
         glBindTexture(GL_TEXTURE_2D, handle);
+      
+        // if the GPU version is outdated, feed it with blank pixels
         if (!bitmap.isUpToDate(ProcessingTarget::GPU)) {
             static const GLint formats[] = {
                 0,
@@ -475,19 +485,15 @@ public:
 #ifdef BEATMUP_DEBUG
         GL::GLException::check("setting output: enabling/disabling");
 #endif
-
-        // marking bitmap as up-to-date on GPU
-        bitmap.upToDate[ProcessingTarget::GPU] = true;
-        onScreen = false;
     }
 
 
     void unbindOutput() {
+        output = nullptr;
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, displayResolution.getWidth(), displayResolution.getHeight());
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        onScreen = true;
         outputResolution = displayResolution;
     }
 
@@ -611,6 +617,11 @@ void GraphicPipeline::switchDisplay(void* data) {
 
 void GraphicPipeline::swapBuffers() {
     impl->swapBuffers();
+}
+
+
+void GraphicPipeline::flush() {
+    impl->flush();
 }
 
 

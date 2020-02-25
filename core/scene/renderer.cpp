@@ -191,6 +191,8 @@ bool SceneRenderer::doRender(GraphicPipeline& gpu, TaskThread& thread) {
             renderLayer(context, thread, layer, outputCoords);
     }
 
+    gpu.flush();
+
     // swap output if needed (and if the rendering task was not aborted)
     if (!thread.isTaskAborted()) {
         if (!output)
