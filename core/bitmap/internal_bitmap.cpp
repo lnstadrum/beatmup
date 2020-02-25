@@ -1,6 +1,7 @@
 #include "internal_bitmap.h"
 #include "../exception.h"
 #include "../utils/bmp_file.h"
+#include "../gpu/swapper.h"
 
 using namespace Beatmup;
 
@@ -115,6 +116,11 @@ void InternalBitmap::unlockPixels() {
 
 
 void InternalBitmap::saveBmp(const char* filename) {
+    if (!isUpToDate(ProcessingTarget::CPU)) {
+        // Grab output bitmap from GPU memory to RAM
+    	Beatmup::Swapper::grabPixels(*this);
+    }
+  
     if (!memory)
         memory = ctx.allocateMemory(getMemorySize());
     Context::Mem mem(ctx, memory);
