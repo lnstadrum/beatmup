@@ -9,8 +9,45 @@
 
 namespace Beatmup {
 namespace BitmapResamplingTools{
+    
+    
+    template<class in_t, class out_t> class NearestNeigborResampling {
+    public:
 
-    template<class in_t, class out_t> class BoxResampler {
+        /**
+            Resamples a rectangle from an input bitmap to a rectangle in an output bitmap by nearest neighbor interpolation
+        */
+        static void process(in_t in, out_t out, IntRectangle& src, IntRectangle& dst, const TaskThread& tt) {
+            const int
+                srcW = src.width(), srcH = src.height(),
+                dstW = dst.width(), dstH = dst.height(),
+                shiftX = dstW / 2,
+                shiftY = dstH / 2;
+
+            // dest image slice to process in the current thread
+            const int
+              sliceStart = tt.currentThread()       * dstH / tt.totalThreads(),
+              sliceStop  = (tt.currentThread() + 1) * dstH / tt.totalThreads();
+
+            for (int y = sliceStart; y < sliceStop; ++y) {
+                out.goTo(dst.a.x, dst.a.y + y);
+                const int sy = src.a.y + (y * srcH + shiftY) / dstH;
+                
+                for (int x = 0; x < dstW; ++x) {
+                    const int sx = src.a.x + (x * srcW + shiftX) / dstW;
+                    in.goTo(sx, sy);
+                    out = in();
+                    out++;
+                }
+
+                if (tt.isTaskAborted())
+                    return;
+            }
+        }
+    };
+    
+
+    template<class in_t, class out_t> class BoxResampling {
     public:
 
         /**

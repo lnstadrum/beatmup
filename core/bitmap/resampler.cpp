@@ -1,13 +1,12 @@
 #include "resampler.h"
 #include "resampler_tools.h"
-#include "interpolation.h"
 #include "processing.h"
 
 using namespace Beatmup;
 
 
 BitmapResampler::BitmapResampler() :
-    input(nullptr), output(nullptr)
+    input(nullptr), output(nullptr), mode(Mode::NEAREST_NEIGHBOR)
 {}
 
 
@@ -18,6 +17,11 @@ void BitmapResampler::setBitmaps(AbstractBitmap* input, AbstractBitmap* output) 
         srcRect = IntRectangle(0, 0, input->getWidth(), input->getHeight());
     if (output)
         destRect = IntRectangle(0, 0, output->getWidth(), output->getHeight());
+}
+
+
+void BitmapResampler::setMode(Mode mode) {
+    this->mode = mode;
 }
 
 
@@ -57,9 +61,20 @@ void BitmapResampler::afterProcessing(ThreadIndex threadCount, bool aborted) {
 
 
 bool BitmapResampler::process(TaskThread& thread) {
-    BitmapProcessing::pipeline<BitmapResamplingTools::BoxResampler>(
-        *input, *output, 0, 0,
-        srcRect, destRect, thread
-    );
+    switch (mode) {
+        case Mode::NEAREST_NEIGHBOR:
+            BitmapProcessing::pipeline<BitmapResamplingTools::NearestNeigborResampling>(
+                *input, *output, 0, 0,
+                srcRect, destRect, thread
+            );
+            break;
+
+        case Mode::BOX:
+            BitmapProcessing::pipeline<BitmapResamplingTools::BoxResampling>(
+                *input, *output, 0, 0,
+                srcRect, destRect, thread
+            );
+            break;
+    }
     return true;
 }
