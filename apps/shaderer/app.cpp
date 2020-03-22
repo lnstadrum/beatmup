@@ -4,7 +4,6 @@
 #include <bitmap/internal_bitmap.h>
 #include <shading/image_shader.h>
 #include <shading/shader_applicator.h>
-#include <gpu/swapper.h>
 #include <iostream>
 
 
@@ -22,17 +21,17 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // Creating a context
+    // Create a context
     Beatmup::Context ctx;
 
-    // Loading input bitmaps
+    // Load input bitmaps
     std::vector<Beatmup::InternalBitmap*> inputs;
     for (int i = Args::INPUT_FILENAME; i < argc; i += 2) {
         std::cout << "Loading " << argv[i] << " (uniform \"" << argv[i + 1] << "\")" << std::endl;
         inputs.push_back(new Beatmup::InternalBitmap(ctx, argv[i]));
     }
 
-    // Initializing the output bitmap
+    // Initialize the output bitmap
     // When running GLES 2.0, QuadByte is the optimal format to transfer from GPU memory.
     const int
         outputWidth  = std::atoi(argv[Args::OUTPUT_WIDTH]),

@@ -10,11 +10,8 @@ namespace Beatmup {
 
     class BitmapResampler : public AbstractTask {
     private:
-        const int MIN_PIXEL_COUNT_PER_THREAD = 1000;		//!< minimum number of pixels per worker
-
-        AbstractBitmap *input, *output;						//!< input and output bitmaps
+        AbstractBitmap *input, *output;                     //!< input and output bitmaps
         IntRectangle srcRect, destRect;
-
         void doConvert(int outX, int outY, msize nPix);
     protected:
         virtual bool process(TaskThread& thread);
@@ -30,8 +27,4 @@ namespace Beatmup {
 
         ThreadIndex maxAllowedThreads() const;
     };
-
-    namespace BitmapResamplerTools {
-        template<class in_t, class out_t> void resample_accum(in_t in, out_t out, IntRectangle& src, IntRectangle& dst, const TaskThread& tt);
-    }
 }
