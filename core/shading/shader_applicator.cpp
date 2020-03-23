@@ -5,8 +5,8 @@
 using namespace Beatmup;
 
 bool ShaderApplicator::processOnGPU(GraphicPipeline &gpu, TaskThread &thread) {
-    shader->prepare(gpu, mainInput, output, AffineMapping::IDENTITY);
-    
+    shader->prepare(gpu, mainInput, output);
+
     // binding other inputs
     size_t unit = mainInput ? 1 : 0;
     for (auto input : samplers) {

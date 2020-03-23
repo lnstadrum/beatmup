@@ -43,7 +43,7 @@ void SceneRenderer::renderLayer(RenderingContext& context, TaskThread& thread, S
 const Scene* SceneRenderer::getScene() const {
     return scene;
 }
-    
+
 
 AbstractBitmap* SceneRenderer::getOutput() const {
     return output;
@@ -64,7 +64,7 @@ void SceneRenderer::resetOutput() {
     this->output = nullptr;
 }
 
-    
+
 void SceneRenderer::setOutputMapping(const OutputMapping newMapping) {
     outputMapping = newMapping;
 }
@@ -124,7 +124,7 @@ void SceneRenderer::setRenderingEventListener(RenderingContext::EventListener* e
 void SceneRenderer::beforeProcessing(ThreadIndex threadCount, GraphicPipeline* gpu) {
     if (eventListener)
         eventListener->onRenderingStart();
-        
+
     // reset camera frame
     cameraFrame = nullptr;
 
@@ -163,6 +163,9 @@ bool SceneRenderer::doRender(GraphicPipeline& gpu, TaskThread& thread) {
         context.lockBitmap(background);
         gpu.getRenderingPrograms().paveBackground(&gpu, *background, output == nullptr);
     }
+
+    // enable blending
+    gpu.switchAlphaBlending(true);
 
     // compute initial mapping
     resolution = gpu.getOutputResolution();

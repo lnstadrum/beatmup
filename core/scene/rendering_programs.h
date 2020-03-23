@@ -35,9 +35,9 @@ namespace Beatmup {
         static const std::string
             MODELVIEW_MATRIX_ID,      //!< Modelview matrix (mapping input geometry to output) shader variable name.
             TEXTURE_COORDINATES_ID,   //!< Texture coordinates shader variable name
-      
+
             DECLARE_TEXTURE_COORDINATES_IN_FRAG;    //!< Declaring texture coordinates in fragment shader.
-            
+
 
 
         /**

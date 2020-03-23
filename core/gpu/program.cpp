@@ -119,7 +119,7 @@ Chunk* AbstractProgram::getBinary() const {
     GLsizei length;
     glGetProgramiv(handle, GL_PROGRAM_BINARY_LENGTH, &length);
     GL::GLException::check("querying program size");
-    
+
     // setting up a chunk: first sizeof(GLenum) bytes store the binary format
     Chunk* result = new Chunk(sizeof(GLenum) + (size_t)length);
     glGetProgramBinary(handle, length, nullptr, result->at<GLenum>(0), result->at<GLenum>(1));
@@ -228,6 +228,23 @@ void AbstractProgram::setMatrix3(const char* name, const Matrix2& mat, const Poi
 
 void AbstractProgram::setMatrix3(const char* name, const AffineMapping& mapping) {
     setMatrix3(name, mapping.matrix, mapping.position);
+}
+
+
+void AbstractProgram::setIntegerArray(const char* name, const int* values, const int length) {
+    if (sizeof(GLint) != sizeof(int)) {
+        GLint* convValues = new GLint[length];
+        for (int i = 0; i < length; ++i)
+            convValues[i] = values[i];
+        glUniform1iv(glGetUniformLocation(handle, name), length, convValues);
+        delete[] convValues;
+    }
+    else {
+        glUniform1iv(glGetUniformLocation(handle, name), length, values);
+    }
+    #ifdef BEATMUP_DEBUG
+        GL::GLException::check("seting shader integer array");
+    #endif
 }
 
 
