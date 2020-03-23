@@ -1,5 +1,5 @@
 /**
-    Custom shader
+    Applying a custom shader to images
 */
 #include <bitmap/internal_bitmap.h>
 #include <shading/image_shader.h>

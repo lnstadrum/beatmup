@@ -441,6 +441,6 @@ void Scene::ShadedBitmapLayer::render(RenderingContext& context) {
     if (content)
         arMapping.matrix.scale(1.0f, invAr);
 
-    shader->prepare(context.getGpu(), content, nullptr, arMapping);
+    shader->prepare(context.getGpu(), content, TextureParam::INTERP_LINEAR, nullptr, arMapping);
     context.blend();
 }

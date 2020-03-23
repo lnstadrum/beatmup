@@ -333,8 +333,8 @@ public:
         glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
         glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
-  
-  
+
+
     void flush() {
         if (output) {
             output->upToDate[ProcessingTarget::GPU] = true;
@@ -447,7 +447,7 @@ public:
         glBindFramebuffer(GL_FRAMEBUFFER, hFrameBuffer);
         GLuint handle = useTexture(bitmap);
         glBindTexture(GL_TEXTURE_2D, handle);
-      
+
         // if the GPU version is outdated, feed it with blank pixels
         if (!bitmap.isUpToDate(ProcessingTarget::GPU)) {
             static const GLint formats[] = {
@@ -585,6 +585,14 @@ public:
     int getSharedMemSize() const {
         return glLimits.maxSharedMemSize;
     }
+
+
+    void switchAlphaBlending(bool enable) {
+        if (enable)
+            glEnable(GL_BLEND);
+        else
+            glDisable(GL_BLEND);
+    }
 };
 
 
@@ -657,4 +665,9 @@ void GraphicPipeline::fetchPixels(AbstractBitmap& bitmap) {
 
 int GraphicPipeline::getLimit(Limit limit) const {
     return impl->getLimit(limit);
+}
+
+
+void GraphicPipeline::switchAlphaBlending(bool enable) {
+    impl->switchAlphaBlending(enable);
 }

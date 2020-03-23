@@ -44,11 +44,11 @@ namespace Beatmup {
 
         void switchDisplay(void* data);
 
-      	/**
-        	To be called at the end of a rendering pass to ensure a proper state of the output.
+        /**
+            To be called at the end of a rendering pass to ensure a proper state of the output.
         */
         void flush();
-        
+
         void swapBuffers();
 
         /**
@@ -60,7 +60,7 @@ namespace Beatmup {
             Unbinds a bitmap from output and switches to screen
         */
         void unbindOutput();
-        
+
         ImageResolution getOutputResolution() const;
 
         void bind(GL::TextureHandler& texture, size_t texUnit, const TextureParam param);
@@ -69,6 +69,13 @@ namespace Beatmup {
         void fetchPixels(AbstractBitmap& bitmap);
 
         int getLimit(Limit limit) const;
+
+        /**
+            Enables / disables alpha blending.
+            \param[in] enable    If `true`, the image is blended on top of what is in the framebuffer according to alpha
+                                 channel values. Otherwise its alpha is simply copied.
+        */
+        void switchAlphaBlending(bool enable);
 
         inline RenderingPrograms & getRenderingPrograms() { return renderingPrograms; }
     };

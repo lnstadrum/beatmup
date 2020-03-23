@@ -457,6 +457,7 @@ void RenderingPrograms::paveBackground(GraphicPipeline* gpu, GL::TextureHandler&
     currentGlProgram->setMatrix3(MODELVIEW_MATRIX_ID, AffineMapping::IDENTITY);
     currentGlProgram->setVector4("modulationColor", 1.0f, 1.0f, 1.0f, 1.0f);
     gpu->bind(content, 0, TextureParam::REPEAT);
+    gpu->switchAlphaBlending(false);
     blend(onScreen);
 }
 

@@ -24,13 +24,18 @@ bool str_replace(std::string& str, const std::string& from, const std::string& t
 }
 
 
-ImageShader::ImageShader(Context& ctx) :
-    ctx(ctx),
+ImageShader::ImageShader(GL::RecycleBin& recycleBin) :
+    recycleBin(recycleBin),
     program(nullptr),
     fragmentShader(nullptr),
     sourceCode(),
     inputFormat(GL::TextureHandler::TextureFormat::RGBx8),
     fragmentShaderReady(false)
+{}
+
+
+ImageShader::ImageShader(Context& ctx) :
+    ImageShader(*ctx.getGpuRecycleBin())
 {}
 
 
@@ -42,7 +47,7 @@ ImageShader::~ImageShader() {
         Deleter(GL::Program* program, GL::FragmentShader* fragmentShader):
             program(program), fragmentShader(fragmentShader)
         {};
-        
+
         ~Deleter() {
             if (program)
                 delete program;
@@ -51,7 +56,7 @@ ImageShader::~ImageShader() {
         }
     };
 
-    ctx.getGpuRecycleBin()->put(new Deleter(program, fragmentShader));
+    recycleBin.put(new Deleter(program, fragmentShader));
 }
 
 
@@ -63,7 +68,7 @@ void ImageShader::setSourceCode(const char* sourceCode) {
 }
 
 
-void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, AbstractBitmap* output, const AffineMapping& mapping) {
+void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, const TextureParam texParam, AbstractBitmap* output, const AffineMapping& mapping) {
     LockGuard lock(this);
     if (sourceCode.empty())
         throw NoSource();
@@ -107,6 +112,7 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, Abstr
         fragmentShader = new GL::FragmentShader(gpu, code);
     }
 
+
     // link program
     if (!program) {
         program = new GL::Program(gpu);
@@ -120,14 +126,14 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, Abstr
 
     // enable program
     gpu.getRenderingPrograms().enableProgram(&gpu, *program);
-  
+
     // bind output
     if (output)
         gpu.bindOutput(*output);
 
     // bind input
     if (input)
-        gpu.bind(*input, 0, TextureParam::INTERP_LINEAR);
+        gpu.bind(*input, 0, texParam);
         // Binding order matters: texture unit 0 is used for input now.
 
     // set up mapping
@@ -135,6 +141,20 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, Abstr
 
     // apply bundle
     apply(*program);
+}
+
+
+void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, AbstractBitmap* output) {
+    prepare(gpu, input, TextureParam::INTERP_LINEAR, output, AffineMapping::IDENTITY);
+}
+
+
+void ImageShader::bindSamplerArray(const char* uniformName, int startingUnit, int numUnits) {
+    int* vals = new int[numUnits];
+    for (int i = 0; i < numUnits; ++i)
+        vals[i] = startingUnit + i;
+    program->setIntegerArray(uniformName, vals, numUnits);
+    delete[] vals;
 }
 
 
