@@ -34,6 +34,7 @@ set(BEATMUP_SOURCES
     ${BEATMUP_SRC_DIR}/bitmap/operator.cpp
     ${BEATMUP_SRC_DIR}/bitmap/tools.cpp
     ${BEATMUP_SRC_DIR}/bitmap/tools.cpp
+    ${BEATMUP_SRC_DIR}/bitmap/resampler_cnn_x2/cnn.cpp
     ${BEATMUP_SRC_DIR}/color/color_spaces.cpp
     ${BEATMUP_SRC_DIR}/color/matrix.cpp
     ${BEATMUP_SRC_DIR}/contours/contours.cpp
@@ -124,14 +125,14 @@ if (USE_OPENGL OR USE_GLX)
 	link_directories("${BEATMUP_BUILD_DIR}/lib")
 	include_directories("${BEATMUP_GLEW_DIR}/include")
 	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DGLEW_STATIC")
-    
+
 	find_package(OpenGL REQUIRED)
 	link_libraries(${OPENGL_LIBRARY})
 	if (USE_GLX)
 		find_package(X11 REQUIRED)
 		link_libraries(${X11_LIBRARIES} glewmx)
 	endif()
-  
+
 	if (WIN32)
 		link_libraries(glew$<$<CONFIG:Debug>:d>)
 	endif()
@@ -155,9 +156,9 @@ elseif(USE_EGL)
 			pkg_check_modules(EGL REQUIRED egl)
 		endif()
 	endif()
-	
+
 	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DBEATMUP_OPENGLVERSION_GLES")
-  
+
 	if (GLES_VERSION EQUAL 20)
 		if (USE_PKGCONFIG)
 			pkg_check_modules(GLES2 REQUIRED glesv2)
@@ -179,7 +180,7 @@ elseif(USE_EGL)
 	else()
 		message(FATAL_ERROR "GLES_VERSION must specify a valid OpenGL ES version.")
 	endif()
-  
+
 	if (USE_PKGCONFIG)
 		link_libraries(${EGL_LIBRARIES} ${GLES2_LIBRARIES})
 		include_directories(${EGL_INCLUDE_DIR} ${GLES2_INCLUDE_DIR})
