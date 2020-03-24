@@ -3,6 +3,7 @@
 #include "../debug.h"
 #include <algorithm>
 
+using namespace Beatmup;
 using namespace Beatmup::Fragments;
 
 #ifdef BEATMUP_DEBUG
