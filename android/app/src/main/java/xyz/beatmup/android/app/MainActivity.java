@@ -253,7 +253,7 @@ public class MainActivity extends Activity {
                     Bitmap bitmap = Bitmap.decodeStream(context, getAssets().open("kitten.jpg"));
 
                     ShaderApplicator applicator = new ShaderApplicator(context);
-                    applicator.setInput(bitmap);
+                    applicator.addSampler(bitmap);
                     applicator.setOutput(Beatmup.Bitmap.createEmpty(bitmap));
                     applicator.setShader(new Shader(context));
                     ColorMatrix matrix = new ColorMatrix();

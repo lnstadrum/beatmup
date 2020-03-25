@@ -7,8 +7,14 @@ import Beatmup.Utils.VariablesBundle;
  * Custom pixel shader
  */
 public class Shader extends VariablesBundle {
+    public static String
+            INPUT_IMAGE_ID,
+            INPUT_IMAGE_DECL_TYPE;
+
     private native static long newShader(Context context);
     private native void setSourceCode(long handle, String code);
+    private static native String getInputImageId();
+    private static native String getInputImageDeclType();
 
     public Shader(Context context) {
         super(newShader(context));

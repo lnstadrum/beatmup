@@ -17,8 +17,10 @@ namespace Beatmup {
             Specifies resampling mode
         */
         enum class Mode {
-            NEAREST_NEIGHBOR,    //!< usual nearest neighbor
-            BOX,                 //!< anti-aliasing box filter; identical to nearest neigbor when upsampling
+            NEAREST_NEIGHBOR,    //!< zero-order: usual nearest neighbor
+            BOX,                 //!< "0.5-order": anti-aliasing box filter; identical to nearest neigbor when upsampling
+            LINEAR,              //!< first order: bilinear interpolation
+            CUBIC,               //!< third order: bicubic interpolation
             CONVNET              //!< upsampling x2 using a convolutional neural network
         };
     private:
@@ -40,6 +42,7 @@ namespace Beatmup {
 
         void setBitmaps(AbstractBitmap* input, AbstractBitmap* output);
         void setMode(Mode mode);
+        Mode getMode() const { return mode; }
 
         void setInputRect(const IntRectangle& rect);
         void setOutputRect(const IntRectangle& rect);

@@ -18,6 +18,7 @@
 #include "android/context.h"
 #include "android/bitmap.h"
 #include "android/external_bitmap.h"
+#include "../core/bitmap/resampler.h"
 
 #include <core/context.h>
 #include <core/geometry.h>
@@ -1083,13 +1084,34 @@ JNIMETHOD(jlong, newResampler, Java_Beatmup_Imaging_Filters_Resampler, newResamp
 }
 
 
-JNIMETHOD(void, setBitmaps, Java_Beatmup_Imaging_Filters_Resampler, setBitmaps)(JNIEnv * jenv, jobject, jlong hInstance, jobject jInput, jobject jOutput) {
+JNIMETHOD(void, setBitmaps, Java_Beatmup_Imaging_Filters_Resampler, setBitmaps)
+    (JNIEnv * jenv, jobject, jlong hInstance, jobject jInput, jobject jOutput)
+{
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::BitmapResampler, resampler, hInstance);
     BEATMUP_OBJ_OR_NULL(Beatmup::AbstractBitmap, input, jInput);
     BEATMUP_OBJ_OR_NULL(Beatmup::AbstractBitmap, output, jOutput);
     resampler->setBitmaps(input, output);
 }
+
+
+JNIMETHOD(void, setMode, Java_Beatmup_Imaging_Filters_Resampler, setMode)
+    (JNIEnv * jenv, jobject, jlong hInstance, jint mode)
+{
+    BEATMUP_ENTER;
+    BEATMUP_OBJ(Beatmup::BitmapResampler, resampler, hInstance);
+    resampler->setMode((Beatmup::BitmapResampler::Mode)mode);
+}
+
+
+JNIMETHOD(jint, getMode, Java_Beatmup_Imaging_Filters_Resampler, getMode)
+    (JNIEnv * jenv, jobject, jlong hInstance)
+{
+    BEATMUP_ENTER;
+    BEATMUP_OBJ(Beatmup::BitmapResampler, resampler, hInstance);
+    return (jint)resampler->getMode();
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 //                                      COLOR MATRIX
@@ -1174,6 +1196,22 @@ JNIMETHOD(void, setSourceCode, Java_Beatmup_Shading_Shader, setSourceCode)(JNIEn
     jenv->ReleaseStringUTFChars(src, javaChar);
 }
 
+
+JNIMETHOD(jstring, getInputImageId, Java_Beatmup_Shading_Shader, getInputImageId)
+    (JNIEnv * jenv, jclass)
+{
+    BEATMUP_ENTER;
+    return jenv->NewStringUTF(Beatmup::ImageShader::INPUT_IMAGE_ID.c_str());
+}
+
+
+JNIMETHOD(jstring, getInputImageDeclType, Java_Beatmup_Shading_Shader, getInputImageDeclType)
+    (JNIEnv * jenv, jclass)
+{
+    BEATMUP_ENTER;
+    return jenv->NewStringUTF(Beatmup::ImageShader::INPUT_IMAGE_DECL_TYPE.c_str());
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 //                                      SHADER APPLICATOR
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -1184,11 +1222,14 @@ JNIMETHOD(jlong, newShaderApplicator, Java_Beatmup_Shading_ShaderApplicator, new
 }
 
 
-JNIMETHOD(void, setInput, Java_Beatmup_Shading_ShaderApplicator, setInput)(JNIEnv * jenv, jobject, jlong hInst, jobject jBitmap) {
+JNIMETHOD(void, addSampler, Java_Beatmup_Shading_ShaderApplicator, addSampler)
+    (JNIEnv * jenv, jobject, jlong hInst, jobject jBitmap, jstring uniformName)
+{
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::ShaderApplicator, applicator, hInst);
     BEATMUP_OBJ_OR_NULL(Beatmup::AbstractBitmap, bitmap, jBitmap);
-    applicator->setInputBitmap(bitmap);
+    BEATMUP_STRING(uniformName);
+    applicator->addSampler(bitmap, uniformNameStr);
 }
 
 
@@ -1200,7 +1241,7 @@ JNIMETHOD(void, setOutput, Java_Beatmup_Shading_ShaderApplicator, setOutput)(JNI
 }
 
 
-JNIMETHOD(void, setLayerShader, Java_Beatmup_Shading_ShaderApplicator, setLayerShader)(JNIEnv * jenv, jobject, jlong hInst, jobject jShader) {
+JNIMETHOD(void, setShader, Java_Beatmup_Shading_ShaderApplicator, setShader)(JNIEnv * jenv, jobject, jlong hInst, jobject jShader) {
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::ShaderApplicator, applicator, hInst);
     BEATMUP_OBJ_OR_NULL(Beatmup::ImageShader, shader, jShader);

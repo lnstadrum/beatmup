@@ -17,11 +17,11 @@ JNIEXPORT jlong JNICALL Java_Beatmup_Shading_ShaderApplicator_newShaderApplicato
 
 /*
  * Class:     Beatmup_Shading_ShaderApplicator
- * Method:    setInput
- * Signature: (JLBeatmup/Bitmap;)V
+ * Method:    addSampler
+ * Signature: (JLBeatmup/Bitmap;Ljava/lang/String;)V
  */
-JNIEXPORT void JNICALL Java_Beatmup_Shading_ShaderApplicator_setInput
-  (JNIEnv *, jobject, jlong, jobject);
+JNIEXPORT void JNICALL Java_Beatmup_Shading_ShaderApplicator_addSampler
+  (JNIEnv *, jobject, jlong, jobject, jstring);
 
 /*
  * Class:     Beatmup_Shading_ShaderApplicator
@@ -33,10 +33,10 @@ JNIEXPORT void JNICALL Java_Beatmup_Shading_ShaderApplicator_setOutput
 
 /*
  * Class:     Beatmup_Shading_ShaderApplicator
- * Method:    setLayerShader
+ * Method:    setShader
  * Signature: (JLBeatmup/Shading/Shader;)V
  */
-JNIEXPORT void JNICALL Java_Beatmup_Shading_ShaderApplicator_setLayerShader
+JNIEXPORT void JNICALL Java_Beatmup_Shading_ShaderApplicator_setShader
   (JNIEnv *, jobject, jlong, jobject);
 
 #ifdef __cplusplus

@@ -316,10 +316,8 @@ public:
             // setting viewport
             displayResolution.set(ANativeWindow_getWidth((ANativeWindow*)data), ANativeWindow_getHeight((ANativeWindow*)data));
             glViewport(0, 0, displayResolution.getWidth(), displayResolution.getHeight());
-            onScreen = true;
         }
         else {
-            onScreen = false;
             eglSurface = eglDefaultSurface;
             if (! eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext))
                 throw GL::GLException("EGL: making current", eglGetError());
