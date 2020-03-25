@@ -8,8 +8,8 @@ import Beatmup.Utils.VariablesBundle;
  */
 public class Shader extends VariablesBundle {
     public static String
-            INPUT_IMAGE_ID,
-            INPUT_IMAGE_DECL_TYPE;
+            INPUT_IMAGE_ID        = getInputImageId(),
+            INPUT_IMAGE_DECL_TYPE = getInputImageDeclType();
 
     private native static long newShader(Context context);
     private native void setSourceCode(long handle, String code);
