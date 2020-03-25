@@ -145,6 +145,13 @@ namespace Beatmup {
             return pixint1{ data[y * width + x] };
         }
 
+        /**
+            Retrieves a value at position shifted by i pixels in scanline order with respect to the current position
+        */
+        inline const pixint1 operator[](int i) const {
+            return pixint1{ ptr[i] };
+        }
+
         SingleByteBitmapReader(const AbstractBitmap& bitmap, int x = 0, int y = 0) : CustomBitmapScanner(bitmap, x, y) {}
     };
 
@@ -165,6 +172,14 @@ namespace Beatmup {
         inline pixint3 operator()(int x, int y) const {
             int i = 3 * (y * width + x);
             return pixint3{ data[i + CHANNELS_3.R], data[i + CHANNELS_3.G], data[i + CHANNELS_3.B] };
+        }
+
+        /**
+            Retrieves a value at position shifted by i pixels in scanline order with respect to the current position
+        */
+        inline const pixint3 operator[](int i) const {
+            const pixbyte* p = ptr + 3 * i;
+            return pixint3{ p[CHANNELS_3.R], p[CHANNELS_3.G], p[CHANNELS_3.B] };
         }
 
         TripleByteBitmapReader(const AbstractBitmap& bitmap, int x = 0, int y = 0) : CustomBitmapScanner(bitmap, x, y) {}
@@ -189,6 +204,14 @@ namespace Beatmup {
             return pixint4(data[i + CHANNELS_4.R], data[i + CHANNELS_4.G], data[i + CHANNELS_4.B], data[i + CHANNELS_4.A]);
         }
 
+        /**
+            Retrieves a value at position shifted by i pixels in scanline order with respect to the current position
+        */
+        inline const pixint4 operator[](int i) const {
+            const pixbyte* p = ptr + 4 * i;
+            return pixint4(p[CHANNELS_4.R], p[CHANNELS_4.G], p[CHANNELS_4.B], p[CHANNELS_4.A]);
+        }
+
         QuadByteBitmapReader(const AbstractBitmap& bitmap, int x = 0, int y = 0) : CustomBitmapScanner(bitmap, x, y) {}
     };
 
@@ -208,6 +231,13 @@ namespace Beatmup {
 
         inline pixfloat1 operator()(int x, int y) const {
             return pixfloat1{ data[y * width + x] };
+        }
+
+        /**
+            Retrieves a value at position shifted by i pixels in scanline order with respect to the current position
+        */
+        inline const pixfloat1 operator[](int i) const {
+            return pixfloat1{ ptr[i] };
         }
 
         SingleFloatBitmapReader(const AbstractBitmap& bitmap, int x = 0, int y = 0) : CustomBitmapScanner(bitmap, x, y) {}
@@ -231,6 +261,15 @@ namespace Beatmup {
             int i = 3 * (y * width + x);
             return pixfloat3{ data[i + CHANNELS_3.R], data[i + CHANNELS_3.G], data[i + CHANNELS_3.B] };
         }
+
+        /**
+            Retrieves a value at position shifted by i pixels in scanline order with respect to the current position
+        */
+        inline const pixfloat3 operator[](int i) const {
+            const pixfloat* p = ptr + 3 * i;
+            return pixfloat3{ p[CHANNELS_3.R], p[CHANNELS_3.G], p[CHANNELS_3.B] };
+        }
+
 
         TripleFloatBitmapReader(const AbstractBitmap& bitmap, int x = 0, int y = 0) : CustomBitmapScanner(bitmap, x, y) {}
     };
@@ -258,6 +297,15 @@ namespace Beatmup {
             int i = 4 * (y * width + x);
             return pixfloat4(ptr[i + CHANNELS_4.R], ptr[i + CHANNELS_4.G], ptr[i + CHANNELS_4.B], ptr[i + CHANNELS_4.A]);
         }
+
+        /**
+            Retrieves a value at position shifted by i pixels in scanline order with respect to the current position
+        */
+        inline const pixfloat4 operator[](int i) const {
+            const pixfloat* p = ptr + 4 * i;
+            return pixfloat4(p[CHANNELS_4.R], p[CHANNELS_4.G], p[CHANNELS_4.B], p[CHANNELS_4.A]);
+        }
+
 
         QuadFloatBitmapReader(const AbstractBitmap& bitmap, int x = 0, int y = 0) : CustomBitmapScanner(bitmap, x, y) {}
     };

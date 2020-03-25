@@ -82,8 +82,20 @@ namespace Beatmup {
         */
         inline unsigned char getValue(int x, int y) const {
             msize n = (this->width*y + x);
-            unsigned char
+            uint8_t
                 *p = this->data + n / pointsPerByte,
+                b = (unsigned char)(n % pointsPerByte);
+            return ((*p) >> (b*num_bits)) & this->MAX_UNNORM_VALUE;
+        }
+
+        /**
+            Returns 0..MAX_UNNORM_VALUE value at position shifted by i pixels in scanline order with respect
+            to the current position
+        */
+        inline unsigned char getValue(int i) const {
+            int n = this->bit / num_bits + i;
+            uint8_t
+                *p = this->ptr + n / pointsPerByte,
                 b = (unsigned char)(n % pointsPerByte);
             return ((*p) >> (b*num_bits)) & this->MAX_UNNORM_VALUE;
         }
@@ -100,6 +112,13 @@ namespace Beatmup {
         */
         inline pixint1 operator()(int x, int y) const {
             return pixint1{ lookup[getValue(x, y)] };
+        }
+
+        /**
+            Returns 0..255 value at position shifted by i pixels in scanline order with respect to the current position
+        */
+        inline const pixint1 operator[](int i) const {
+            return pixint1{ lookup[getValue(i)] };
         }
 
         /**
@@ -262,6 +281,14 @@ namespace Beatmup {
         }
 
         /**
+            Returns 0..MAX_UNNORM_VALUE value at position shifted by i pixels in scanline order with respect
+            to the current position
+        */
+        inline unsigned char getValue(int i) const {
+            return ptr[i];
+        }
+
+        /**
             Returns 0..MAX_UNNORM_VALUE value at (x,y) position
         */
         inline unsigned char getValue(int x, int y) const {
@@ -280,6 +307,13 @@ namespace Beatmup {
         */
         inline pixint1 operator()(int x, int y) const {
             return pixint1{ getValue(x, y) };
+        }
+
+        /**
+            Returns 0..255 value at position shifted by i pixels in scanline order with respect to the current position
+        */
+        inline const pixint1 operator[](int i) const {
+            return pixint1{ getValue(i) };
         }
 
         /**

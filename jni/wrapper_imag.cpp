@@ -1113,6 +1113,23 @@ JNIMETHOD(jint, getMode, Java_Beatmup_Imaging_Filters_Resampler, getMode)
 }
 
 
+JNIMETHOD(void, setCubicParameter, Java_Beatmup_Imaging_Filters_Resampler, setCubicParameter)
+    (JNIEnv * jenv, jobject, jlong hInstance, jfloat val)
+{
+    BEATMUP_ENTER;
+    BEATMUP_OBJ(Beatmup::BitmapResampler, resampler, hInstance);
+    resampler->setCubicParameter((float)val);
+}
+
+
+JNIMETHOD(jfloat, getCubicParameter, Java_Beatmup_Imaging_Filters_Resampler, getCubicParameter)
+    (JNIEnv * jenv, jobject, jlong hInstance)
+{
+    BEATMUP_ENTER;
+    BEATMUP_OBJ(Beatmup::BitmapResampler, resampler, hInstance);
+    return (jfloat)resampler->getCubicParameter();
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 //                                      COLOR MATRIX
 /////////////////////////////////////////////////////////////////////////////////////////////
