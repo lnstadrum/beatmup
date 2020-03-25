@@ -23,6 +23,22 @@ JNIEXPORT jlong JNICALL Java_Beatmup_Shading_Shader_newShader
 JNIEXPORT void JNICALL Java_Beatmup_Shading_Shader_setSourceCode
   (JNIEnv *, jobject, jlong, jstring);
 
+/*
+ * Class:     Beatmup_Shading_Shader
+ * Method:    getInputImageId
+ * Signature: ()Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_Beatmup_Shading_Shader_getInputImageId
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     Beatmup_Shading_Shader
+ * Method:    getInputImageDeclType
+ * Signature: ()Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_Beatmup_Shading_Shader_getInputImageDeclType
+  (JNIEnv *, jclass);
+
 #ifdef __cplusplus
 }
 #endif

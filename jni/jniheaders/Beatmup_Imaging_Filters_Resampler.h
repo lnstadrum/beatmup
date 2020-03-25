@@ -23,6 +23,22 @@ JNIEXPORT jlong JNICALL Java_Beatmup_Imaging_Filters_Resampler_newResampler
 JNIEXPORT void JNICALL Java_Beatmup_Imaging_Filters_Resampler_setBitmaps
   (JNIEnv *, jobject, jlong, jobject, jobject);
 
+/*
+ * Class:     Beatmup_Imaging_Filters_Resampler
+ * Method:    setMode
+ * Signature: (JI)V
+ */
+JNIEXPORT void JNICALL Java_Beatmup_Imaging_Filters_Resampler_setMode
+  (JNIEnv *, jobject, jlong, jint);
+
+/*
+ * Class:     Beatmup_Imaging_Filters_Resampler
+ * Method:    getMode
+ * Signature: (J)I
+ */
+JNIEXPORT jint JNICALL Java_Beatmup_Imaging_Filters_Resampler_getMode
+  (JNIEnv *, jobject, jlong);
+
 #ifdef __cplusplus
 }
 #endif

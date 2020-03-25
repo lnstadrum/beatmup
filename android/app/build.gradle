@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion 29
     flavorDimensions "version"
     defaultConfig {
         applicationId "xyz.beatmup.android.app"
-        minSdkVersion 24
-        targetSdkVersion 26
+        minSdkVersion 26
+        targetSdkVersion 29
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"

@@ -167,7 +167,7 @@ JNIMETHOD(jlong, newPlayback, Java_Beatmup_Audio_Playback, newPlayback)
 {
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::Context, ctx, jCtx);
-    return (jlong) new Beatmup::Android::SLESPlayback();
+    return (jlong) new Beatmup::Audio::Android::SLESPlayback();
 }
 
 

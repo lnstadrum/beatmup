@@ -1,5 +1,7 @@
 package Beatmup.Shading;
 
+import java.util.Map;
+
 import Beatmup.Bitmap;
 import Beatmup.Context;
 import Beatmup.Task;
@@ -8,13 +10,14 @@ import Beatmup.Task;
  * Lightweight task applying a layer shader to a bitmap
  */
 public class ShaderApplicator extends Task {
-    Bitmap input, output;
+    Map<String, Bitmap> samplers;
+    Bitmap output;
     Shader shader;
 
     private static native long newShaderApplicator();
-    private native void setInput(long handle, Bitmap bitmap);
+    private native void addSampler(long handle, Bitmap bitmap, String uniformName);
     private native void setOutput(long handle, Bitmap bitmap);
-    private native void setLayerShader(long handle, Shader shader);
+    private native void setShader(long handle, Shader shader);
 
     public ShaderApplicator(Context context) {
         super(context, newShaderApplicator());
@@ -22,20 +25,20 @@ public class ShaderApplicator extends Task {
 
     public void setShader(Shader shader) {
         this.shader = shader;
-        setLayerShader(handle, shader);
+        setShader(handle, shader);
     }
 
     public Shader getShader() {
         return shader;
     }
 
-    public Bitmap getInput() {
-        return input;
+    public void addSampler(Bitmap input, String name) {
+        this.samplers.put(name, input);
+        addSampler(handle, input, name);
     }
 
-    public void setInput(Bitmap input) {
-        this.input = input;
-        setInput(handle, input);
+    public void addSampler(Bitmap input) {
+        addSampler(input, Shader.INPUT_IMAGE_ID);
     }
 
     public Bitmap getOutput() {

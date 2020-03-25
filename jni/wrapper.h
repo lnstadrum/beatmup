@@ -26,7 +26,7 @@
 
 #define BEATMUP_STRING(var) \
     const char* javaChar = jenv->GetStringUTFChars(var, 0); \
-    const std::string name##Str(javaChar); \
+    const std::string var##Str(javaChar); \
     jenv->ReleaseStringUTFChars(var, javaChar)
 
 
