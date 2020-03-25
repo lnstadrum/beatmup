@@ -1,5 +1,7 @@
 package Beatmup.Shading;
 
+import android.util.ArrayMap;
+
 import java.util.Map;
 
 import Beatmup.Bitmap;
@@ -21,6 +23,7 @@ public class ShaderApplicator extends Task {
 
     public ShaderApplicator(Context context) {
         super(context, newShaderApplicator());
+        samplers = new ArrayMap<>();
     }
 
     public void setShader(Shader shader) {
