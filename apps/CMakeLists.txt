@@ -12,6 +12,8 @@ endfunction()
 set(PROFILE_PLATFORM_SPECIFIC_BITMAP ON)
 include("../core/CMakeLists.in")
 
+set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -O3")
+
 add_app(BasicRendering    basic_rendering/app.cpp)
 add_app(FloodFill         flood_fill/app.cpp)
 add_app(Shaderer          shaderer/app.cpp)
