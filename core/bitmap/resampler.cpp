@@ -101,6 +101,13 @@ bool BitmapResampler::process(TaskThread& thread) {
             );
             break;
 
+        case Mode::LINEAR:
+            BitmapProcessing::pipeline<BitmapResamplingTools::BilinearResampling>(
+                *input, *output, 0, 0,
+                srcRect, destRect, thread
+            );
+            break;
+
         case Mode::CONVNET:
             break;
 

@@ -9,8 +9,8 @@
 
 namespace Beatmup {
 namespace BitmapResamplingTools{
-    
-    
+
+
     template<class in_t, class out_t> class NearestNeigborResampling {
     public:
 
@@ -21,8 +21,8 @@ namespace BitmapResamplingTools{
             const int
                 srcW = src.width(), srcH = src.height(),
                 dstW = dst.width(), dstH = dst.height(),
-                shiftX = dstW / 2,
-                shiftY = dstH / 2;
+                shiftX = srcW / 2,
+                shiftY = srcH / 2;
 
             // dest image slice to process in the current thread
             const int
@@ -32,7 +32,7 @@ namespace BitmapResamplingTools{
             for (int y = sliceStart; y < sliceStop; ++y) {
                 out.goTo(dst.a.x, dst.a.y + y);
                 const int sy = src.a.y + (y * srcH + shiftY) / dstH;
-                
+
                 for (int x = 0; x < dstW; ++x) {
                     const int sx = src.a.x + (x * srcW + shiftX) / dstW;
                     in.goTo(sx, sy);
@@ -45,7 +45,7 @@ namespace BitmapResamplingTools{
             }
         }
     };
-    
+
 
     template<class in_t, class out_t> class BoxResampling {
     public:
@@ -97,4 +97,71 @@ namespace BitmapResamplingTools{
             }
         }
     };
-}}
+
+
+    template<class in_t, class out_t> class BilinearResampling {
+    public:
+
+        /**
+            Resamples a rectangle from an input bitmap to a rectangle in an output bitmap by bilinear interpolation
+        */
+        static void process(in_t in, out_t out, IntRectangle& src, IntRectangle& dst, const TaskThread& tt) {
+            const int
+                srcW = src.width(), srcH = src.height(),
+                dstW = dst.width(), dstH = dst.height(),
+                shiftX = srcW > dstW ? srcW / 2 : srcW < dstW ? -srcW / 2 : 0,
+                shiftY = srcH > dstH ? srcH / 2 : srcH < dstH ? -srcH / 2 : 0;
+
+            // dest image slice to process in the current thread
+            const int
+              sliceStart = tt.currentThread()       * dstH / tt.totalThreads(),
+              sliceStop  = (tt.currentThread() + 1) * dstH / tt.totalThreads();
+
+            for (int y = sliceStart; y < sliceStop; ++y) {
+                out.goTo(dst.a.x, dst.a.y + y);
+                const float fsy = (float)(y * srcH + shiftY) / dstH;
+                const int   isy = (int)fsy;
+                const float fy = fsy - (float)isy, _fy = 1 - fy;
+                const int   sy = src.a.y + isy;
+
+                in.goTo(src.a.x, sy);
+                const int
+                    lineJump = sy < srcH - 1 ? srcW - 1 : -1,
+                    xBound = srcW - 1;
+
+                typename out_t::pixtype acc;
+                for (int x = 0; x < dstW; ++x) {
+
+                    const float fsx = (float)(x * srcW + shiftX) / dstW;
+                    const int   isx = (int)fsx;
+                    const float fx = fsx - (float)isx;
+                    const int   sx = src.a.x + isx;
+
+                    in.goTo(sx, sy);
+                    if (sx < xBound) {
+                        acc = in() * (1 - fx) * _fy;
+                        in++;
+                        acc = acc + in() * fx * _fy;
+                        in += lineJump;
+                        acc = acc + in() * (1 - fx) * fy;
+                        in++;
+                        acc = acc + in() * fx * fy;
+                    }
+                    else {
+                        acc = in() * _fy;
+                        in += lineJump + 1;
+                        acc = acc + in() * fy;
+                    }
+
+                    out = acc;
+                    out++;
+                }
+
+                if (tt.isTaskAborted())
+                    return;
+            }
+        }
+    };
+
+}
+}

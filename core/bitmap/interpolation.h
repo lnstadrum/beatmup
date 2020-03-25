@@ -3,7 +3,9 @@
 */
 #pragma once
 #include "bitmap_access.h"
+
 namespace Beatmup {
+
     /**
         Nearest neighbour bitmap interpolation
     */
@@ -17,12 +19,14 @@ namespace Beatmup {
             return scanner::operator() (roundf_fast(x), roundf_fast(y));
         }
     };
+
     typedef NearestNeighborInterpolator < SingleByteBitmapReader, pixint1 > SingleByteNearestNeighborInterpolator;
     typedef NearestNeighborInterpolator < TripleByteBitmapReader, pixint3 > TripleByteNearestNeighborInterpolator;
     typedef NearestNeighborInterpolator < QuadByteBitmapReader, pixint4 > QuadByteNearestNeighborInterpolator;
     typedef NearestNeighborInterpolator < SingleFloatBitmapReader, pixfloat1 > SingleFloatNearestNeighborInterpolator;
     typedef NearestNeighborInterpolator < TripleFloatBitmapReader, pixfloat3 > TripleFloatNearestNeighborInterpolator;
     typedef NearestNeighborInterpolator < QuadFloatBitmapReader, pixfloat4 > QuadFloatNearestNeighborInterpolator;
+
     /**
         Single byte bitmap bilinear interpolation
     */
@@ -52,6 +56,7 @@ namespace Beatmup {
                     return pixint1{ p[0] };
         }
     };
+
     /**
         Triple byte bitmap bilinear interpolation
     */
@@ -101,6 +106,7 @@ namespace Beatmup {
                     return pixint3{ p[0], p[1], p[2] };
         }
     };
+
     /**
         Quad byte bitmap bilinear interpolation
     */
@@ -155,6 +161,7 @@ namespace Beatmup {
                     return pixint4{ p[0], p[1], p[2], p[3] };
         }
     };
+
     /**
         Floating point bitmap bilinear interpolation, implemented using pixel arithmetics
     */
@@ -185,6 +192,8 @@ namespace Beatmup {
                     return p[0];
         }
     };
+
     typedef FloatBilinearInterpolator < SingleFloatBitmapReader, pixfloat1 > SingleFloatBilinearInterpolator;
     typedef FloatBilinearInterpolator < TripleFloatBitmapReader, pixfloat3 > TripleFloatBilinearInterpolator;
-    typedef FloatBilinearInterpolator < QuadFloatBitmapReader, pixfloat4 > QuadFloatBilinearInterpolator;}
+    typedef FloatBilinearInterpolator < QuadFloatBitmapReader, pixfloat4 > QuadFloatBilinearInterpolator;
+}
