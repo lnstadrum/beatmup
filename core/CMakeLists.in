@@ -195,6 +195,3 @@ elseif(USE_EGL)
 else()
 	message(FATAL_ERROR "OpenGL backend not specified. Please define USE_OPENGL, USE_GLX or USE_EGL.")
 endif()
-
-
-set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DBEATMUP_DEBUG")
