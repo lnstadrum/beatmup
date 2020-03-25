@@ -3,7 +3,7 @@ STRINGIFY(
         varying highp vec2 texCoord;
         uniform highp vec2 d1;
 
-        lowp vec4 fetch(sampler2D image, float x, float y) {
+        lowp vec4 fetch(sampler2D image, highp float x, highp float y) {
             return texture2D(image, vec2(x, y));
         }
 
@@ -18,7 +18,7 @@ STRINGIFY(
             y1 = texCoord.y,
             y2 = texCoord.y + d1.y;
     
-        vec4 i0[3], i1[3], i2[3], i3[3], i4[3], i5[3], i6[3], i7[3], i8[3];
+        lowp vec4 i0[3], i1[3], i2[3], i3[3], i4[3], i5[3], i6[3], i7[3], i8[3];
         for (int i = 0; i < 3; ++i) {
             i0[i] = fetch(images[i], x0, y0);
             i1[i] = fetch(images[i], x1, y0);

@@ -83,9 +83,9 @@ void X2UpsamplingNetwork::process(GraphicPipeline& gpu, GL::TextureHandler& inpu
 
     layer5->process(ctx, gpu, layer4, L4_SIZE);
 
+    demux.setInteger("convnetOutput", 1);
     demux.prepare(gpu, &input, TextureParam::INTERP_LINEAR, &output, AffineMapping::IDENTITY);
     gpu.bind(layer5->getOutput(), 1, TextureParam::INTERP_NEAREST);
-    demux.setInteger("convnetOutput", 1);
     demux.process(gpu);
 }
 

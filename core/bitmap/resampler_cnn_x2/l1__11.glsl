@@ -4,7 +4,7 @@ STRINGIFY(
         uniform highp vec2 d1;
         uniform highp vec2 d2;
 
-        lowp float fetch(float x, float y) {
+        lowp float fetch(highp float x, highp float y) {
            return dot(texture2D(image, vec2(x, y)).rgb, vec3(0.299, 0.587, 0.114));
         }
 
