@@ -4,7 +4,7 @@ STRINGIFY(
 
         void main() {
             
-        vec4 f[8];
+        lowp vec4 f[8];
         for (int i = 0; i < 8; ++i)
             f[i] = texture2D(images[i], texCoord);
     
