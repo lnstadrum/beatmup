@@ -39,6 +39,22 @@ JNIEXPORT void JNICALL Java_Beatmup_Imaging_Filters_Resampler_setMode
 JNIEXPORT jint JNICALL Java_Beatmup_Imaging_Filters_Resampler_getMode
   (JNIEnv *, jobject, jlong);
 
+/*
+ * Class:     Beatmup_Imaging_Filters_Resampler
+ * Method:    setCubicParameter
+ * Signature: (JF)V
+ */
+JNIEXPORT void JNICALL Java_Beatmup_Imaging_Filters_Resampler_setCubicParameter
+  (JNIEnv *, jobject, jlong, jfloat);
+
+/*
+ * Class:     Beatmup_Imaging_Filters_Resampler
+ * Method:    getCubicParameter
+ * Signature: (J)F
+ */
+JNIEXPORT jfloat JNICALL Java_Beatmup_Imaging_Filters_Resampler_getCubicParameter
+  (JNIEnv *, jobject, jlong);
+
 #ifdef __cplusplus
 }
 #endif

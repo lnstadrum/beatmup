@@ -5,9 +5,11 @@
 
 using namespace Beatmup;
 
+const float BitmapResampler::DEFAULT_CUBIC_PARAMETER = -0.5f;
+
 
 BitmapResampler::BitmapResampler() :
-    input(nullptr), output(nullptr), mode(Mode::NEAREST_NEIGHBOR), convnet(nullptr)
+    input(nullptr), output(nullptr), mode(Mode::CUBIC), cubicParameter(DEFAULT_CUBIC_PARAMETER), convnet(nullptr)
 {}
 
 
@@ -29,6 +31,11 @@ void BitmapResampler::setBitmaps(AbstractBitmap* input, AbstractBitmap* output) 
 
 void BitmapResampler::setMode(Mode mode) {
     this->mode = mode;
+}
+
+
+void BitmapResampler::setCubicParameter(float alpha) {
+    cubicParameter = alpha;
 }
 
 
@@ -105,6 +112,13 @@ bool BitmapResampler::process(TaskThread& thread) {
             BitmapProcessing::pipeline<BitmapResamplingTools::BilinearResampling>(
                 *input, *output, 0, 0,
                 srcRect, destRect, thread
+            );
+            break;
+
+        case Mode::CUBIC:
+            BitmapProcessing::pipeline<BitmapResamplingTools::BicubicResampling>(
+                *input, *output, 0, 0,
+                srcRect, destRect, cubicParameter, thread
             );
             break;
 

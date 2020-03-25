@@ -20,6 +20,8 @@ public class Resampler extends Task {
     private native void setBitmaps(long handle, Bitmap in, Bitmap out);
     private native void setMode(long handle, int mode);
     private native int getMode(long handle);
+    private native void setCubicParameter(long handle, float val);
+    private native float getCubicParameter(long handle);
 
     public Resampler(Context context) {
         super(context, newResampler());
@@ -35,5 +37,13 @@ public class Resampler extends Task {
 
     public Mode getMode() {
         return Mode.values()[ getMode(handle) ];
+    }
+
+    public void setCubicParameter(float alpha) {
+        setCubicParameter(handle, alpha);
+    }
+
+    public float getCubicParameter() {
+        return getCubicParameter();
     }
 }

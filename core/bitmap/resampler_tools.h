@@ -10,7 +10,6 @@
 namespace Beatmup {
 namespace BitmapResamplingTools{
 
-
     template<class in_t, class out_t> class NearestNeigborResampling {
     public:
 
@@ -124,7 +123,6 @@ namespace BitmapResamplingTools{
                 const float fy = fsy - (float)isy, _fy = 1 - fy;
                 const int   sy = src.a.y + isy;
 
-                in.goTo(src.a.x, sy);
                 const int
                     lineJump = sy < srcH - 1 ? srcW - 1 : -1,
                     xBound = srcW - 1;
@@ -152,6 +150,115 @@ namespace BitmapResamplingTools{
                         in += lineJump + 1;
                         acc = acc + in() * fy;
                     }
+
+                    out = acc;
+                    out++;
+                }
+
+                if (tt.isTaskAborted())
+                    return;
+            }
+        }
+    };
+
+
+    template<class in_t, class out_t> class BicubicResampling {
+    private:
+        /**
+            Precomputes kernel coefficients in function of bicubic kernel parameter.
+        */
+        class BicubicKernel {
+        private:
+            float c0[2], c1[2], c2[3];
+            float coeff[4];
+        public:
+            BicubicKernel(const float alpha) {
+                // alpha*x**3 - 2*alpha*x**2 + alpha*x
+                c0[0] = alpha;
+                c0[1] = -2 * alpha;
+                //alpha*x**3 - alpha*x**2 + 2*x**3 - 3*x**2 + 1
+                c1[0] = - alpha - 3;
+                c1[1] = alpha + 2;
+                // -alpha*x**3 + 2*alpha*x**2 - alpha*x - 2*x**3 + 3*x**2
+                c2[0] = -alpha;
+                c2[1] = 2 * alpha + 3;
+                c2[2] = - alpha - 2;
+            }
+
+            /**
+                Computes the kernel itself for a given phase.
+            */
+            void operator()(float x) {
+                const float xx = x * x, xxx = xx * x;
+                coeff[0] = c0[0] * (xxx + x) + c0[1] * xx;
+                coeff[1] = c1[1] * xxx + c1[0] * xx + 1;
+                coeff[2] = c2[2] * xxx + c2[1] * xx + c2[0] * x;
+                coeff[3] = 1 - coeff[0] - coeff[1] - coeff[2];
+            }
+
+            inline const float operator[](const int i) const {
+                return coeff[i];
+            }
+        };
+
+    public:
+        /**
+            Resamples a rectangle from an input bitmap to a rectangle in an output bitmap applying a bicubic kernel
+        */
+        static void process(in_t in, out_t out, IntRectangle& src, IntRectangle& dst, const float alpha, const TaskThread& tt) {
+            const int
+                srcW = src.width(), srcH = src.height(),
+                dstW = dst.width(), dstH = dst.height(),
+                shiftX = srcW > dstW ? srcW / 2 : srcW < dstW ? -srcW / 2 : 0,
+                shiftY = srcH > dstH ? srcH / 2 : srcH < dstH ? -srcH / 2 : 0;
+
+            // dest image slice to process in the current thread
+            const int
+              sliceStart = tt.currentThread()       * dstH / tt.totalThreads(),
+              sliceStop  = (tt.currentThread() + 1) * dstH / tt.totalThreads();
+
+            BicubicKernel kx(alpha), ky(alpha);
+
+            for (int y = sliceStart; y < sliceStop; ++y) {
+                out.goTo(dst.a.x, dst.a.y + y);
+                const float fsy = (float)(y * srcH + shiftY) / dstH;
+                const int   isy = (int)fsy;
+                const float fy = fsy - (float)isy, _fy = 1 - fy;
+                const int   sy = src.a.y + isy;
+
+                const int lineJump[3] = {
+                    sy > 0 ? srcW : 0,
+                    sy < srcH - 1 ? srcW : 0,
+                    sy < srcH - 2 ? srcW : 0
+                };
+
+                // preparing kernel
+                ky(fy);
+
+                typename out_t::pixtype acc;
+                for (int x = 0; x < dstW; ++x) {
+
+                    const float fsx = (float)(x * srcW + shiftX) / dstW;
+                    const int   isx = (int)fsx;
+                    const float fx = fsx - (float)isx;
+                    const int   sx = src.a.x + isx;
+
+                    kx(fx);
+
+                    const int pixJump[3] = {
+                        sx > 0        ? -1 : 0,
+                        sx < dstW - 1 ? +1 : 0,
+                        sx < dstW - 2 ? +2 : 0
+                    };
+
+                    in.goTo(sx, sy > 0 ? sy - 1 : 0);
+                    acc =       in[pixJump[0]] * kx[0] * ky[0] + in() * kx[1] * ky[0] + in[pixJump[1]] * kx[2] * ky[0] + in[pixJump[2]] * kx[3] * ky[0];
+                    in += lineJump[0];
+                    acc = acc + in[pixJump[0]] * kx[0] * ky[1] + in() * kx[1] * ky[1] + in[pixJump[1]] * kx[2] * ky[1] + in[pixJump[2]] * kx[3] * ky[1];
+                    in += lineJump[1];
+                    acc = acc + in[pixJump[0]] * kx[0] * ky[2] + in() * kx[1] * ky[2] + in[pixJump[1]] * kx[2] * ky[2] + in[pixJump[2]] * kx[3] * ky[2];
+                    in += lineJump[2];
+                    acc = acc + in[pixJump[0]] * kx[0] * ky[3] + in() * kx[1] * ky[3] + in[pixJump[1]] * kx[2] * ky[3] + in[pixJump[2]] * kx[3] * ky[3];
 
                     out = acc;
                     out++;

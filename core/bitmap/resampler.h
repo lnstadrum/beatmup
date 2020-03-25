@@ -27,6 +27,7 @@ namespace Beatmup {
         AbstractBitmap *input, *output;                     //!< input and output bitmaps
         IntRectangle srcRect, destRect;
         Mode mode;
+        float cubicParameter;
 
         X2UpsamplingNetwork* convnet;
 
@@ -37,12 +38,17 @@ namespace Beatmup {
         virtual void beforeProcessing(ThreadIndex, GraphicPipeline*);
         virtual void afterProcessing(ThreadIndex, bool);
     public:
+        static const float DEFAULT_CUBIC_PARAMETER;
+
         BitmapResampler();
         ~BitmapResampler();
 
         void setBitmaps(AbstractBitmap* input, AbstractBitmap* output);
         void setMode(Mode mode);
         Mode getMode() const { return mode; }
+
+        void setCubicParameter(float alpha);
+        float getCubicParameter() const { return cubicParameter; }
 
         void setInputRect(const IntRectangle& rect);
         void setOutputRect(const IntRectangle& rect);
