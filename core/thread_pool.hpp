@@ -19,7 +19,7 @@ class ThreadPool {
     public:
         inline TaskThreadImpl(ThreadIndex current, ThreadPool& pool) :
                 TaskThread(current),
-                pool(pool), current(current), syncPointIdx(0), running(false), terminateFlag(false),
+                pool(pool), current(current), running(false), terminateFlag(false),
                 internalThread(&TaskThreadImpl::threadFunc, this)
         {}
 
@@ -49,7 +49,6 @@ class ThreadPool {
 
         ThreadPool& pool;
         ThreadIndex current;			//!< current thread index
-        unsigned int syncPointIdx;		//!< synchronization point index passed by this worker
         bool running;					//!< if not, the thread will sleep
         bool terminateFlag;				//!< if `true`, the thread is requested to terminate
         // declaration order matters!
@@ -113,8 +112,8 @@ private:
             }
 
             // fetch a task
-            syncHits = 0;
-            syncPointCtr = 0;
+            syncHitsCount = 0;
+            syncHitsBound = 0;
             abortExternally = abortInternally = false;
             failFlag = false;
             repeatFlag = false;
@@ -189,9 +188,6 @@ private:
                 continue;
             }
 
-            // setting up local stuff
-            thread.syncPointIdx = 0;
-
             // wake up workers
             workersLock.lock();
             for (ThreadIndex t = 0; t < threadCount; t++)
@@ -205,15 +201,12 @@ private:
                     do {
                         bool result = useGpuForCurrentTask ? currentJob.task->processOnGPU(*gpu, thread) : currentJob.task->process(thread);
                         if (!result) {
-                            // if stopped, set the flag and notify other workers if they're waiting for synchro
                             abortInternally = true;
-                            synchroCvar.notify_all();
                         }
                     } while (currentJob.mode == TaskExecutionMode::PERSISTENT && !abortInternally && !abortExternally);
                 }
                 catch (const Exception& ex) {
                     eventListener.taskFail(myIndex, *currentJob.task, ex);
-                    synchroCvar.notify_all();
                     failFlag = true;
                 }
 
@@ -222,6 +215,9 @@ private:
 
             // decrease remaining workers count
             remainingWorkers--;
+
+            // notify other workers if they're waiting for synchro
+            synchroCvar.notify_all();
 
             // call afterProcessing if no more threads are working
             if (currentJob.task && remainingWorkers == 0)
@@ -290,21 +286,17 @@ private:
             // do the job
             JobContext job = currentJob;
             lock.unlock();
-            thread.syncPointIdx = 0;
 
             /* UNLOCKED SECTION */
             try {
                 do {
                     if (!job.task->process(thread)) {
-                        // if stopped, set the flag and notify other workers if they're waiting for synchro
                         abortInternally = true;
-                        synchroCvar.notify_all();
                     }
                 } while (job.mode == TaskExecutionMode::PERSISTENT && !abortInternally && !abortExternally);
             }
             catch (const Exception& ex) {
                 eventListener.taskFail(myIndex, *job.task, ex);
-                synchroCvar.notify_all();
                 failFlag = true;
             }
 
@@ -313,6 +305,9 @@ private:
 
             // decrease remaining workers count
             remainingWorkers--;
+
+            // notify other workers if they're waiting for synchro
+            synchroCvar.notify_all();
 
             // call afterProcessing if no more threads are working
             if (remainingWorkers == 0) {
@@ -337,19 +332,26 @@ private:
 
 
     inline void synchronizeThread(TaskThreadImpl& thread) {
-        std::unique_lock<std::mutex> lock(synchro);
-        syncHits++;
-        thread.syncPointIdx++;
-        synchroCvar.notify_all();
+        std::unique_lock<std::mutex> lock(synchro);    //<------- LOCKING HERE
+        syncHitsCount++;
 
-        // wait while other threads reach this syncronization point
-        while (!(abortExternally || abortInternally) &&  syncHits < currentWorkerCount &&  thread.syncPointIdx > syncPointCtr)
-            synchroCvar.wait(lock);
+        // check if this thread is the last one passing the sytnchronization point
+        if (syncHitsCount >= syncHitsBound + remainingWorkers) {
+            syncHitsBound = syncHitsCount;
+            lock.unlock();    //<------- UNLOCKING HERE
+            // do not block, wake up the others
+            synchroCvar.notify_all();
+        }
 
-        // if we are in the first thread resuming after synchronization, step sync point counter in the executor
-        if (syncHits > 0) {
-            syncHits = 0;
-            syncPointCtr++;
+        else {
+            // Wait while other threads reach this synchronization point or the remaining number of workers drops
+            // (at the end of the task), or pool is terminating.
+            // Do not check if the task aborted here to keep threads synchronized.
+            const int myBound = syncHitsBound;
+            while (!thread.terminateFlag  &&  myBound + remainingWorkers - syncHitsCount > 0)
+                synchroCvar.wait(lock);
+
+            lock.unlock();    //<------- UNLOCKING HERE
         }
     }
 
@@ -371,10 +373,7 @@ private:
 
     ThreadIndex
             currentWorkerCount,
-            remainingWorkers,		//!< number of workers performing the current task right now
-            syncHits;				//!< number of workers reached current synchronization point
-
-    unsigned int syncPointCtr;      //!< current synchronization point index
+            remainingWorkers;		//!< number of workers performing the current task right now
 
     std::condition_variable
             synchroCvar,			//!< workers synchronization control within the current task
@@ -385,6 +384,11 @@ private:
             synchro,				//!< workers synchronization control within the current task
             workersAccess,			//!< workers lifecycle access control
             jobsAccess;             //!< jobs queue access control
+
+    int
+            syncHitsCount,    //!< number of times synchronization is hit so far by all workers together
+            syncHitsBound;    //!< last sync hits count when all the workers were synchronized
+
 
     bool
             isGpuTested,			//!< if `true`, there was an attempt to warm up the GPU
@@ -403,7 +407,7 @@ public:
             jobCounter(1),
             threadCount(limitThreadCount),
             currentWorkerCount(0), remainingWorkers(0),
-            syncHits(0), syncPointCtr(0),
+            syncHitsCount(0), syncHitsBound(0),
             isGpuTested(false),
             abortExternally(false), abortInternally(false),
             failFlag(false), repeatFlag(false),
