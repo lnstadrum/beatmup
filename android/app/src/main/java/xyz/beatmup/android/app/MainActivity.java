@@ -49,6 +49,8 @@ import xyz.beatmup.android.app.samples.BasicCameraUse;
 import xyz.beatmup.android.app.samples.BasicRendering;
 import xyz.beatmup.android.app.samples.HarmonicPlayback;
 import xyz.beatmup.android.app.samples.TestSample;
+import xyz.beatmup.android.app.samples.UpsamplingConvnet;
+import xyz.beatmup.android.app.samples.UpsamplingConvnetOnCamera;
 import xyz.beatmup.android.app.samples.VideoDecoding;
 import xyz.beatmup.android.app.samples.WavFilePlayback;
 
@@ -235,10 +237,12 @@ public class MainActivity extends Activity {
 
             },
 
-
             new BasicCameraUse(),
 
             new VideoDecoding(this),
+
+            new UpsamplingConvnet(),
+            new UpsamplingConvnetOnCamera(),
 
             new TestSample() {
                 private Multitask multitask;
@@ -508,7 +512,7 @@ public class MainActivity extends Activity {
     private void setupCamera() {
         try {
             camera = new Camera(context, this);
-            camera.chooseResolution(1920,1080, Camera.ResolutionSelectionPolicy.SMALLEST_COVERAGE);
+            camera.chooseResolution(256,256, Camera.ResolutionSelectionPolicy.SMALLEST_COVERAGE);
             Log.i("Beatmup", "Camera resolution: "
                     + Integer.toString(camera.getResolution().getWidth()) + "x"
                     + Integer.toString(camera.getResolution().getHeight()));
