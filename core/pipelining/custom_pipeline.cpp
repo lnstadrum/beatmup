@@ -36,7 +36,7 @@ public:
         task.getTask().beforeProcessing(
                 task.threadCount,
                 task.executionMode != AbstractTask::ExecutionTarget::doNotUseGPU && gpu ?
-                    gpu : NULL
+                    gpu : nullptr
         );
 
         // wait for other workers
@@ -167,20 +167,15 @@ public:
             std::lock_guard<std::mutex> lock(tasksAccess);
             currentTask = tasks.begin();
             pipeline.route(*this);
-            thread.synchronize();
         }
 
         // secondary worker thread
         else {
             do {
                 thread.synchronize();
-                if (allTasksDone() || allTasksAborted())
-                    break;
-
-                if (thread.currentThread() < (*currentTask)->threadCount)
+                if (!allTasksDone() && !allTasksAborted() && thread.currentThread() < (*currentTask)->threadCount)
                     if (!(*currentTask)->getTask().process(thread))
                         abort = true;
-
                 thread.synchronize();
             } while (!allTasksDone() && !allTasksAborted());
         }
@@ -188,6 +183,7 @@ public:
         return !abort;
     }
 };
+
 
 AbstractTask::ExecutionTarget CustomPipeline::getExecutionTarget() const {
     return impl->getExecutionTarget();
@@ -206,7 +202,7 @@ void CustomPipeline::afterProcessing(ThreadIndex threadCount, bool aborted) {
 }
 
 bool CustomPipeline::process(TaskThread &thread) {
-    return impl->process(NULL, thread, *this);
+    return impl->process(nullptr, thread, *this);
 }
 
 bool CustomPipeline::processOnGPU(GraphicPipeline &gpu, TaskThread &thread) {
