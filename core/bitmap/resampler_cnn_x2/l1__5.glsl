@@ -1,5 +1,5 @@
 STRINGIFY(
-        uniform sampler2D image;
+        beatmupInputImage image;
         varying highp vec2 texCoord;
         uniform highp vec2 d1;
         uniform highp vec2 d2;
