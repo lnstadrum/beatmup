@@ -61,6 +61,7 @@ public class MainActivity extends Activity {
     TestSample currentTest;
     Camera camera;
     Dialog testSamplesSelectionDialog;
+    int drawingJob;
 
     final TestSample[] TEST_SAMPLES = new TestSample[] {
 
@@ -348,8 +349,10 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // init context
+        // init context with two thread pools
         context = new Context(2, getFilesDir());
+
+        // shape the secondary pool to a single thread
         context.limitWorkerCount(1, 1);
 
         // setting up a renderer
@@ -365,13 +368,13 @@ public class MainActivity extends Activity {
             e.printStackTrace();
         }
 
-        // camera
+        // prepare camera
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED)
             ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, 0);
         else
             setupCamera();
 
-        //
+        // ask for permission to read external storage
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED)
             ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.READ_EXTERNAL_STORAGE}, 0);
 
@@ -402,7 +405,6 @@ public class MainActivity extends Activity {
             public boolean onGesture(AffineMapping gesture) {
                 if (pickedLayer != null) {
                     pickedLayer.setTransform(gesture);
-                    context.repeatTask(drawingTask, true);
                     currentTest.onGesture(pickedLayer, gesture);
                 }
                 return true;
@@ -412,7 +414,6 @@ public class MainActivity extends Activity {
             public void onRelease(AffineMapping gesture) {
                 if (pickedLayer != null) {
                     pickedLayer.setTransform(gesture);
-                    context.repeatTask(drawingTask, true);
                 }
             }
 
@@ -437,19 +438,16 @@ public class MainActivity extends Activity {
             entry.setOnClickListener(testSampleClickListener);
         }
 
-        builder.setView(listing)
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-
-                    }
-                });
+        builder.setView(listing);
         builder.setTitle("Select a test sample");
+        builder.setCancelable(false);
+
         testSamplesSelectionDialog = builder.show();
 
         findViewById(R.id.buttonShowTestList).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                context.abortJob(drawingJob);
                 testSamplesSelectionDialog.show();
             }
         });
@@ -459,42 +457,31 @@ public class MainActivity extends Activity {
     private class TestSampleClickListener implements View.OnClickListener {
         @Override
         public void onClick(View view) {
+            // close everything
             testSamplesSelectionDialog.hide();
             context.recycleGPUGarbage();
-            if (view.getTag() != currentTest) {
-                if (currentTest != null && currentTest.usesCamera())
-                    camera.close();
-                currentTest = (TestSample)view.getTag();
-
-                try {
-                    Scene scene = currentTest.designScene(renderer, MainActivity.this, currentTest.usesCamera() ? camera : null);
-                    renderer.setScene(scene);
-                    drawingTask = currentTest.getDrawingTask();
-                    if (drawingTask == null)
-                        drawingTask = renderer;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-                if (currentTest.usesCamera()) {
-                    camera.open();
-                    camera.setCallback(new Camera.Callback() {
-                        public void onAccessError(Camera camera) {}
-                        public void onConfigureFailed(Camera camera) {}
-                        public void onCameraError(Camera camera, int code) {}
-                        public void onCameraOpened(Camera camera) {}
-                        public void onCameraClosed(Camera camera) {}
-                        public void onFacesDetected(Camera camera, Face[] faces) {}
-                        public void onFrameReceived(Camera camera) {
-                            context.repeatTask(drawingTask, false);
-                        }
-                    });
-                }
-            }
             renderer.resetOutput();
+            if (currentTest != null && currentTest.usesCamera())
+                camera.close();
 
-            float time = context.performTask(drawingTask);
-            ((TextView) findViewById(R.id.textInfo)).setText(String.format("%.2f ms", Float.valueOf(time)));
+            // construct new scene
+            currentTest = (TestSample)view.getTag();
+            try {
+                Scene scene = currentTest.designScene(renderer, MainActivity.this, currentTest.usesCamera() ? camera : null);
+                renderer.setScene(scene);
+                drawingTask = currentTest.getDrawingTask();
+                if (drawingTask == null)
+                    drawingTask = renderer;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            // open camera if required by the selected test sample
+            if (currentTest.usesCamera())
+                camera.open();
+
+            // start drawing
+            drawingJob = context.submitPersistentTask(drawingTask);
         }
     }
 

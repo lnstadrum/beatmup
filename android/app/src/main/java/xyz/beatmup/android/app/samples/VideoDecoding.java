@@ -36,23 +36,25 @@ public class VideoDecoding extends TestSample {
         decoder1.open(app.getAssets().openFd("VID_20190608_200239.mp4"));
         Decoder.VideoTrack videoTrack1 = decoder1.selectDefaultVideoTrack();
         videoTrack1.changeBlockingPolicy(Decoder.BlockingPolicy.PLAYBACK);
+        /* For a non-persistent drawing task:
         videoTrack1.setFrameAvailableCallback(new Decoder.FrameAvailableCallback() {
             @Override
             public void onFrameAvailable() {
                 drawingTask.execute();
             }
-        });
+        });*/
 
         decoder2 = new Decoder(drawingTask.getContext());
         decoder2.open(app.getAssets().openFd("V_20160714_222043.mp4"));
         Decoder.VideoTrack videoTrack2 = decoder2.selectDefaultVideoTrack();
         videoTrack1.changeBlockingPolicy(Decoder.BlockingPolicy.PLAYBACK);
+        /* For a non-persistent drawing task:
         videoTrack2.setFrameAvailableCallback(new Decoder.FrameAvailableCallback() {
             @Override
             public void onFrameAvailable() {
                 drawingTask.execute();
             }
-        });
+        });*/
 
         Scene scene = new Scene();
         Scene.BitmapLayer layer1 = scene.newBitmapLayer();

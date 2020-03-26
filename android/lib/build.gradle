@@ -27,6 +27,7 @@ android {
         debug {
             minifyEnabled false
             useProguard false
+            debuggable true
             externalNativeBuild {
                 cmake {
                     cFlags.add("-DBEATMUP_DEBUG")
