@@ -108,8 +108,8 @@ namespace BitmapResamplingTools{
             const int
                 srcW = src.width(), srcH = src.height(),
                 dstW = dst.width(), dstH = dst.height(),
-                shiftX = srcW > dstW ? srcW / 2 : srcW < dstW ? -srcW / 2 : 0,
-                shiftY = srcH > dstH ? srcH / 2 : srcH < dstH ? -srcH / 2 : 0;
+                shiftX = (srcW - dstW) / 2,
+                shiftY = (srcH - dstH) / 2;
 
             // dest image slice to process in the current thread
             const int
@@ -209,8 +209,8 @@ namespace BitmapResamplingTools{
             const int
                 srcW = src.width(), srcH = src.height(),
                 dstW = dst.width(), dstH = dst.height(),
-                shiftX = srcW > dstW ? srcW / 2 : srcW < dstW ? -srcW / 2 : 0,
-                shiftY = srcH > dstH ? srcH / 2 : srcH < dstH ? -srcH / 2 : 0;
+                shiftX = (srcW - dstW) / 2,
+                shiftY = (srcH - dstH) / 2;
 
             // dest image slice to process in the current thread
             const int
@@ -247,8 +247,8 @@ namespace BitmapResamplingTools{
 
                     const int pixJump[3] = {
                         sx > 0        ? -1 : 0,
-                        sx < dstW - 1 ? +1 : 0,
-                        sx < dstW - 2 ? +2 : 0
+                        sx < srcW - 1 ? +1 : 0,
+                        sx < srcW - 2 ? +2 : 0
                     };
 
                     in.goTo(sx, sy > 0 ? sy - 1 : 0);
