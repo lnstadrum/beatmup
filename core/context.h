@@ -96,7 +96,7 @@ namespace Beatmup {
         /**
             Performs a given task.
             \param task				The task
-         	\param pool				A thread pool to run the task in
+            \param pool				A thread pool to run the task in
             \returns task execution time
         */
         float performTask(AbstractTask& task, const PoolIndex pool = DEFAULT_POOL);
@@ -110,17 +110,17 @@ namespace Beatmup {
         void repeatTask(AbstractTask& task, bool abortCurrent, const PoolIndex pool = DEFAULT_POOL);
 
         /**
-         	Adds a new task to the jobs queue.
-         	\param task				The task
-         	\param pool				A thread pool to run the task in
+            Adds a new task to the jobs queue.
+            \param task				The task
+            \param pool				A thread pool to run the task in
          */
         Job submitTask(AbstractTask& task, const PoolIndex pool = DEFAULT_POOL);
 
         /**
-         	Adds a new persistent task to the jobs queue.
+            Adds a new persistent task to the jobs queue.
             Persistent task is repeated until it decides itself to quit.
-         	\param task				The task
-         	\param pool				A thread pool to run the task in
+            \param task				The task
+            \param pool				A thread pool to run the task in
          */
         Job submitPersistentTask(AbstractTask& task, const PoolIndex pool = DEFAULT_POOL);
 

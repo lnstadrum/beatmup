@@ -15,6 +15,7 @@ namespace Beatmup {
         inline pixel operator()() const {
             return scanner::operator()();
         }
+
         inline pixel operator()(float x, float y) const {
             return scanner::operator() (roundf_fast(x), roundf_fast(y));
         }
@@ -33,9 +34,11 @@ namespace Beatmup {
     class SingleByteBilinearInterpolator : public SingleByteBitmapReader {
     public:
         SingleByteBilinearInterpolator(const AbstractBitmap& bitmap, int x = 0, int y = 0) : SingleByteBitmapReader(bitmap, x, y) {}
+
         inline pixint1 operator()() const {
             return SingleByteBitmapReader::operator()();
         }
+
         inline pixint1 operator()(float x, float y) const {
             int ix = (int)x, iy = (int)y;
             pixbyte* p = jump(ix, iy);
@@ -63,9 +66,11 @@ namespace Beatmup {
     class TripleByteBilinearInterpolator : public TripleByteBitmapReader {
     public:
         TripleByteBilinearInterpolator(const AbstractBitmap& bitmap, int x = 0, int y = 0) : TripleByteBitmapReader(bitmap, x, y) {}
+
         inline pixint3 operator()() const {
             return TripleByteBitmapReader::operator()();
         }
+
         inline pixint3 operator()(float x, float y) const {
             int
                 ix = (int)x, iy = (int)y,
@@ -113,9 +118,11 @@ namespace Beatmup {
     class QuadByteBilinearInterpolator : public QuadByteBitmapReader {
     public:
         QuadByteBilinearInterpolator(const AbstractBitmap& bitmap, int x = 0, int y = 0) : QuadByteBitmapReader(bitmap, x, y) {}
+
         inline pixint4 operator()() const {
             return QuadByteBitmapReader::operator()();
         }
+
         inline pixint4 operator()(float x, float y) const {
             int
                 ix = (int)x, iy = (int)y,
@@ -168,9 +175,11 @@ namespace Beatmup {
     template<class scanner, typename pixel> class FloatBilinearInterpolator : public scanner {
     public:
         FloatBilinearInterpolator(const AbstractBitmap& bitmap, int x = 0, int y = 0) : scanner(bitmap, x, y) {}
+
         inline pixel operator()() const {
             return scanner::operator()();
         }
+
         inline pixel operator()(float x, float y) const {
             int ix = (int)x, iy = (int)y;
             pixel* p = (pixel*)scanner::jump(ix, iy);
