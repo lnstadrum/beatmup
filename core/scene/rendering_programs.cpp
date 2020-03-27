@@ -198,7 +198,7 @@ public:
     ~Backend() {}
 
 
-    void setupVertexAttributes(GL::Program& program, float texScaleX = 1.0f, float texScaleY = 1.0f) {
+    void setupVertexAttributes(GL::Program& program, bool textured, float texScaleX = 1.0f, float texScaleY = 1.0f) {
         if (!vertexAttrBufSet) {
             // attribute buffer initialization
             glGenBuffers(1, &hVertexAttribBuffer);
@@ -220,9 +220,12 @@ public:
         }
 
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(program.getAttribLocation("inVertex"), 2, GL_FLOAT, GL_FALSE, sizeof(VertexAttribBufferElement), NULL);
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(program.getAttribLocation("inTexCoord"), 2, GL_FLOAT, GL_FALSE, sizeof(VertexAttribBufferElement), (void*)(2 * sizeof(GLfloat)));
+        glVertexAttribPointer(program.getAttribLocation("inVertex"), 2, GL_FLOAT, GL_FALSE, sizeof(VertexAttribBufferElement), nullptr);
+
+        if (textured) {
+            glEnableVertexAttribArray(1);
+            glVertexAttribPointer(program.getAttribLocation("inTexCoord"), 2, GL_FLOAT, GL_FALSE, sizeof(VertexAttribBufferElement), (void*)(2 * sizeof(GLfloat)));
+        }
 #ifdef BEATMUP_DEBUG
         GL::GLException::check("vertex attributes buffer setup");
 #endif
@@ -381,7 +384,7 @@ void RenderingPrograms::enableProgram(GraphicPipeline* gpu, Program program) {
     currentProgram = program;
     currentGlProgram = &glProgram;
     glProgram.enable(*gpu);
-    backend->setupVertexAttributes(glProgram);
+    backend->setupVertexAttributes(glProgram, true);
     glProgram.setInteger("image", TextureUnits::IMAGE);
     switch (program) {
     case Program::MASKED_BLEND:
@@ -396,12 +399,13 @@ void RenderingPrograms::enableProgram(GraphicPipeline* gpu, Program program) {
 }
 
 
-void RenderingPrograms::enableProgram(GraphicPipeline* gpu, GL::Program& program) {
+void RenderingPrograms::enableProgram(GraphicPipeline* gpu, GL::Program& program, bool textured) {
     currentProgram = Program::CUSTOM;
     currentGlProgram = &program;
     program.enable(*gpu);
-    backend->setupVertexAttributes(program);
-    program.setInteger("image", TextureUnits::IMAGE);
+    backend->setupVertexAttributes(program, textured);
+    if (textured)
+        program.setInteger("image", TextureUnits::IMAGE);
     maskSetUp = false;
 }
 
@@ -452,7 +456,7 @@ void RenderingPrograms::paveBackground(GraphicPipeline* gpu, GL::TextureHandler&
     }
 
     // setting texture coords, bitmap size and updating buffer data in GPU
-    backend->setupVertexAttributes(*currentGlProgram, (float)gpu->getOutputResolution().getWidth() / content.getWidth(), (float)gpu->getOutputResolution().getHeight() / content.getHeight());
+    backend->setupVertexAttributes(*currentGlProgram, true, (float)gpu->getOutputResolution().getWidth() / content.getWidth(), (float)gpu->getOutputResolution().getHeight() / content.getHeight());
 
     currentGlProgram->setMatrix3(MODELVIEW_MATRIX_ID, AffineMapping::IDENTITY);
     currentGlProgram->setVector4("modulationColor", 1.0f, 1.0f, 1.0f, 1.0f);

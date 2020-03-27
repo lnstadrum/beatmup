@@ -43,15 +43,23 @@ namespace Beatmup {
         }
 
         /**
-            \brief Conducts required preparations for the blending. Compiles shaders and links the rendering program if not yet.
+            \brief Conducts required preparations for blending. Compiles shaders and links the rendering program if not yet.
             \param gpu        Graphic pipeline instance
-            \param input      Shader input image (optional)
+            \param input      Shader input image. This is optional, but the shader is considered to have at least one input image if this function is used.
             \param texParam   Input texture parameter
             \param output     Image to write shader output to (optional)
             \param mapping    Geometric transformation to apply when filling output
         */
         void prepare(GraphicPipeline& gpu, GL::TextureHandler* input, const TextureParam texParam, AbstractBitmap* output, const AffineMapping& mapping);
         void prepare(GraphicPipeline& gpu, GL::TextureHandler* input, AbstractBitmap* output);
+
+        /**
+            \brief Conducts required preparations for blending. Compiles shaders and links the rendering program if not yet.
+            This function is used for shaders having no inputs.
+            \param gpu        Graphic pipeline instance
+            \param output     Image to write shader output to (optional)
+        */
+        void prepare(GraphicPipeline& gpu, AbstractBitmap* output);
 
         void bindSamplerArray(const char* uniformName, int startingUnit, int numUnits);
 

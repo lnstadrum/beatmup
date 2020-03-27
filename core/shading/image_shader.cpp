@@ -112,7 +112,6 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, const
         fragmentShader = new GL::FragmentShader(gpu, code);
     }
 
-
     // link program
     if (!program) {
         program = new GL::Program(gpu);
@@ -125,7 +124,7 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, const
     }
 
     // enable program
-    gpu.getRenderingPrograms().enableProgram(&gpu, *program);
+    gpu.getRenderingPrograms().enableProgram(&gpu, *program, true);
 
     // bind output
     if (output)
@@ -146,6 +145,48 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, const
 
 void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, AbstractBitmap* output) {
     prepare(gpu, input, TextureParam::INTERP_LINEAR, output, AffineMapping::IDENTITY);
+}
+
+
+void ImageShader::prepare(GraphicPipeline& gpu, AbstractBitmap* output) {
+    LockGuard lock(this);
+    if (sourceCode.empty())
+        throw NoSource();
+
+    // destroy fragment shader if not up to date
+    if (!fragmentShaderReady && fragmentShader) {
+        delete fragmentShader;
+        fragmentShader = nullptr;
+    }
+
+    // compile fragment shader if not up to date
+    if (!fragmentShader) {
+        fragmentShader = new GL::FragmentShader(gpu, BEATMUP_SHADER_HEADER_VERSION + sourceCode);
+    }
+
+    // link program
+    if (!program) {
+        program = new GL::Program(gpu);
+        program->link(gpu.getRenderingPrograms().getDefaultVertexShader(&gpu), *fragmentShader);
+        fragmentShaderReady = true;
+    }
+    else if (!fragmentShaderReady) {
+        program->relink(*fragmentShader);
+        fragmentShaderReady = true;
+    }
+
+    // enable program
+    gpu.getRenderingPrograms().enableProgram(&gpu, *program, false);
+
+    // bind output
+    if (output)
+        gpu.bindOutput(*output);
+
+    // set up mapping
+    program->setMatrix3(RenderingPrograms::MODELVIEW_MATRIX_ID, AffineMapping::IDENTITY);
+
+    // apply bundle
+    apply(*program);
 }
 
 
