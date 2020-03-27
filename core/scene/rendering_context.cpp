@@ -43,7 +43,7 @@ void RenderingContext::blend() {
 
 
 void RenderingContext::enableProgram(GL::Program& program) {
-    gpu.getRenderingPrograms().enableProgram(&gpu, program);
+    gpu.getRenderingPrograms().enableProgram(&gpu, program, true);
 }
 
 

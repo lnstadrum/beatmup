@@ -52,10 +52,11 @@ namespace Beatmup {
         /**
             \brief Enable a user-defined program.
             The program must be linked.
-            \param[in,out] gpu			A graphic pipeline instance
-            \param[in,out] program		The program to use
+            \param[in,out] gpu          A graphic pipeline instance
+            \param[in,out] program      The program to use
+            \param[in] textured         If `true`, the program has an input texture
         */
-        void enableProgram(GraphicPipeline* gpu, GL::Program& program);
+        void enableProgram(GraphicPipeline* gpu, GL::Program& program, bool textured);
 
 
         /**
