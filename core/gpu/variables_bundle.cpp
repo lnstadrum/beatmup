@@ -1,8 +1,10 @@
 #include "variables_bundle.h"
 #include "../bitmap/pixel_arithmetic.h"
 #include "bgl.h"
+
 using namespace Beatmup;
 using namespace GL;
+
 VariablesBundle::MatrixParameter& VariablesBundle::MatrixParameter::operator=(VariablesBundle::MatrixParameter&& src) {
     data = src.data;
     type = src.type;
@@ -12,9 +14,11 @@ VariablesBundle::MatrixParameter& VariablesBundle::MatrixParameter::operator=(Va
     src.data = NULL;
     return *this;
 }
+
 VariablesBundle::MatrixParameter::MatrixParameter():
     data(nullptr), width(0), height(0), count(0), type(MatrixParameter::Type::UNDEFINED)
 {}
+
 void VariablesBundle::MatrixParameter::configure(Type type, unsigned short int width, unsigned short int height, unsigned int count) {
     free(data);
     this->width = width;
@@ -32,12 +36,15 @@ void VariablesBundle::MatrixParameter::configure(Type type, unsigned short int w
         Insanity::insanity("Invalid data type when construction matrix parameter");
     }
 }
+
 VariablesBundle::MatrixParameter::~MatrixParameter() {
     free(data);
 }
+
 void VariablesBundle::setInteger(std::string name, int value) {
     integers[name] = value;
 }
+
 void VariablesBundle::setInteger(std::string name, int x, int y) {
     MatrixParameter& param = params[name];
     param.configure(MatrixParameter::Type::INT, 2);
@@ -45,6 +52,7 @@ void VariablesBundle::setInteger(std::string name, int x, int y) {
     data[0] = x;
     data[1] = y;
 }
+
 void VariablesBundle::setInteger(std::string name, int x, int y, int z) {
     MatrixParameter& param = params[name];
     param.configure(MatrixParameter::Type::INT, 3);
@@ -53,6 +61,7 @@ void VariablesBundle::setInteger(std::string name, int x, int y, int z) {
     data[1] = y;
     data[2] = z;
 }
+
 void VariablesBundle::setInteger(std::string name, int x, int y, int z, int w) {
     MatrixParameter& param = params[name];
     param.configure(MatrixParameter::Type::INT, 4);
@@ -62,9 +71,11 @@ void VariablesBundle::setInteger(std::string name, int x, int y, int z, int w) {
     data[2] = z;
     data[3] = w;
 }
+
 void VariablesBundle::setFloat(std::string name, float value) {
     floats[name] = value;
 }
+
 void VariablesBundle::setFloat(std::string name, float x, float y) {
     MatrixParameter& param = params[name];
     param.configure(MatrixParameter::Type::FLOAT, 2);
@@ -72,6 +83,7 @@ void VariablesBundle::setFloat(std::string name, float x, float y) {
     data[0] = x;
     data[1] = y;
 }
+
 void VariablesBundle::setFloat(std::string name, float x, float y, float z) {
     MatrixParameter& param = params[name];
     param.configure(MatrixParameter::Type::FLOAT, 3);
@@ -80,6 +92,7 @@ void VariablesBundle::setFloat(std::string name, float x, float y, float z) {
     data[1] = y;
     data[2] = z;
 }
+
 void VariablesBundle::setFloat(std::string name, float x, float y, float z, float w) {
     MatrixParameter& param = params[name];
     param.configure(MatrixParameter::Type::FLOAT, 4);
@@ -89,6 +102,7 @@ void VariablesBundle::setFloat(std::string name, float x, float y, float z, floa
     data[2] = z;
     data[3] = w;
 }
+
 void VariablesBundle::setFloatMatrix3(std::string name, const float matrix[9]) {
     MatrixParameter& param = params[name];
     param.configure(MatrixParameter::Type::FLOAT, 3, 3);
@@ -103,6 +117,7 @@ void VariablesBundle::setFloatMatrix4(std::string name, const float matrix[16]) 
     for (const float* in = matrix; in < matrix + 16; ++in)
         *out++ = *in;
 }
+
 void VariablesBundle::setFloatMatrix4(std::string name, const Color::Matrix& matrix) {
     MatrixParameter& param = params[name];
     param.configure(MatrixParameter::Type::FLOAT, 4, 4);
@@ -113,12 +128,14 @@ void VariablesBundle::setFloatMatrix4(std::string name, const Color::Matrix& mat
             *out++ = row[y];
     }
 }
+
 float VariablesBundle::getFloat(const std::string& name) const {
     const auto& it = floats.find(name);
     if (it == floats.cend())
         return std::numeric_limits<float>::quiet_NaN();
     return it->second;
 }
+
 void VariablesBundle::apply(Program& program) {
     for (auto& var : integers)
         program.setInteger(var.first.c_str(), var.second);
@@ -206,4 +223,5 @@ void VariablesBundle::apply(Program& program) {
         else
             Insanity::insanity("Invalid matrix size");
         GL::GLException::check((std::string("setting uniform variable ") + var.first).c_str());
-    }}
+    }
+}
