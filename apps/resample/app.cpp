@@ -3,7 +3,6 @@
 */
 #include <bitmap/internal_bitmap.h>
 #include <bitmap/resampler.h>
-#include <gpu/swapper.h>
 #include <iostream>
 
 
@@ -43,11 +42,7 @@ int main(int argc, char* argv[]) {
     std::cout << "Processing..." << std::endl;
     time = ctx.performTask(resampler);
     std::cout << time << " ms" << std::endl;
-    
-    std::cout << "Processing..." << std::endl;
-    time = ctx.performTask(resampler);
-    std::cout << time << " ms" << std::endl;
-    
+
     // Save output to a file.
     std::cout << "Saving result to " << argv[Args::OUTPUT_FILENAME] << std::endl;
     output.saveBmp(argv[Args::OUTPUT_FILENAME]);
