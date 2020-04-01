@@ -32,8 +32,6 @@ private:
         displayResolution,					//!< width and height of a display obtained when switching
         outputResolution;					//!< actual output resolution (display or bitmap)
 
-    bool isAlphaBlending;                     //!< if `true`, alpha-blend is applied; otherwise color copy
-
 #ifdef BEATMUP_OPENGLVERSION_GLES
     EGLDisplay eglDisplay;
     EGLSurface
@@ -265,7 +263,6 @@ public:
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
         glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
-        isAlphaBlending = true;
         GL::GLException::check("enabling / disabling");
     }
 
@@ -333,7 +330,6 @@ public:
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
         glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
-        isAlphaBlending = true;
     }
 
 
@@ -450,8 +446,8 @@ public:
         GLuint handle = useTexture(bitmap);
         glBindTexture(GL_TEXTURE_2D, handle);
 
-        // if the GPU version is outdated and alpha blending, feed it with blank pixels
-        if (!bitmap.isUpToDate(ProcessingTarget::GPU) && isAlphaBlending) {
+        // if the GPU version is outdated, feed it with blank pixels
+        if (!bitmap.isUpToDate(ProcessingTarget::GPU)) {
             static const GLint formats[] = {
                 0,
 #ifdef BEATMUP_OPENGLVERSION_GLES20
@@ -480,6 +476,7 @@ public:
         // setting up main controls
         glViewport(0, 0, bitmap.getWidth(), bitmap.getHeight());
         outputResolution = bitmap.getSize();
+        glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -583,14 +580,12 @@ public:
         return 0;
     }
 
-
     int getSharedMemSize() const {
         return glLimits.maxSharedMemSize;
     }
 
 
     void switchAlphaBlending(bool enable) {
-        this->isAlphaBlending = enable;
         if (enable)
             glEnable(GL_BLEND);
         else
