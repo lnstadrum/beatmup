@@ -274,7 +274,7 @@ void AbstractProgram::bindAtomicCounter(GraphicPipeline& gpu, AtomicCounter& cou
 #endif
 
 
-Program::Program(const GraphicPipeline& gpu) : AbstractProgram(gpu) {}
+Program::Program(const GraphicPipeline& gpu) : AbstractProgram(gpu), vertexShader(nullptr), fragmentShader(nullptr) {}
 
 
 Program::Program(const GraphicPipeline& gpu, const VertexShader& vertex, const FragmentShader& fragment) : AbstractProgram(gpu) {
@@ -283,6 +283,10 @@ Program::Program(const GraphicPipeline& gpu, const VertexShader& vertex, const F
 
 
 void Program::link(const VertexShader& vertexShader, const FragmentShader& fragmentShader) {
+    if (this->vertexShader)
+        glDetachShader(getHandle(), this->vertexShader->handle);
+    if (this->fragmentShader)
+        glDetachShader(getHandle(), this->fragmentShader->handle);
     this->vertexShader = &vertexShader;
     this->fragmentShader = &fragmentShader;
     glAttachShader(getHandle(), vertexShader.handle);
@@ -294,6 +298,8 @@ void Program::link(const VertexShader& vertexShader, const FragmentShader& fragm
 
 
 void Program::relink(const VertexShader& vertexShader) {
+    if (this->vertexShader)
+        glDetachShader(getHandle(), this->vertexShader->handle);
     this->vertexShader = &vertexShader;
     glAttachShader(getHandle(), vertexShader.handle);
     glLinkProgram(getHandle());
@@ -302,10 +308,20 @@ void Program::relink(const VertexShader& vertexShader) {
 
 
 void Program::relink(const FragmentShader& fragmentShader) {
+    if (this->fragmentShader)
+        glDetachShader(getHandle(), this->fragmentShader->handle);
     this->fragmentShader = &fragmentShader;
     glAttachShader(getHandle(), fragmentShader.handle);
     glLinkProgram(getHandle());
     assertLinked();
+}
+
+
+void Program::detachFragmentShader() {
+    if (fragmentShader) {
+        glDetachShader(getHandle(), fragmentShader->handle);
+        fragmentShader = nullptr;
+    }
 }
 
 

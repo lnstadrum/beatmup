@@ -153,6 +153,7 @@ namespace Beatmup {
             void link(const VertexShader&, const FragmentShader&);
             void relink(const VertexShader&);
             void relink(const FragmentShader&);
+            void detachFragmentShader();
             const VertexShader* getVertexShader() const;
             const FragmentShader* getFragmentShader() const;
         };

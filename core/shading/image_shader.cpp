@@ -79,6 +79,8 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, const
 
     // destroy fragment shader if not up to date
     if (!fragmentShaderReady && fragmentShader) {
+        if (program)
+            program->detachFragmentShader();
         delete fragmentShader;
         fragmentShader = nullptr;
     }
@@ -155,6 +157,8 @@ void ImageShader::prepare(GraphicPipeline& gpu, AbstractBitmap* output) {
 
     // destroy fragment shader if not up to date
     if (!fragmentShaderReady && fragmentShader) {
+        if (program)
+            program->detachFragmentShader();
         delete fragmentShader;
         fragmentShader = nullptr;
     }

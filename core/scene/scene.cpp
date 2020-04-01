@@ -303,7 +303,7 @@ bool Scene::BitmapLayer::testPoint(float x, float y) const {
 
 
 Scene::CustomMaskedBitmapLayer::CustomMaskedBitmapLayer(Type type) :
-    BitmapLayer(type), maskMapping(), bgColor{ 0, 0, 0, 0 }
+    BitmapLayer(type), maskMapping(), bgColor(Beatmup::Colors::Zero)
 {}
 
 void Scene::CustomMaskedBitmapLayer::configure(RenderingContext& context, GL::TextureHandler* content) {
