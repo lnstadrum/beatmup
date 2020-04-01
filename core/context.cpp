@@ -239,6 +239,8 @@ protected:
         \return actual swapped memory size
     */
     inline msize doSwapping(msize howMuch) {
+        if (swappableChunks.empty())
+            return 0;
         msize
             freed = 0,
             available = getAvailableDiskSpace();
