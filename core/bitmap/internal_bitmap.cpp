@@ -118,7 +118,7 @@ void InternalBitmap::unlockPixels() {
 void InternalBitmap::saveBmp(const char* filename) {
     if (!isUpToDate(ProcessingTarget::CPU)) {
         // Grab output bitmap from GPU memory to RAM
-    	Beatmup::Swapper::grabPixels(*this);
+        Beatmup::Swapper::pullPixels(*this);
     }
   
     if (!memory)

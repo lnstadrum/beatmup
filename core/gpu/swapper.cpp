@@ -5,15 +5,19 @@
 using namespace Beatmup;
 
 bool Swapper::processOnGPU(GraphicPipeline& gpu, TaskThread&) {
-    // grab pixels
     bitmap->lockPixels(ProcessingTarget::CPU);
-    gpu.fetchPixels(*bitmap);
+    if (fromGpuToCpu) {
+        gpu.fetchPixels(*bitmap);
+    }
+    else {
+        bitmap->lockPixels(ProcessingTarget::GPU);
+        gpu.bind(*bitmap, 0, INTERP_NEAREST);
+    }
     bitmap->unlockPixels();
-
     return true;
 }
 
-Swapper::Swapper() : bitmap(NULL)
+Swapper::Swapper(bool fromGpuToCpu) : bitmap(nullptr), fromGpuToCpu(fromGpuToCpu)
 {}
 
 
@@ -22,9 +26,18 @@ void Swapper::setBitmap(AbstractBitmap& bitmap) {
 }
 
 
-void Swapper::grabPixels(AbstractBitmap& bitmap) {
+void Swapper::pullPixels(AbstractBitmap& bitmap) {
     if (!bitmap.isUpToDate(ProcessingTarget::CPU) && bitmap.isUpToDate(ProcessingTarget::GPU)) {
-        Swapper me;
+        Swapper me(true);
+        me.setBitmap(bitmap);
+        bitmap.getContext().performTask(me);
+    }
+}
+
+
+void Swapper::pushPixels(AbstractBitmap& bitmap) {
+    if (!bitmap.isUpToDate(ProcessingTarget::GPU) && bitmap.isUpToDate(ProcessingTarget::CPU)) {
+        Swapper me(false);
         me.setBitmap(bitmap);
         bitmap.getContext().performTask(me);
     }
