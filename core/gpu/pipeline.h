@@ -78,5 +78,8 @@ namespace Beatmup {
         void switchAlphaBlending(bool enable);
 
         inline RenderingPrograms & getRenderingPrograms() { return renderingPrograms; }
+
+        const char* getGpuVendorString() const;
+        const char* getGpuRendererString() const;
     };
 }

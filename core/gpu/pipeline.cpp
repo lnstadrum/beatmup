@@ -669,3 +669,12 @@ int GraphicPipeline::getLimit(Limit limit) const {
 void GraphicPipeline::switchAlphaBlending(bool enable) {
     impl->switchAlphaBlending(enable);
 }
+
+const char* GraphicPipeline::getGpuVendorString() const {
+    return (const char*)glGetString(GL_VENDOR);
+}
+
+
+const char* GraphicPipeline::getGpuRendererString() const {
+    return (const char*)glGetString(GL_RENDERER);
+}

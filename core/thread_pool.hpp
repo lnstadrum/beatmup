@@ -609,7 +609,7 @@ public:
 
 
     /**
-        \return `true` if GPU was queried
+        \return `true` if GPU was queried.
     */
     inline bool isGpuQueried() const {
         return isGpuTested;
@@ -617,12 +617,11 @@ public:
 
 
     /**
-        \return graphic pipeline
+        \return `true` if GPU is ready to use.
     */
-    inline GraphicPipeline* getGraphicPipeline() const {
-        return gpu;
+    inline bool isGpuReady() const {
+        return gpu != nullptr;
     }
-
 
     /**
         \returns `true` if invoked from the manager thread

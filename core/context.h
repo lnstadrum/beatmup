@@ -6,7 +6,8 @@
 
 #include "basic_types.h"
 #include "parallelism.h"
-#include <exception>
+#include <string>
+
 
 namespace Beatmup {
     namespace GL {
@@ -222,7 +223,6 @@ namespace Beatmup {
         */
         bool isManagingThread() const;
 
-
         /**
             \return GPU recycle bin to store GPU resources that can be freed only within a GPU-aware thread
         */
@@ -234,10 +234,17 @@ namespace Beatmup {
         static msize getTotalRam();
 
         /**
-            \brief Initializes GPU within a given Context.
-            GPU initialization may take some time and is done when a first task using GPU is being run. Warping up
+            \brief Initializes GPU within a given Context if not yet (takes no effect if it already is).
+            GPU initialization may take some time and is done when a first task using GPU is being run. Warming up
             the GPU is useful to avoid the app get stucked for some time when it launches its first task on GPU.
         */
         void warmUpGpu();
+
+        /**
+            \brief Initializes the GPU if not yet and queries information about it.
+            \param[out] vendor      GPU vendor string.
+            \param[out] renderer    renderer string.
+        */
+        void queryGpuInfo(std::string& vendor, std::string& renderer);
     };
 };

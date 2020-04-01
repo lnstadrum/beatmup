@@ -473,7 +473,7 @@ public:
 
 
     inline bool isGpuReady() const {
-        return threadPools[0]->getGraphicPipeline() != NULL;
+        return threadPools[0]->isGpuReady();
     }
 
 
@@ -603,4 +603,21 @@ void Context::warmUpGpu() {
         GpuTask task;
         performTask(task);
     }
+}
+
+
+void Context::queryGpuInfo(std::string& vendor, std::string& renderer) {
+    class GpuQueryingTask : public GpuTask {
+    public:
+        std::string &vendor, &renderer;
+        GpuQueryingTask(std::string& vendor, std::string& renderer) :
+            vendor(vendor), renderer(renderer) {}
+        bool processOnGPU(GraphicPipeline& gpu, TaskThread& thread) {
+            vendor = gpu.getGpuVendorString();
+            renderer = gpu.getGpuRendererString();
+            return true;
+        }
+    } task(vendor, renderer);
+
+    performTask(task);
 }
