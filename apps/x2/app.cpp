@@ -52,11 +52,11 @@ int main(int argc, char* argv[]) {
     ctx.queryGpuInfo(vendor, renderer);
     std::cout << vendor << " | " << renderer << std::endl;
 
-    // Run the task on dummy bitmaps first to warm up GPU and compile shaders
+    // Run the task on a dummy bitmap first to warm up GPU, compile shaders and allocate output
     std::cout << "Compiling shaders... ";
     float time;
-    Beatmup::InternalBitmap warmupIn(ctx, input.getPixelFormat(), 64, 64), warmupOut(ctx, output.getPixelFormat(), 128, 128);
-    resampler.setBitmaps(&warmupIn, &warmupOut);
+    Beatmup::InternalBitmap dummyInput(ctx, input.getPixelFormat(), input.getWidth(), input.getHeight());
+    resampler.setBitmaps(&dummyInput, &output);
     time = ctx.performTask(resampler);
     std::cout << time << " ms" << std::endl;
 
