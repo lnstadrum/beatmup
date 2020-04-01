@@ -1,8 +1,11 @@
 /**
-    Upsamples an image using a convolutional neural net inferred on GPU
+    Upsamples an image using a convolutional neural net inferred on GPU.
+    A basic example of using Resampler to infer the net is much simpler; in this app there is a lot of code
+    to be able to meter only the inference (warming up GPU, explicitly transferring pixels, etc.)
 */
 #include <bitmap/internal_bitmap.h>
 #include <bitmap/resampler.h>
+#include <gpu/swapper.h>
 #include <iostream>
 #include <algorithm>
 #include <chrono>
@@ -18,7 +21,7 @@ int main(int argc, char* argv[]) {
     if (argc <= Args::OUTPUT_FILENAME) {
         std::cout
             << "Usage: resample <input file> <output file> [<repeat count>]" << std::endl
-            << "BMP files are only supported." << std::endl
+            << "BMP files are supported only." << std::endl
             << std::endl;
         return 1;
     }
@@ -43,20 +46,26 @@ int main(int argc, char* argv[]) {
     Beatmup::BitmapResampler resampler;
     resampler.setMode(Beatmup::BitmapResampler::Mode::CONVNET);
 
-    // Warm up GPU.
+    // Warm up GPU
     std::cout << "Preparing GPU... " << std::endl;
     std::string vendor, renderer;
     ctx.queryGpuInfo(vendor, renderer);
     std::cout << vendor << " | " << renderer << std::endl;
 
     // Run the task on dummy bitmaps first to warm up GPU and compile shaders
+    std::cout << "Compiling shaders... ";
     float time;
-    Beatmup::InternalBitmap warmupIn(ctx, Beatmup::PixelFormat::QuadByte, 64, 64), warmupOut(ctx, Beatmup::PixelFormat::QuadByte, 128, 128);
+    Beatmup::InternalBitmap warmupIn(ctx, input.getPixelFormat(), 64, 64), warmupOut(ctx, output.getPixelFormat(), 128, 128);
     resampler.setBitmaps(&warmupIn, &warmupOut);
     time = ctx.performTask(resampler);
-    std::cout << "  " << time << " ms" << std::endl;
+    std::cout << time << " ms" << std::endl;
 
-    // Run the inference
+    // Transfer input pixels to GPU. This is not necessary: Resampler (as well as pretty much any other task) does it itself if needed.
+    // It is done here to properly meter the inference time (not to mix in the pixel transfer time).
+    std::cout << "Transfering input to GPU... " << std::endl;
+    Beatmup::Swapper::pushPixels(input);
+
+    // Run the inference (possibly multiple times)
     std::cout << "Processing... " << std::endl;
     resampler.setBitmaps(&input, &output);
     const int repeat = argc > Args::REPEAT_COUNT ? std::stoi(argv[Args::REPEAT_COUNT]) : 1;
@@ -74,7 +83,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // Write out time stats if needed
+    // Write out time stats if asked
     if (repeat > 1) {
         const float std = sqrtf(sqrTimeSum / repeat - (timeSum * timeSum) / (repeat * repeat));
         std::cout
@@ -82,7 +91,7 @@ int main(int argc, char* argv[]) {
             << " ms, max: " << maxTime << " ms, std: " << std << " ms" << std::endl;
     }
 
-    // Save output to a file.
+    // Save output to a file
     std::cout << "Saving result to " << argv[Args::OUTPUT_FILENAME] << std::endl;
     output.saveBmp(argv[Args::OUTPUT_FILENAME]);
 
