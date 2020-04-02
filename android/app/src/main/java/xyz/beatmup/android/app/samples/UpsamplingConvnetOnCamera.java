@@ -1,18 +1,17 @@
 package xyz.beatmup.android.app.samples;
 
 import android.app.Activity;
-import android.util.Log;
 
 import java.io.IOException;
 
-import Beatmup.Android.Bitmap;
 import Beatmup.Android.Camera;
 import Beatmup.Context;
+import Beatmup.Geometry.AffineMapping;
 import Beatmup.Imaging.Filters.Resampler;
 import Beatmup.Imaging.PixelFormat;
 import Beatmup.Pipelining.Multitask;
+import Beatmup.Pipelining.TaskHolder;
 import Beatmup.Rendering.Scene;
-import Beatmup.Rendering.SceneRenderer;
 import Beatmup.Shading.Shader;
 import Beatmup.Shading.ShaderApplicator;
 import Beatmup.Task;
@@ -21,6 +20,7 @@ public class UpsamplingConvnetOnCamera extends TestSample {
     private Resampler resampler;
     private ShaderApplicator textureCopy;
     private Multitask multitask;
+    private TaskHolder resamplerTaskHolder;
 
     @Override
     public String getCaption() {
@@ -65,23 +65,31 @@ public class UpsamplingConvnetOnCamera extends TestSample {
         // put all this together in a Multitask
         multitask = new Multitask(context);
         multitask.addTask(textureCopy, Multitask.RepetitionPolicy.REPEAT_ALWAYS);
-        multitask.addTask(resampler, Multitask.RepetitionPolicy.REPEAT_ALWAYS);
+        resamplerTaskHolder = multitask.addTask(resampler, Multitask.RepetitionPolicy.REPEAT_ALWAYS);
         multitask.addTask(drawingTask, Multitask.RepetitionPolicy.REPEAT_ALWAYS);
         multitask.measure();
 
         // setup a scene scene
+        int orientation = camera.getOrientation(app.getWindowManager().getDefaultDisplay());
+        AffineMapping imgTransform = new AffineMapping();
+        imgTransform.rotateAround(0.5f, 0.5f * height / width, orientation);
+
+        int outWidth = app.getWindow().getDecorView().getWidth();
+        int outHeight = app.getWindow().getDecorView().getHeight();
+        float ar = (float)outWidth / outHeight;
+
         Scene scene = new Scene();
         {
             Scene.BitmapLayer l = scene.newBitmapLayer();
-            l.scale(0.5f);
-            l.setCenterPosition(0.5f, 0.25f);
+            l.setCenterPosition(0.5f, 0.25f / ar);
+            l.setImageTransform(imgTransform);
             l.setBitmap(input);
         }
 
         {
             Scene.BitmapLayer l = scene.newBitmapLayer();
-            l.scale(0.5f);
-            l.setCenterPosition(0.5f, 0.75f);
+            l.setCenterPosition(0.5f, 0.75f / ar);
+            l.setImageTransform(imgTransform);
             l.setBitmap(output);
         }
 
@@ -96,5 +104,13 @@ public class UpsamplingConvnetOnCamera extends TestSample {
     @Override
     public boolean usesCamera() {
         return true;
+    }
+
+    @Override
+    public String getRuntimeInfo() {
+        if (resamplerTaskHolder != null)
+            return String.format("%.2f FPS",1000 / resamplerTaskHolder.getRunTime());
+        else
+            return "";
     }
 }

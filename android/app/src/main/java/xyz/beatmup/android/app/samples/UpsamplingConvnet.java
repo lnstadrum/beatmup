@@ -14,6 +14,8 @@ import Beatmup.Rendering.Scene;
 import Beatmup.Task;
 
 public class UpsamplingConvnet extends TestSample {
+    String runtimeInfo;
+
     @Override
     public String getCaption() {
         return "Upsampling with CNN";
@@ -48,6 +50,7 @@ public class UpsamplingConvnet extends TestSample {
         resampler.setBitmaps(subsampled, outputConvnet);
         time = resampler.execute();
         Log.i("Beatmup", String.format("Convnet resampling: %f ms", time));
+        runtimeInfo = String.format("%.2f ms", time);
 
         {
             Scene.BitmapLayer l = scene.newBitmapLayer();
@@ -64,5 +67,11 @@ public class UpsamplingConvnet extends TestSample {
         }
 
         return scene;
+    }
+
+
+    @Override
+    public String getRuntimeInfo() {
+        return runtimeInfo;
     }
 }

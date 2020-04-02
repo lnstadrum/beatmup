@@ -4,12 +4,11 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.hardware.camera2.CameraAccessException;
-import android.hardware.camera2.params.Face;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -455,6 +454,16 @@ public class MainActivity extends Activity {
                 testSamplesSelectionDialog.show();
             }
         });
+
+        final Handler textInfoUpdater = new Handler();
+        textInfoUpdater.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (currentTest != null)
+                    ((TextView) findViewById(R.id.textInfo)).setText(currentTest.getRuntimeInfo());
+                textInfoUpdater.postDelayed(this,1000);
+            }
+        },1000);
     }
 
 

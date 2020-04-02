@@ -32,6 +32,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_marginLeft="10sp" />
+        android:layout_marginLeft="10sp"
+        android:textStyle="bold" />
 
 </RelativeLayout>

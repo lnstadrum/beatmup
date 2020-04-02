@@ -59,6 +59,11 @@ public abstract class TestSample {
     public Task getDrawingTask() { return null; }
 
     /**
+     * @return a piece of text to be displayed in runtime. Will be called from time to time.
+     */
+    public String getRuntimeInfo() { return ""; }
+
+    /**
      * Called by the application when the user taps a layer in the scene.
      * @param layer     The layer tapped
      */
