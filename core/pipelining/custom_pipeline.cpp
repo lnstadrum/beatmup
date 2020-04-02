@@ -1,6 +1,7 @@
 #include "../exception.h"
 #include "custom_pipeline.h"
 #include <algorithm>
+#include <chrono>
 
 using namespace Beatmup;
 
@@ -32,6 +33,7 @@ public:
     }
 
     void runTask() {
+        auto startTime = std::chrono::high_resolution_clock::now();
         TaskHolder& task = **currentTask;
         task.getTask().beforeProcessing(
                 task.threadCount,
@@ -56,6 +58,9 @@ public:
         thread->synchronize();
 
         task.getTask().afterProcessing(task.threadCount, !abort);
+
+        auto endTime = std::chrono::high_resolution_clock::now();
+        task.time = std::chrono::duration<float, std::milli>(endTime - startTime).count();
     }
 
     void goToNextTask() {
@@ -252,7 +257,8 @@ void CustomPipeline::measure() {
 CustomPipeline::TaskHolder::TaskHolder(CustomPipeline::TaskHolder &&holder):
     task(holder.task),
     executionMode(holder.executionMode),
-    threadCount(holder.threadCount)
+    threadCount(holder.threadCount),
+    time(0)
 {}
 
 

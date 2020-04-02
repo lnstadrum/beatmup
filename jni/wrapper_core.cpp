@@ -7,6 +7,7 @@
 #include "jniheaders/Beatmup_Object.h"
 #include "jniheaders/Beatmup_Pipelining_CustomPipeline.h"
 #include "jniheaders/Beatmup_Pipelining_Multitask.h"
+#include "jniheaders/Beatmup_Pipelining_TaskHolder.h"
 #include "jniheaders/Beatmup_Utils_VariablesBundle.h"
 #include "jniheaders/Beatmup_Sequence.h"
 
@@ -537,6 +538,16 @@ JNIMETHOD(void, setRepetitionPolicy, Java_Beatmup_Pipelining_Multitask, setRepet
     BEATMUP_CATCH({
         multitask->setRepetitionPolicy(*taskHolder, static_cast<Beatmup::Multitask::RepetitionPolicy>(policy));
     });
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+//                                         TASK HOLDER
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+JNIMETHOD(jfloat, getRunTime, Java_Beatmup_Pipelining_TaskHolder, getRunTime) (JNIEnv * jenv, jobject, jlong hHolder) {
+    BEATMUP_ENTER;
+    BEATMUP_OBJ(Beatmup::CustomPipeline::TaskHolder, taskHolder, hHolder);
+    return (jfloat) taskHolder->getRunTime();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////

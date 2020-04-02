@@ -74,17 +74,24 @@ namespace Beatmup {
          */
         class TaskHolder : public Object {
         friend class CustomPipeline;
+        friend class CustomPipeline::Impl;
         private:
             void operator = (const TaskHolder&) = delete;
         protected:
             AbstractTask& task;
             AbstractTask::ExecutionTarget executionMode;
             ThreadIndex threadCount;
+            float time;
             TaskHolder(AbstractTask& task): task(task) {}
             ~TaskHolder() {}
         public:
             TaskHolder(TaskHolder&&);
             AbstractTask& getTask() const { return task; }
+
+            /**
+                \return last execution time in milliseconds.
+            */
+            float getRunTime() const { return time; }
         };
 
         class PipelineNotReady : public Exception {

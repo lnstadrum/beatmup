@@ -25,6 +25,7 @@ javah -d ../../../../../jni/jniheaders -classpath ~/Android/Sdk/platforms/androi
   Beatmup.Utils.VariablesBundle\
   Beatmup.Pipelining.CustomPipeline\
   Beatmup.Pipelining.Multitask\
+  Beatmup.Pipelining.TaskHolder\
   Beatmup.NNets.GPUBenchmark
 
 
