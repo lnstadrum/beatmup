@@ -22,6 +22,6 @@ public class TaskHolder {
     }
 
     public float getRunTime() {
-        return getRunTime();
+        return getRunTime(handle);
     }
 }
