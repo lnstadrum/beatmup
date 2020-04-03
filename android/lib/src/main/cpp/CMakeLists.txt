@@ -37,7 +37,9 @@ find_library(path_jnigraphics  jnigraphics)
 find_library(path_log          log)
 if (PROFILE_AUDIO)
     find_library(path_OpenSLES OpenSLES)
-    find_library(path_AAudio aaudio)
+    if (ANDROID_PLATFORM GREATER 26)
+        find_library(path_AAudio aaudio)
+    endif()
 endif()
 
 # platform-specific defines
@@ -56,5 +58,8 @@ target_link_libraries(beatmup
 )
 
 if (PROFILE_AUDIO)
-    target_link_libraries(beatmup ${path_OpenSLES} ${path_AAudio})
+    target_link_libraries(beatmup ${path_OpenSLES})
+    if (ANDROID_PLATFORM GREATER 26)
+        target_link_libraries(beatmup ${path_AAudio})
+    endif()
 endif()

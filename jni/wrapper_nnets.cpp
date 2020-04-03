@@ -297,12 +297,14 @@ JNIMETHOD(jfloat, test, Java_Beatmup_NNets_GPUBenchmark, test)(JNIEnv * jenv, jc
             LOG_I("%0.9f %0.9f %0.9f %0.9f\n", data[i].r, data[i].g, data[i].b, data[i].a);*/
 
         LOG_I(" == %0.2f ms\n", totalTime / 10);
+#ifdef BEATMUP_DEBUG
         std::ostringstream os;
         inference.getProfiler().report(os, Beatmup::Profiler::ReportType::BRIEF);
         LOG_I("%s\n\n", os.str().c_str());
         std::fstream report("/storage/emulated/0/report.txt", std::ios::out);
         report << os.str();
         report.close();
+#endif
     }
 
     return 0;

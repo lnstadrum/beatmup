@@ -5,7 +5,7 @@ android {
     flavorDimensions "version"
     defaultConfig {
         applicationId "xyz.beatmup.android.app"
-        minSdkVersion 26
+        minSdkVersion 21
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
