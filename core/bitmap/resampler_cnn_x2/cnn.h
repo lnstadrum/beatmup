@@ -12,12 +12,13 @@ namespace Beatmup {
     class X2UpsamplingNetwork {
     private:
         class Layer {
+        public:
+            typedef InternalBitmap* Storage;
         private:
             ImageShader shader;
-            InternalBitmap* output;
+            Storage& output;
         public:
-            Layer(GL::RecycleBin& recycleBin, GraphicPipeline& gpu, const char* sourceCode);
-            ~Layer();
+            Layer(GL::RecycleBin& recycleBin, GraphicPipeline& gpu, Storage& outputStorage, const char* sourceCode);
 
             void process(Context& ctx, GraphicPipeline& gpu, GL::TextureHandler& input);
             void process(Context& ctx, GraphicPipeline& gpu, Layer** inputs, int inputsCount);
@@ -31,7 +32,10 @@ namespace Beatmup {
             L1_SIZE = 12,
             L2_SIZE = 8,
             L3_SIZE = 6,
-            L4_SIZE = 4;
+            L4_SIZE = 4,
+            STORAGE_SIZE = 14;
+
+        InternalBitmap* storage[STORAGE_SIZE];
 
         Layer
             *layer1[L1_SIZE],
@@ -41,6 +45,8 @@ namespace Beatmup {
             *layer5;
 
         ImageShader demux;
+
+        Layer::Storage& nextStorage(int& i) { return storage[i++ % STORAGE_SIZE]; }
 
     public:
         X2UpsamplingNetwork(GL::RecycleBin& recycleBin, GraphicPipeline& gpu);

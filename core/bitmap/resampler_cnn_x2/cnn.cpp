@@ -3,16 +3,10 @@
 using namespace Beatmup;
 
 
-X2UpsamplingNetwork::Layer::Layer(GL::RecycleBin& recycleBin, GraphicPipeline& gpu, const char* sourceCode):
-  shader(recycleBin), output(nullptr)
+X2UpsamplingNetwork::Layer::Layer(GL::RecycleBin& recycleBin, GraphicPipeline& gpu, Storage& outputStorage, const char* sourceCode):
+  shader(recycleBin), output(outputStorage)
 {
     shader.setSourceCode(sourceCode);
-}
-
-
-X2UpsamplingNetwork::Layer::~Layer() {
-    if (output)
-        delete output;
 }
 
 
@@ -93,134 +87,138 @@ void X2UpsamplingNetwork::process(GraphicPipeline& gpu, GL::TextureHandler& inpu
 X2UpsamplingNetwork::X2UpsamplingNetwork(GL::RecycleBin& recycleBin, GraphicPipeline& gpu):
     demux(recycleBin)
 {
+    for (int i = 0; i < STORAGE_SIZE; ++i)
+        storage[i] = nullptr;
+
+    int i = 0;
 #define STRINGIFY(...) BEATMUP_SHADER_CODE(__VA_ARGS__)
 #undef clamp
 
-    layer1[0] = new Layer(recycleBin, gpu,
+    layer1[0] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l1__0.glsl"
     );
 
-    layer1[1] = new Layer(recycleBin, gpu,
+    layer1[1] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l1__1.glsl"
     );
 
-    layer1[2] = new Layer(recycleBin, gpu,
+    layer1[2] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l1__2.glsl"
     );
 
-    layer1[3] = new Layer(recycleBin, gpu,
+    layer1[3] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l1__3.glsl"
     );
 
-    layer1[4] = new Layer(recycleBin, gpu,
+    layer1[4] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l1__4.glsl"
     );
 
-    layer1[5] = new Layer(recycleBin, gpu,
+    layer1[5] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l1__5.glsl"
     );
 
-    layer1[6] = new Layer(recycleBin, gpu,
+    layer1[6] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l1__6.glsl"
     );
 
-    layer1[7] = new Layer(recycleBin, gpu,
+    layer1[7] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l1__7.glsl"
     );
 
-    layer1[8] = new Layer(recycleBin, gpu,
+    layer1[8] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l1__8.glsl"
     );
 
-    layer1[9] = new Layer(recycleBin, gpu,
+    layer1[9] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l1__9.glsl"
     );
 
-    layer1[10] = new Layer(recycleBin, gpu,
+    layer1[10] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l1__10.glsl"
     );
 
-    layer1[11] = new Layer(recycleBin, gpu,
+    layer1[11] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l1__11.glsl"
     );
 
 
-    layer2[0] = new Layer(recycleBin, gpu,
+    layer2[0] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l2-0__0.glsl"
     );
 
-    layer2[1] = new Layer(recycleBin, gpu,
+    layer2[1] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l2-0__1.glsl"
     );
 
-    layer2[2] = new Layer(recycleBin, gpu,
+    layer2[2] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l2-1__0.glsl"
     );
 
-    layer2[3] = new Layer(recycleBin, gpu,
+    layer2[3] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l2-1__1.glsl"
     );
 
-    layer2[4] = new Layer(recycleBin, gpu,
+    layer2[4] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l2-2__0.glsl"
     );
 
-    layer2[5] = new Layer(recycleBin, gpu,
+    layer2[5] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l2-2__1.glsl"
     );
 
-    layer2[6] = new Layer(recycleBin, gpu,
+    layer2[6] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l2-3__0.glsl"
     );
 
-    layer2[7] = new Layer(recycleBin, gpu,
+    layer2[7] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l2-3__1.glsl"
     );
 
 
-    layer3[0] = new Layer(recycleBin, gpu,
+    layer3[0] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l3__0.glsl"
     );
 
-    layer3[1] = new Layer(recycleBin, gpu,
+    layer3[1] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l3__1.glsl"
     );
 
-    layer3[2] = new Layer(recycleBin, gpu,
+    layer3[2] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l3__2.glsl"
     );
 
-    layer3[3] = new Layer(recycleBin, gpu,
+    layer3[3] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l3__3.glsl"
     );
 
-    layer3[4] = new Layer(recycleBin, gpu,
+    layer3[4] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l3__4.glsl"
     );
 
-    layer3[5] = new Layer(recycleBin, gpu,
+    layer3[5] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l3__5.glsl"
     );
 
 
-    layer4[0] = new Layer(recycleBin, gpu,
+    layer4[0] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l4-0__0.glsl"
     );
 
-    layer4[1] = new Layer(recycleBin, gpu,
+    layer4[1] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l4-0__1.glsl"
     );
 
-    layer4[2] = new Layer(recycleBin, gpu,
+    layer4[2] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l4-1__0.glsl"
     );
 
-    layer4[3] = new Layer(recycleBin, gpu,
+    layer4[3] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l4-1__1.glsl"
     );
 
 
-    layer5 = new Layer(recycleBin, gpu,
+    layer5 = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l5.glsl"
     );
 
@@ -240,4 +238,8 @@ X2UpsamplingNetwork::~X2UpsamplingNetwork() {
     for (int i = 0; i < L4_SIZE; ++i)
         delete layer4[i];
     delete layer5;
+
+    for (int i = 0; i < STORAGE_SIZE; ++i)
+        if (storage[i])
+            delete storage[i];
 }
