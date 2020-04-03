@@ -18,7 +18,7 @@ template<class in_t, class out_t> inline void convertBlock(AbstractBitmap& input
 
 
 BitmapConverter::BitmapConverter() :
-    input(NULL), output(NULL)
+    input(nullptr), output(nullptr)
 {}
 
 

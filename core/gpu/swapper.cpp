@@ -5,15 +5,14 @@
 using namespace Beatmup;
 
 bool Swapper::processOnGPU(GraphicPipeline& gpu, TaskThread&) {
-    bitmap->lockPixels(ProcessingTarget::CPU);
     if (fromGpuToCpu) {
+        AbstractBitmap::WriteLock lock(*bitmap);
         gpu.fetchPixels(*bitmap);
     }
     else {
-        bitmap->lockPixels(ProcessingTarget::GPU);
+        AbstractBitmap::ReadLock lock(*bitmap, ProcessingTarget::GPU);
         gpu.bind(*bitmap, 0, INTERP_NEAREST);
     }
-    bitmap->unlockPixels();
     return true;
 }
 

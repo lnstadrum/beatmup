@@ -30,6 +30,9 @@ namespace Beatmup {
 
     class AbstractBitmap : public GL::TextureHandler {
         friend class GraphicPipeline;
+        friend class BitmapContentModifier;
+        friend class ReadLock;
+        friend class WriteLock;
 
     private:
         AbstractBitmap(const AbstractBitmap& that) = delete;		//!< disabling copying constructor
@@ -167,6 +170,23 @@ namespace Beatmup {
         std::string toString() const;
 
         ~AbstractBitmap();
+
+
+        class ReadLock {
+        private:
+            AbstractBitmap& bitmap;
+        public:
+            ReadLock(AbstractBitmap&, ProcessingTarget);
+            ~ReadLock();
+        };
+
+        class WriteLock {
+        private:
+            AbstractBitmap& bitmap;
+        public:
+            WriteLock(AbstractBitmap&);
+            ~WriteLock();
+        };
     };
 
 

@@ -127,18 +127,10 @@ void SceneRenderer::beforeProcessing(ThreadIndex threadCount, GraphicPipeline* g
 
     // reset camera frame
     cameraFrame = nullptr;
-
-    // locking the output
-    if (output) {
-        output->lockPixels(ProcessingTarget::GPU);
-        output->invalidate(ProcessingTarget::CPU);
-    }
 }
 
 
 void SceneRenderer::afterProcessing(ThreadIndex threadCount, bool aborted) {
-    if (output)
-        output->unlockPixels();
 }
 
 
@@ -202,7 +194,7 @@ bool SceneRenderer::doRender(GraphicPipeline& gpu, TaskThread& thread) {
             gpu.swapBuffers();
 
         if (output && outputPixelsFetching) {
-            output->lockPixels(ProcessingTarget::CPU);
+            AbstractBitmap::WriteLock lock(*output);
             gpu.fetchPixels(*output);
         }
     }

@@ -58,9 +58,8 @@ AbstractBitmap* BitmapTools::makeCopy(AbstractBitmap& source) {
 
 AbstractBitmap* BitmapTools::chessboard(Context& ctx, int width, int height, int cellSize, PixelFormat pixelFormat) {
     RuntimeError::check(cellSize > 0, "Chessboard cell size must be positive");
-    RuntimeError::check(AbstractBitmap::isMask(pixelFormat), "Mask pixel formats are supported only");
-    BitmapPtr chess = new Beatmup::InternalBitmap(ctx, pixelFormat, width, height);
-    chess->lockPixels(ProcessingTarget::CPU);
+    AbstractBitmap* chess = new Beatmup::InternalBitmap(ctx, pixelFormat, width, height);
+    AbstractBitmap::WriteLock lock(*chess);
     switch (pixelFormat) {
     case BinaryMask:
         renderChessboard<BinaryMaskWriter>(BinaryMaskWriter(*chess), width, height, cellSize);
@@ -74,12 +73,44 @@ AbstractBitmap* BitmapTools::chessboard(Context& ctx, int width, int height, int
     default:
         throw BitmapProcessing::ProcessingActionNotImplemented(pixelFormat);
     }
-    chess->unlockPixels();
     return chess;
 }
 
 
+void BitmapTools::noise(AbstractBitmap& bitmap, IntRectangle area) {
+    AbstractBitmap::WriteLock lock(bitmap);
+    const int n = bitmap.getNumberOfChannels();
+
+    if (bitmap.isMask())
+        throw ImplementationUnsupported("Noise is not implemented for mask bitmaps");
+    // floating-point bitmap
+    else if (bitmap.isFloat())
+        for (int y = area.a.y; y <= area.b.y; ++y) {
+            pixfloat* p = (pixfloat*)bitmap.getData(area.a.x, y);
+            for (int x = area.a.x; x <= area.b.x; ++x)
+                for (int i = 0; i < n; ++i, ++p)
+                    *p = (float)rand() / RAND_MAX;
+        }
+    // integer bitmap
+    else if (bitmap.isInteger()) {
+        for (int y = area.a.y; y <= area.b.y; ++y) {
+            pixbyte* p = bitmap.getData(area.a.x, y);
+            for (int x = area.a.x; x <= area.b.x; ++x)
+                for (int i = 0; i < n; ++i, ++p)
+                    *p = rand() % 256;
+        }
+    }
+}
+
+
+void BitmapTools::noise(AbstractBitmap& bitmap) {
+    noise(bitmap, IntRectangle(0, 0, bitmap.getWidth() - 1, bitmap.getHeight() - 1));
+}
+
+
 void BitmapTools::makeOpaque(AbstractBitmap& bitmap, IntRectangle area) {
+    AbstractBitmap::WriteLock lock(bitmap);
+
     // floating-point bitmap
     if (bitmap.getPixelFormat() == QuadFloat)
         for (int y = area.a.y; y <= area.b.y; ++y) {
@@ -107,8 +138,8 @@ void BitmapTools::invert(AbstractBitmap& input, AbstractBitmap& output) {
     RuntimeError::check(input.getPixelFormat() == output.getPixelFormat(),
         "Input/output pixel formats mismatch");
 
-    input.lockPixels(ProcessingTarget::CPU);
-    output.lockPixels(ProcessingTarget::CPU);
+    AbstractBitmap::ReadLock inputLock(input, ProcessingTarget::CPU);
+    AbstractBitmap::WriteLock outputLock(output);
 
     const size_t NPIX = input.getSize().numPixels();
     if (input.isFloat()) {
@@ -135,24 +166,20 @@ void BitmapTools::invert(AbstractBitmap& input, AbstractBitmap& output) {
         for (int r = 0; r < N % sizeof(pixint_platform); ++r)
             *(ro++) = ~*(ri++);
     }
-    input.unlockPixels();
-    output.unlockPixels();
 }
 
 
 IntPoint BitmapTools::scanlineSearch(AbstractBitmap& source, pixint4 val, const IntPoint& startFrom) {
     IntPoint result;
-    source.lockPixels(ProcessingTarget::CPU);
+    AbstractBitmap::ReadLock lock(source, ProcessingTarget::CPU);
     BitmapProcessing::read<ScanlineSearch>(source, startFrom.x, startFrom.y, val, startFrom, result);
-    source.unlockPixels();
     return result;
 }
 
 
 IntPoint BitmapTools::scanlineSearch(AbstractBitmap& source, pixfloat4 val, const IntPoint& startFrom) {
     IntPoint result;
-    source.lockPixels(ProcessingTarget::CPU);
+    AbstractBitmap::ReadLock lock(source, ProcessingTarget::CPU);
     BitmapProcessing::read<ScanlineSearch>(source, startFrom.x, startFrom.y, val, startFrom, result);
-    source.unlockPixels();
     return result;
 }

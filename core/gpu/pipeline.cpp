@@ -476,7 +476,6 @@ public:
         // setting up main controls
         glViewport(0, 0, bitmap.getWidth(), bitmap.getHeight());
         outputResolution = bitmap.getSize();
-        glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -539,7 +538,7 @@ public:
             InternalBitmap buffer(bitmap.getContext(),
                 bitmap.isFloat() ? PixelFormat::QuadFloat : PixelFormat::QuadByte,
                 bitmap.getWidth(), bitmap.getHeight());
-            buffer.lockPixels(ProcessingTarget::CPU);
+            AbstractBitmap::WriteLock lock(buffer);
 
             glReadPixels(0, 0, buffer.getWidth(), buffer.getHeight(),
                 GL::BITMAP_PIXELFORMATS[buffer.getPixelFormat()],
@@ -550,8 +549,6 @@ public:
 
             // converting to the required format
             BitmapConverter::convert(buffer, bitmap);
-
-            buffer.unlockPixels();
         }
 
         // copy data directly

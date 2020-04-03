@@ -14,7 +14,7 @@ namespace Beatmup {
             \brief Makes a copy of a bitmap with a specified pixel format
         */
         AbstractBitmap* makeCopy(AbstractBitmap& source, PixelFormat newPixelFormat);
-        
+
         /**
             \brief Makes a copy of a bitmap
         */
@@ -24,7 +24,14 @@ namespace Beatmup {
             Generates a chessboard
         */
         AbstractBitmap* chessboard(Context& ctx, int width, int height, int cellSize, PixelFormat pixelFormat = BinaryMask);
-                
+
+        /**
+            Replaces a rectangular area in a bitmap by random noise
+        */
+        void noise(AbstractBitmap&, IntRectangle);
+
+        void noise(AbstractBitmap&);
+
         /**
             Makes a bitmap area opaque
         */

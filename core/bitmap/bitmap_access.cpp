@@ -8,7 +8,8 @@ const int
 
 
 Beatmup::BitmapContentModifier::BitmapContentModifier(AbstractBitmap& bitmap) {
-    bitmap.invalidate(ProcessingTarget::GPU);
+    bitmap.upToDate[ProcessingTarget::GPU] = false;
+    bitmap.upToDate[ProcessingTarget::CPU] = true;
         // say to bitmap that it is gonna be processed on CPU, its GPU version is not up to date any more
 }
 
