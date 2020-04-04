@@ -263,6 +263,7 @@ public:
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
         glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         GL::GLException::check("enabling / disabling");
     }
 
@@ -444,10 +445,11 @@ public:
         // setting up a texture
         glBindFramebuffer(GL_FRAMEBUFFER, hFrameBuffer);
         GLuint handle = useTexture(bitmap);
-        glBindTexture(GL_TEXTURE_2D, handle);
 
         // if the GPU version is outdated, feed it with blank pixels
-        if (!bitmap.isUpToDate(ProcessingTarget::GPU)) {
+        if (!bitmap.isUpToDate(ProcessingTarget::GPU))  {
+            glBindTexture(GL_TEXTURE_2D, handle);
+
             static const GLint formats[] = {
                 0,
 #ifdef BEATMUP_OPENGLVERSION_GLES20
@@ -458,6 +460,7 @@ public:
                 0, // not used
                 GL_RGB, GL_RGBA
             };
+
             glTexImage2D(
                 GL_TEXTURE_2D, 0, formats[bitmap.getNumberOfChannels()],
                 bitmap.getWidth(), bitmap.getHeight(),
@@ -469,14 +472,15 @@ public:
         }
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, handle, 0);
+#ifdef BEATMUP_DEBUG
         GLuint err = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (err != GL_FRAMEBUFFER_COMPLETE)
             throw GL::GLException("framebuffer incomplete", err);
+#endif
 
         // setting up main controls
         glViewport(0, 0, bitmap.getWidth(), bitmap.getHeight());
         outputResolution = bitmap.getSize();
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
 #ifdef BEATMUP_DEBUG
