@@ -44,7 +44,6 @@ namespace Beatmup {
         const int getHeight() const;
         const msize getMemorySize() const;
         pixbyte* getData(int x, int y) const;
-        void unlockPixels();
 
         void saveBmp(const char* filename);
     };

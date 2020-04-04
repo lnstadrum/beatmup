@@ -24,19 +24,19 @@ void ShaderApplicator::beforeProcessing(ThreadIndex threadCount, GraphicPipeline
     NullTaskInput::check(output, "output bitmap");
     NullTaskInput::check(shader, "image shader");
     if (mainInput)
-        mainInput->lockPixels(ProcessingTarget::GPU);
+        locker.lock(*mainInput, PixelFlow::GpuRead);
     for (auto _ : samplers)
-        _.second->lockPixels(ProcessingTarget::GPU);
-    output->lockPixels(ProcessingTarget::GPU);
+        locker.lock(*_.second, PixelFlow::GpuRead);
+#ifdef BEATMUP_DEBUG
+    DebugAssertion::check(!locker.isLocked(*output), "Output bitmap is used as shader input");
+#endif
+    output->lockContent(PixelFlow::GpuWrite);
 }
 
 
-void ShaderApplicator::afterProcessing(ThreadIndex threadCount, bool aborted) {
-    if (mainInput)
-        mainInput->unlockPixels();
-    for (auto _ : samplers)
-        _.second->unlockPixels();
-    output->unlockPixels();
+void ShaderApplicator::afterProcessing(ThreadIndex threadCount, GraphicPipeline* gpu, bool aborted) {
+    locker.unlockAll();
+    output->unlockContent(PixelFlow::GpuWrite);
 }
 
 

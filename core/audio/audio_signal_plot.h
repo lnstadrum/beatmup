@@ -31,7 +31,7 @@ namespace Beatmup {
     protected:
         virtual bool process(TaskThread& thread);
         virtual void beforeProcessing(ThreadIndex, GraphicPipeline*);
-        virtual void afterProcessing(ThreadIndex, bool);
+        virtual void afterProcessing(ThreadIndex, GraphicPipeline*, bool);
         virtual ExecutionTarget getExecutionTarget() const;
         virtual ThreadIndex maxAllowedThreads() const;
 

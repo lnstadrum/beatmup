@@ -104,23 +104,12 @@ void InternalBitmap::unlockPixelData() {
 }
 
 
-void InternalBitmap::unlockPixels() {
-    AbstractBitmap::unlockPixels();
-    /*if (isUpToDate(ProcessingTarget::GPU))
-        // if it is not a mask, lets free CPU
-        if (!isMask()) {
-            invalidate(ProcessingTarget::CPU);
-            // this will cause freeing the memory when releasing the chunk
-        }*/
-}
-
-
 void InternalBitmap::saveBmp(const char* filename) {
     if (!isUpToDate(ProcessingTarget::CPU)) {
         // Grab output bitmap from GPU memory to RAM
         Beatmup::Swapper::pullPixels(*this);
     }
-  
+
     if (!memory)
         memory = ctx.allocateMemory(getMemorySize());
     Context::Mem mem(ctx, memory);

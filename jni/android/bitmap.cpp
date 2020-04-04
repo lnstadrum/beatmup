@@ -90,11 +90,6 @@ void Bitmap::unlockPixelData() {
 }
 
 
-void Bitmap::unlockPixels() {
-    AbstractBitmap::unlockPixels();
-}
-
-
 pixbyte* Bitmap::getData(int x, int y) const {
     RuntimeError::check(lockedPixels, "No pixel data available. Forget to lock the bitmap?");
     if (x < 0 || y < 0 || x >= lockedWidth || y >= lockedHeight)

@@ -21,8 +21,8 @@ void X2UpsamplingNetwork::Layer::process(Context& ctx, GraphicPipeline& gpu, GL:
         shader.setFloat("d2", 2.0 / input.getWidth(), 2.0 / input.getHeight());
     }
 
+    AbstractBitmap::ContentLock outputLock(*output, PixelFlow::GpuWrite);
     shader.prepare(gpu, &input, TextureParam::INTERP_NEAREST, output, AffineMapping::IDENTITY);
-
     shader.process(gpu);
 }
 
@@ -36,16 +36,16 @@ void X2UpsamplingNetwork::Layer::process(Context& ctx, GraphicPipeline& gpu, Lay
     if (!output)
         output = new InternalBitmap(ctx, PixelFormat::QuadByte, input.getWidth(), input.getHeight(), false);
 
+    AbstractBitmap::ContentLock outputLock(*output, PixelFlow::GpuWrite);
     shader.setFloat("d1", 1.0 / input.getWidth(), 1.0 / input.getHeight());
-
     shader.prepare(gpu, nullptr, output);
 
     // bind images
-    for (int i = 0; i < inputsCount; ++i) {
+    for (int i = 0; i < inputsCount; ++i)
         gpu.bind(inputs[i]->getOutput(), i, TextureParam::INTERP_NEAREST);
-    }
     shader.bindSamplerArray("images", 0, inputsCount);
 
+    // process
     shader.process(gpu);
 }
 

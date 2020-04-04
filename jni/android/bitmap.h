@@ -18,7 +18,7 @@ namespace Beatmup {
             jobject bitmap;             //!< java object representing the bitmap
             JavaVM *jvm;                //!< java environment
 
-            void *lockedPixels;         //!< pixel buffer; available only after calling lockPixels()
+            void *lockedPixels;         //!< pixel buffer; available only after calling lockPixelData()
             int lockedWidth, lockedHeight;
             PixelFormat lockedPixelFormat;
 
@@ -43,8 +43,6 @@ namespace Beatmup {
             const int getWidth() const;
 
             const int getHeight() const;
-
-            void unlockPixels();
 
             pixbyte* getData(int x, int y) const;
 

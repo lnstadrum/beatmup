@@ -36,9 +36,8 @@ public:
         auto startTime = std::chrono::high_resolution_clock::now();
         TaskHolder& task = **currentTask;
         task.getTask().beforeProcessing(
-                task.threadCount,
-                task.executionMode != AbstractTask::ExecutionTarget::doNotUseGPU && gpu ?
-                    gpu : nullptr
+            task.threadCount,
+            task.executionMode != AbstractTask::ExecutionTarget::doNotUseGPU && gpu ? gpu : nullptr
         );
 
         // wait for other workers
@@ -57,7 +56,11 @@ public:
         // wait for other workers
         thread->synchronize();
 
-        task.getTask().afterProcessing(task.threadCount, !abort);
+        task.getTask().afterProcessing(
+            task.threadCount,
+            task.executionMode != AbstractTask::ExecutionTarget::doNotUseGPU && gpu ? gpu : nullptr,
+            !abort
+        );
 
         auto endTime = std::chrono::high_resolution_clock::now();
         task.time = std::chrono::duration<float, std::milli>(endTime - startTime).count();
@@ -202,8 +205,8 @@ void CustomPipeline::beforeProcessing(ThreadIndex threadCount, GraphicPipeline *
     impl->beforeProcessing();
 }
 
-void CustomPipeline::afterProcessing(ThreadIndex threadCount, bool aborted) {
-    AbstractTask::afterProcessing(threadCount, aborted);
+void CustomPipeline::afterProcessing(ThreadIndex threadCount, GraphicPipeline* gpu, bool aborted) {
+    AbstractTask::afterProcessing(threadCount, gpu, aborted);
 }
 
 bool CustomPipeline::process(TaskThread &thread) {

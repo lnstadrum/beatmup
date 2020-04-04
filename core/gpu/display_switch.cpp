@@ -19,7 +19,7 @@ bool DisplaySwitch::process(TaskThread& thread) {
 
 
 AbstractTask::ExecutionTarget DisplaySwitch::getExecutionTarget() const {
-    return useGPUIfAvailable;
+    return ExecutionTarget::useGPUIfAvailable;
 }
 
 

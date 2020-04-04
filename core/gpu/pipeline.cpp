@@ -334,14 +334,6 @@ public:
     }
 
 
-    void flush() {
-        if (output) {
-            output->upToDate[ProcessingTarget::GPU] = true;
-            output->upToDate[ProcessingTarget::CPU] = false;
-        }
-    }
-
-
     void swapBuffers() {
         glFinish();
 #ifdef BEATMUP_PLATFORM_WINDOWS
@@ -627,11 +619,6 @@ void GraphicPipeline::swapBuffers() {
 }
 
 
-void GraphicPipeline::flush() {
-    impl->flush();
-}
-
-
 void GraphicPipeline::bind(GL::TextureHandler& texture, size_t texUnit, const TextureParam param) {
     impl->bind(texture, texUnit, param);
 }
@@ -659,6 +646,11 @@ ImageResolution GraphicPipeline::getOutputResolution() const {
 
 void GraphicPipeline::fetchPixels(AbstractBitmap& bitmap) {
     impl->fetchPixels(bitmap);
+}
+
+
+void GraphicPipeline::flush() {
+    glFinish();
 }
 
 

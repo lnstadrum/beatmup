@@ -26,7 +26,7 @@ private:
     }
 
     ExecutionTarget getExecutionTarget() const {
-        return useGPU;
+        return ExecutionTarget::useGPU;
     }
 
 public:

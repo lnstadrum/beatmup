@@ -33,7 +33,7 @@ namespace Beatmup {
 
             virtual void beforeProcessing(ThreadIndex threadCount, GraphicPipeline* gpu) final;
 
-            virtual void afterProcessing(ThreadIndex threadCount, bool aborted) final;
+            virtual void afterProcessing(ThreadIndex threadCount, GraphicPipeline* gpu, bool aborted) final;
 
         public:
             PixelwiseFilter();

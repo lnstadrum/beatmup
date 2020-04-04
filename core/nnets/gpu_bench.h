@@ -26,7 +26,7 @@ namespace Beatmup {
             float score;	//!< score
 
             void beforeProcessing(ThreadIndex threadCount, GraphicPipeline* gpu);
-            void afterProcessing(ThreadIndex threadCount, bool aborted);
+            void afterProcessing(ThreadIndex threadCount, GraphicPipeline* gpu, bool aborted);
             bool processOnGPU(GraphicPipeline& gpu, TaskThread& thread);
 
         public:

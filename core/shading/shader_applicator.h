@@ -6,6 +6,7 @@
 #include "../bitmap/abstract_bitmap.h"
 #include "../geometry.h"
 #include "image_shader.h"
+#include "../utils/bitmap_locker.h"
 #include <map>
 
 namespace Beatmup {
@@ -16,13 +17,14 @@ namespace Beatmup {
     class ShaderApplicator : public GpuTask {
     private:
         std::map<std::string, AbstractBitmap*> samplers;
+        BitmapLocker locker;
         ImageShader* shader;
         AbstractBitmap *mainInput, *output;
         AffineMapping mapping;
 
         bool processOnGPU(GraphicPipeline& gpu, TaskThread& thread);
         void beforeProcessing(ThreadIndex threadCount, GraphicPipeline* gpu);
-        void afterProcessing(ThreadIndex threadCount, bool aborted);
+        void afterProcessing(ThreadIndex threadCount, GraphicPipeline* gpu, bool aborted);
 
     public:
         ShaderApplicator();

@@ -219,24 +219,27 @@ private:
             // notify other workers if they're waiting for synchro
             synchroCvar.notify_all();
 
-            // call afterProcessing if no more threads are working
-            if (currentJob.task && remainingWorkers == 0)
+            // wait until all the workers stop
+            while (remainingWorkers > 0)
+                workersCvar.wait(workersLock);
+
+            // call afterProcessing
+            if (currentJob.task)
                 try {
-                    currentJob.task->afterProcessing(currentWorkerCount, abortExternally);
+                    currentJob.task->afterProcessing(currentWorkerCount, useGpuForCurrentTask ? gpu : nullptr, abortExternally);
                 }
                 catch (const Exception& ex) {
                     eventListener.taskFail(myIndex, *currentJob.task, ex);
                     failFlag = true;
                 }
 
-            // wait until all the workers stop
-            while (remainingWorkers > 0)
-                workersCvar.wait(workersLock);
             workersLock.unlock();
 
-            // unlock graphic pipeline, if needed
-            if (useGpuForCurrentTask && gpu)
+            // unlock graphic pipeline, if used
+            if (useGpuForCurrentTask && gpu) {
+                gpu->flush();
                 gpu->unlock();
+            }
 
             // call taskDone, ask if want to repeat
             bool internalRepeatFlag = false;
@@ -308,17 +311,6 @@ private:
 
             // notify other workers if they're waiting for synchro
             synchroCvar.notify_all();
-
-            // call afterProcessing if no more threads are working
-            if (remainingWorkers == 0) {
-                try {
-                    job.task->afterProcessing(currentWorkerCount, abortExternally);
-                }
-                catch (const Exception& ex) {
-                    eventListener.taskFail(myIndex, *job.task, ex);
-                    failFlag = true;
-                }
-            }
 
             // stop
             thread.running = false;

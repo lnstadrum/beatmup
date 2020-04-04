@@ -27,17 +27,19 @@ namespace Beatmup {
         HexMask				//!< 4 bits per pixel
     };
 
+    enum PixelFlow {
+        CpuRead = 1 << 0,
+        GpuRead = 1 << 1,
+        CpuWrite = 1 << 2,
+        GpuWrite = 1 << 3
+    };
 
     class AbstractBitmap : public GL::TextureHandler {
         friend class GraphicPipeline;
-        friend class BitmapContentModifier;
-        friend class ReadLock;
-        friend class WriteLock;
 
     private:
         AbstractBitmap(const AbstractBitmap& that) = delete;		//!< disabling copying constructor
 
-        bool pixelDataLocked;								//!< flag signaling whether the pixel buffer in CPU memory is currently locked
         bool upToDate[2];									//!< bitmap up-to-date state on CPU and GPU
 
     protected:
@@ -77,19 +79,36 @@ namespace Beatmup {
         virtual const msize getMemorySize() const = 0;
 
         /**
-            Unlocks access to the memory buffer (in CPU memory) containing pixel data
+            Prepares the bitmap for a specific processing; enables direct pixel acces for processing units that will
+            operate on the bitmap.
         */
-        virtual void unlockPixels();
+        void lockContent(PixelFlow flow);
 
         /**
-            Locks access to the pixel data guaranteeing that the bitmap is up to date on the required processing target
+            Shortcut for locking the content in function of GPU availablility and a reading/writing flag.
         */
-        virtual void lockPixels(ProcessingTarget);
+        inline void lockContent(GraphicPipeline* gpu, bool write) {
+            lockContent(gpu ?
+                (write ? PixelFlow::GpuWrite : PixelFlow::GpuRead) :
+                (write ? PixelFlow::CpuWrite : PixelFlow::CpuRead));
+        }
 
         /**
-            Marks as out-of-date bitmap content stored specified target processing unit memory
+            Releases access to pixels after a specific process.
+            This operation may release memory. The pixel flow value must correspond to value given in lockContent(..),
+            otherwise updated pixel data may be lost.
         */
-        virtual void invalidate(ProcessingTarget);
+        void unlockContent(PixelFlow flow);
+
+        /**
+            Shortcut for unlocking the content in function of GPU availablility and a reading/writing flag.
+        */
+        void unlockContent(GraphicPipeline* gpu, bool write) {
+            unlockContent(gpu ?
+                (write ? PixelFlow::GpuWrite : PixelFlow::GpuRead) :
+                (write ? PixelFlow::CpuWrite : PixelFlow::CpuRead));
+        }
+
 
         bool isUpToDate(ProcessingTarget) const;
 
@@ -172,23 +191,75 @@ namespace Beatmup {
         ~AbstractBitmap();
 
 
+        /**
+            Guard utility for locking and unlocking content
+        */
+        class ContentLock {
+        private:
+            AbstractBitmap& bitmap;
+            const PixelFlow flow;
+        public:
+            ContentLock(AbstractBitmap& bitmap, const PixelFlow flow):
+                bitmap(bitmap), flow(flow)
+            {
+                bitmap.lockContent(flow);
+            }
+
+            ~ContentLock() {
+                bitmap.unlockContent(flow);
+            }
+        };
+
+
+        /**
+            Locks a bitmap for reading checking whether it is up-to-date.
+            Once instantiated on a bitmap, bitmap.getData(..) returns a valid address. Modifying its content puts
+            the bitmap into inconsistent state.
+        */
         class ReadLock {
         private:
             AbstractBitmap& bitmap;
+            const PixelFlow flow;
         public:
-            ReadLock(AbstractBitmap&, ProcessingTarget);
-            ~ReadLock();
+            ReadLock(AbstractBitmap& bitmap, ProcessingTarget unit = ProcessingTarget::CPU):
+                bitmap(bitmap), flow(unit == ProcessingTarget::CPU ? PixelFlow::CpuRead : PixelFlow::GpuRead)
+            {
+                bitmap.lockContent(flow);
+            }
+
+            ~ReadLock() {
+                bitmap.unlockContent(flow);
+            }
         };
 
+
+        /**
+            Makes a bitmap writable CPU access regardless its actual state.
+            Once instantiated on a bitmap, bitmap.getData(..) returns valid address. When destroyed, marks the bitmap
+            being up-to-date in RAM and outdated in GPU memory.
+        */
         class WriteLock {
         private:
             AbstractBitmap& bitmap;
         public:
-            WriteLock(AbstractBitmap&);
-            ~WriteLock();
+            WriteLock(AbstractBitmap& bitmap):
+                bitmap(bitmap)
+            {
+                bitmap.lockContent(PixelFlow::CpuWrite);
+            }
+
+            ~WriteLock() {
+                bitmap.unlockContent(PixelFlow::CpuWrite);
+            }
         };
     };
 
 
-    typedef AbstractBitmap* BitmapPtr;
+    inline PixelFlow operator + (PixelFlow a, PixelFlow b) {
+        return static_cast<PixelFlow>(static_cast<int>(a) | static_cast<int>(b));
+    }
+
+    inline bool operator & (PixelFlow a, PixelFlow b) {
+        return (static_cast<int>(a) & static_cast<int>(b)) > 0;
+    }
 }

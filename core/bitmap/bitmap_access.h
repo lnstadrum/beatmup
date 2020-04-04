@@ -38,7 +38,7 @@ namespace Beatmup {
 
     class BitmapContentModifier {
     protected:
-        BitmapContentModifier(AbstractBitmap& bitmap);
+        BitmapContentModifier(AbstractBitmap& bitmap) {}
     };
 
     /**

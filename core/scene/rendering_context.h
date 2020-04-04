@@ -5,7 +5,7 @@
 
 #include "../gpu/pipeline.h"
 #include "../gpu/program.h"
-#include <map>
+#include "../utils/bitmap_locker.h"
 
 namespace Beatmup {
     /**
@@ -21,7 +21,7 @@ namespace Beatmup {
         };
 
     private:
-        std::map<BitmapPtr, int> lockedBitmaps;		//!< all the locked bitmaps with reference counters
+        BitmapLocker lockedBitmaps;		//!< all the locked bitmaps with reference counters
         EventListener* eventListener;
         AffineMapping mapping;
 
@@ -30,10 +30,10 @@ namespace Beatmup {
 
         GraphicPipeline& gpu;
         RenderingContext(GraphicPipeline& gpu, EventListener* eventListener, const float outputWidth, const bool renderingOnScreen);
-        ~RenderingContext();
+
     public:
-        void lockBitmap(BitmapPtr bitmap);
-        void unlockBitmap(BitmapPtr bitmap);
+        void lockBitmap(AbstractBitmap* bitmap);
+        void unlockBitmap(AbstractBitmap* bitmap);
         GraphicPipeline& getGpu() { return gpu; }
 
         /**

@@ -22,7 +22,7 @@ namespace Beatmup {
         ExecutionTarget getExecutionTarget() const;
         ThreadIndex maxAllowedThreads() const;
         void beforeProcessing(ThreadIndex threadCount, GraphicPipeline* gpu);
-        void afterProcessing(ThreadIndex threadCount, bool aborted);
+        void afterProcessing(ThreadIndex threadCount, GraphicPipeline* gpu, bool aborted);
         bool process(TaskThread& thread);
         bool processOnGPU(GraphicPipeline& gpu, TaskThread& thread);
 

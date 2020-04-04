@@ -206,20 +206,21 @@ void BitmapBinaryOperation::beforeProcessing(ThreadIndex threadCount, GraphicPip
     RuntimeError::check(outputOrigin.x + cropWidth  <= output->getWidth(),  "operand 1 width exceeded");
     RuntimeError::check(outputOrigin.y + cropHeight <= output->getHeight(), "operand 1 height exceeded");
 
-    op1->lockPixels(ProcessingTarget::CPU);
-    if (op2 != op1)
-        op2->lockPixels(ProcessingTarget::CPU);
-    if (output != op1 && output != op2)
-        output->lockPixels(ProcessingTarget::CPU);
+
+    output->lockContent(nullptr, true);
+    if (op1 != output)
+        op1->lockContent(nullptr, false);
+    if (op2 != output && op2 != op1)
+        op2->lockContent(nullptr, false);
 }
 
 
-void BitmapBinaryOperation::afterProcessing(ThreadIndex threadCount, bool aborted) {
-    op1->unlockPixels();
-    if (op2 != op1)
-        op2->unlockPixels();
-    if (output != op1 && output != op2)
-        output->unlockPixels();
+void BitmapBinaryOperation::afterProcessing(ThreadIndex threadCount, GraphicPipeline* gpu, bool aborted) {
+    output->unlockContent(nullptr, true);
+    if (op1 != output)
+        op1->unlockContent(nullptr, false);
+    if (op2 != output && op2 != op1)
+        op2->unlockContent(nullptr, false);
 }
 
 

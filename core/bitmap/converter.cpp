@@ -35,7 +35,7 @@ ThreadIndex BitmapConverter::maxAllowedThreads() const {
 
 AbstractTask::ExecutionTarget BitmapConverter::getExecutionTarget() const {
     // it does not make sense to convert bitmaps on GPU
-    return doNotUseGPU;
+    return ExecutionTarget::doNotUseGPU;
 }
 
 
@@ -44,14 +44,14 @@ void BitmapConverter::beforeProcessing(ThreadIndex threadCount, GraphicPipeline*
     NullTaskInput::check(output, "output bitmap");
     RuntimeError::check(input->getSize() == output->getSize(),
         "Input and output bitmap must be of the same size.");
-    input->lockPixels(ProcessingTarget::CPU);
-    output->lockPixels(ProcessingTarget::CPU);
+    input->lockContent(PixelFlow::CpuRead);
+    output->lockContent(PixelFlow::CpuWrite);
 }
 
 
-void BitmapConverter::afterProcessing(ThreadIndex threadCount, bool aborted) {
-    input->unlockPixels();
-    output->unlockPixels();
+void BitmapConverter::afterProcessing(ThreadIndex threadCount, GraphicPipeline* gpu, bool aborted) {
+    input->unlockContent(PixelFlow::CpuRead);
+    output->unlockContent(PixelFlow::CpuWrite);
 }
 
 

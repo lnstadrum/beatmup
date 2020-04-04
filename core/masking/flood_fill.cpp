@@ -61,7 +61,7 @@ ThreadIndex FloodFill::maxAllowedThreads() const {
 bool FloodFill::process(TaskThread& thread) {
     std::vector<IntPoint> border;
     border.reserve((output->getWidth() + output->getHeight()) * 2);
-    
+
     std::vector<IntegerContour2D*> myContours;
     IntRectangle bounds;
     bounds.a = bounds.b = seeds[thread.currentThread()];
@@ -80,7 +80,7 @@ bool FloodFill::process(TaskThread& thread) {
             BinaryMaskWriter writer(*ignoredSeeds);
             IntegerContour2D::computeBoundary(myContours, *output, border, writer, 0);
         }
-    
+
     if (!thread.isTaskAborted())
         switch (borderMorphology) {
         case DILATE:
@@ -117,25 +117,25 @@ bool FloodFill::process(TaskThread& thread) {
 void FloodFill::beforeProcessing(ThreadIndex threadCount, GraphicPipeline* gpu) {
     NullTaskInput::check(input, "input bitmap");
     NullTaskInput::check(output, "output bitmap");
-    input->lockPixels(ProcessingTarget::CPU);
-    output->lockPixels(ProcessingTarget::CPU);
+    input->lockContent(PixelFlow::CpuRead);
+    output->lockContent(PixelFlow::CpuWrite);
     for (IntegerContour2D* contour : contours)
         delete contour;
     contours.clear();
     if (computeContours) {
         ignoredSeeds = new InternalBitmap(input->getContext(), PixelFormat::BinaryMask, output->getWidth(), output->getHeight());
         ignoredSeeds->zero();
-        ignoredSeeds->lockPixels(ProcessingTarget::CPU);
+        ignoredSeeds->lockContent(PixelFlow::CpuWrite);
     }
     bounds.a = bounds.b = seeds[0];
 }
 
 
-void FloodFill::afterProcessing(ThreadIndex threadCount, bool aborted) {
-    input->unlockPixels();
-    output->unlockPixels();
+void FloodFill::afterProcessing(ThreadIndex threadCount, GraphicPipeline* gpu, bool aborted) {
+    input->unlockContent(PixelFlow::CpuRead);
+    output->unlockContent(PixelFlow::CpuWrite);
     if (computeContours) {
-        ignoredSeeds->unlockPixels();
+        ignoredSeeds->unlockContent(PixelFlow::CpuWrite);
         delete ignoredSeeds;
     }
 }

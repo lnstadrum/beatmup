@@ -28,16 +28,17 @@ void Filters::PixelwiseFilter::beforeProcessing(ThreadIndex threadCount, Graphic
         inputBitmap->getWidth() == outputBitmap->getWidth() &&
         inputBitmap->getHeight() <= outputBitmap->getHeight(),
         "Incompatible input and output bitmaps sizes");
-    inputBitmap->lockPixels(gpu ? ProcessingTarget::GPU : ProcessingTarget::CPU);
+
+    outputBitmap->lockContent(gpu, true);
     if (inputBitmap != outputBitmap)
-        outputBitmap->lockPixels(gpu ? ProcessingTarget::GPU : ProcessingTarget::CPU);
+        inputBitmap->lockContent(gpu, false);
 }
 
 
-void Filters::PixelwiseFilter::afterProcessing(ThreadIndex threadCount, bool aborted) {
-    inputBitmap->unlockPixels();
+void Filters::PixelwiseFilter::afterProcessing(ThreadIndex threadCount, GraphicPipeline* gpu, bool aborted) {
+    outputBitmap->unlockContent(gpu, true);
     if (inputBitmap != outputBitmap)
-        outputBitmap->unlockPixels();
+        inputBitmap->unlockContent(gpu, false);
 }
 
 

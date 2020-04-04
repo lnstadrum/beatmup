@@ -157,15 +157,15 @@ namespace Beatmup {
             void render(RenderingContext& context);
 
             float invAr;					//!< inversed aspect ratio of what is rendered (set by SceneRenderer)
-            BitmapPtr bitmap;				//!< content to display, used if the image source is set to BITMAP
+            AbstractBitmap* bitmap;				//!< content to display, used if the image source is set to BITMAP
             AffineMapping bitmapMapping;	//!< bitmap mapping w.r.t. the layer mapping
             color4i modulation;               //!< modulation color
 
         public:
             bool testPoint(float x, float y) const;
 
-            inline const BitmapPtr getBitmap() const { return bitmap; }
-            inline void setBitmap(BitmapPtr bitmap) { this->bitmap = bitmap; }
+            inline const AbstractBitmap* getBitmap() const { return bitmap; }
+            inline void setBitmap(AbstractBitmap* bitmap) { this->bitmap = bitmap; }
 
             inline AffineMapping& getBitmapMapping() { return bitmapMapping; }
             inline const AffineMapping& getBitmapMapping() const { return bitmapMapping; }
@@ -203,13 +203,13 @@ namespace Beatmup {
             friend class Scene;
             friend class SceneRenderer;
         private:
-            BitmapPtr mask;		//!< mask bitmap
+            AbstractBitmap* mask;		//!< mask bitmap
         protected:
             MaskedBitmapLayer();
             void render(RenderingContext& context);
         public:
-            inline const BitmapPtr getMask() const { return mask; }
-            inline void setMask(BitmapPtr mask) { this->mask = mask; }
+            inline const AbstractBitmap* getMask() const { return mask; }
+            inline void setMask(AbstractBitmap* mask) { this->mask = mask; }
             bool testPoint(float x, float y) const;
         };
 

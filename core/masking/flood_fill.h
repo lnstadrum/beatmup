@@ -87,5 +87,5 @@ namespace Beatmup {
         ThreadIndex maxAllowedThreads() const;
         virtual bool process(TaskThread& thread) final;
         virtual void beforeProcessing(ThreadIndex threadCount, GraphicPipeline* gpu) final;
-        virtual void afterProcessing(ThreadIndex threadCount, bool aborted) final;
+        virtual void afterProcessing(ThreadIndex threadCount, GraphicPipeline* gpu, bool aborted) final;
     };}

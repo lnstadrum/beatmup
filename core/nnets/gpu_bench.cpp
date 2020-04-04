@@ -56,56 +56,55 @@ void GPUBenchmark::beforeProcessing(ThreadIndex threadCount, GraphicPipeline* gp
         program->make(*gpu, BENCHMARK_PROGRAM_SOURCE);
     }
 
-    input.lockPixels(ProcessingTarget::CPU);
-    QuadFloatBitmapWriter in(input);
-    const msize cpStep = (TEST_BITMAP_SIZE - 2) * (TEST_BITMAP_SIZE - 2) / CONTROL_POINTS_NUM;
+    {
+        AbstractBitmap::WriteLock lock(input);
+        QuadFloatBitmapWriter in(input);
+        const msize cpStep = (TEST_BITMAP_SIZE - 2) * (TEST_BITMAP_SIZE - 2) / CONTROL_POINTS_NUM;
 
-    for (msize i = 0; i < TEST_BITMAP_SIZE * TEST_BITMAP_SIZE; ++i, in++) {
-        in = pixfloat4{ (float)std::rand() / RAND_MAX, (float)std::rand() / RAND_MAX, (float)std::rand() / RAND_MAX, (float)std::rand() / RAND_MAX };
-    }
-
-    in.goTo(0, 0);
-    for (msize y = 0, cp = 0, cpi = 0; y < TEST_BITMAP_SIZE; ++y)
-        for (msize x = 0; x < TEST_BITMAP_SIZE; ++x, ++cp, in++) {
-            if (cp >= cpStep && cpi < CONTROL_POINTS_NUM &&
-                x > 0 && y > 0 &&
-                x < TEST_BITMAP_SIZE - 1 && y < TEST_BITMAP_SIZE - 1)
-            {
-                pixfloat4 v = (
-                    in.at(-1, -1) * 0.1f +
-                    in.at(-1, 0 ) * 0.2f +
-                    in.at(-1, +1) * 0.3f +
-                    in.at(0, -1 ) * 0.4f +
-                    in()          * 0.5f +
-                    in.at(0, +1 ) * 0.6f +
-                    in.at(+1, -1) * 0.7f +
-                    in.at(+1, 0 ) * 0.8f +
-                    in.at(+1, +1) * 0.9f
-                ) - 2.0f;
-                v[0] = std::max(0.0f, v[0]);
-                v[1] = std::max(0.0f, v[1]);
-                v[2] = std::max(0.0f, v[2]);
-                v[3] = std::max(0.0f, v[3]);
-                ctrlPointsVals[cpi] = v.mean();
-                ctrlPointsLocs[cpi] = y * TEST_BITMAP_SIZE + x;
-                cpi++;
-                cp = 0;
-            }
+        for (msize i = 0; i < TEST_BITMAP_SIZE * TEST_BITMAP_SIZE; ++i, in++) {
+            in = pixfloat4{ (float)std::rand() / RAND_MAX, (float)std::rand() / RAND_MAX, (float)std::rand() / RAND_MAX, (float)std::rand() / RAND_MAX };
         }
 
-    input.unlockPixels();
+        in.goTo(0, 0);
+        for (msize y = 0, cp = 0, cpi = 0; y < TEST_BITMAP_SIZE; ++y)
+            for (msize x = 0; x < TEST_BITMAP_SIZE; ++x, ++cp, in++) {
+                if (cp >= cpStep && cpi < CONTROL_POINTS_NUM &&
+                    x > 0 && y > 0 &&
+                    x < TEST_BITMAP_SIZE - 1 && y < TEST_BITMAP_SIZE - 1)
+                {
+                    pixfloat4 v = (
+                        in.at(-1, -1) * 0.1f +
+                        in.at(-1, 0 ) * 0.2f +
+                        in.at(-1, +1) * 0.3f +
+                        in.at(0, -1 ) * 0.4f +
+                        in()          * 0.5f +
+                        in.at(0, +1 ) * 0.6f +
+                        in.at(+1, -1) * 0.7f +
+                        in.at(+1, 0 ) * 0.8f +
+                        in.at(+1, +1) * 0.9f
+                    ) - 2.0f;
+                    v[0] = std::max(0.0f, v[0]);
+                    v[1] = std::max(0.0f, v[1]);
+                    v[2] = std::max(0.0f, v[2]);
+                    v[3] = std::max(0.0f, v[3]);
+                    ctrlPointsVals[cpi] = v.mean();
+                    ctrlPointsLocs[cpi] = y * TEST_BITMAP_SIZE + x;
+                    cpi++;
+                    cp = 0;
+                }
+            }
+    }
 
-    input.lockPixels(ProcessingTarget::GPU);
-    output.lockPixels(ProcessingTarget::GPU);
+    input.lockContent(PixelFlow::GpuRead);
+    output.lockContent(PixelFlow::GpuWrite);
 }
 
 
-void GPUBenchmark::afterProcessing(ThreadIndex threadCount, bool aborted) {
-    input.unlockPixels();
-    output.unlockPixels();
-
-    output.lockPixels(ProcessingTarget::CPU);
-
+void GPUBenchmark::afterProcessing(ThreadIndex threadCount, GraphicPipeline* gpu, bool aborted) {
+    input.unlockContent(PixelFlow::GpuRead);
+    output.unlockContent(PixelFlow::GpuWrite);
+    gpu->fetchPixels(output);
+    AbstractBitmap::ReadLock lock(output, ProcessingTarget::CPU);
     error = 0;
     for (msize i = 0; i < CONTROL_POINTS_NUM; ++i) {
         QuadFloatBitmapReader read(output);
@@ -127,7 +126,6 @@ bool GPUBenchmark::processOnGPU(GraphicPipeline& gpu, TaskThread& thread) {
     auto endTime = std::chrono::high_resolution_clock::now();
     float time = std::chrono::duration<float, std::milli>(endTime - startTime).count();
     score = TEST_BITMAP_SIZE * TEST_BITMAP_SIZE * 4 / (time * 1e-3);
-    gpu.fetchPixels(output);
     return true;
 }
 

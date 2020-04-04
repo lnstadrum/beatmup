@@ -44,11 +44,6 @@ namespace Beatmup {
 
         void switchDisplay(void* data);
 
-        /**
-            To be called at the end of a rendering pass to ensure a proper state of the output.
-        */
-        void flush();
-
         void swapBuffers();
 
         /**
@@ -67,6 +62,11 @@ namespace Beatmup {
         void bind(GL::TextureHandler& texture, size_t imageUnit, bool read, bool write);
 
         void fetchPixels(AbstractBitmap& bitmap);
+
+        /**
+            Waits until all operations submitted to GPU are finished.
+        */
+        void flush();
 
         int getLimit(Limit limit) const;
 

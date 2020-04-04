@@ -31,6 +31,14 @@ const unsigned char AbstractBitmap::CHANNELS_PER_PIXEL[] = {
 };
 
 
+class UnavailablePixelData : public Exception {
+public:
+    UnavailablePixelData(const AbstractBitmap& bitmap, const char* info):
+        Exception("No pixel data available for bitmap %s. %s", bitmap.toString().c_str(), info)
+    {}
+};
+
+
 void AbstractBitmap::prepare(GraphicPipeline& gpu) {
     glBindTexture(GL_TEXTURE_2D, textureHandle);
 
@@ -96,43 +104,28 @@ const GL::TextureHandler::TextureFormat AbstractBitmap::getTextureFormat() const
 }
 
 
-void AbstractBitmap::lockPixels(ProcessingTarget target) {
-    class UnavailablePixelData : public Exception {
-    public:
-        UnavailablePixelData(const AbstractBitmap& bitmap):
-            Exception("No pixel data available for bitmap %s", bitmap.toString().c_str())
-        {}
-    };
-
-    if (target == ProcessingTarget::CPU) {
-        // If pixel data in CPU memory is asked, GPU has it, cannot handle.
-        if (!upToDate[ProcessingTarget::CPU]  && upToDate[ProcessingTarget::GPU]) {
-            throw UnavailablePixelData(*this);
-        }
-    }
+void AbstractBitmap::lockContent(PixelFlow flow) {
+    // first check if the data is available if CPU read is requested
+    if ((flow & PixelFlow::CpuRead) && !upToDate[ProcessingTarget::CPU])
+        throw UnavailablePixelData(*this, "Ensure pixels are up-to-date in RAM using Swapper.");
 
     // lock pixels only if working on CPU, or if GPU version is not up to date so that pixels will be queried from RAM
-    if (target == ProcessingTarget::CPU || !upToDate[ProcessingTarget::GPU]) {
-        if (!pixelDataLocked) {
-            lockPixelData();
-            pixelDataLocked = true;
-        }
+    if ((flow & PixelFlow::CpuRead) || (flow & PixelFlow::CpuWrite) ||
+        ((flow & PixelFlow::GpuRead) && !isUpToDate(ProcessingTarget::GPU)))
+    {
+        lockPixelData();
     }
 }
 
 
-void AbstractBitmap::unlockPixels() {
-    if (pixelDataLocked) {
+void AbstractBitmap::unlockContent(PixelFlow flow) {
+    if ((flow & PixelFlow::CpuRead) || (flow & PixelFlow::CpuWrite) ||
+        ((flow & PixelFlow::GpuRead) && !isUpToDate(ProcessingTarget::GPU)))
+    {
         unlockPixelData();
-        pixelDataLocked = false;
     }
-}
-
-
-void AbstractBitmap::invalidate(ProcessingTarget target) {
-    upToDate[target] = false;
-    if (target == ProcessingTarget::GPU)
-        GL::TextureHandler::invalidate(*ctx.getGpuRecycleBin());
+    upToDate[ProcessingTarget::CPU] = (flow & PixelFlow::CpuRead) || (flow & PixelFlow::CpuWrite);
+    upToDate[ProcessingTarget::GPU] = (flow & PixelFlow::GpuRead) || (flow & PixelFlow::GpuWrite);
 }
 
 
@@ -206,15 +199,15 @@ bool AbstractBitmap::isMask(PixelFormat pixelFormat) {
 std::string AbstractBitmap::toString() const {
     std::string desc = std::to_string(getWidth()) + "x" + std::to_string(getHeight()) + " " + PIXEL_FORMAT_NAMES[getPixelFormat()];
     if (isUpToDate(ProcessingTarget::CPU) && isUpToDate(ProcessingTarget::GPU))
-        desc += " on CPU+GPU";
+        desc += " stored on CPU+GPU";
     else
         if (isUpToDate(ProcessingTarget::CPU))
-            desc += " on CPU";
+            desc += " stored on CPU";
         else
             if (isUpToDate(ProcessingTarget::GPU))
-                desc += " on GPU";
+                desc += " stored on GPU";
             else
-                desc += " out of date";		// impossible
+                desc += " dirty";
     return desc;
 }
 
@@ -222,7 +215,6 @@ std::string AbstractBitmap::toString() const {
 AbstractBitmap::AbstractBitmap(Context& ctx) : ctx(ctx) {
     upToDate[ProcessingTarget::CPU] = true;
     upToDate[ProcessingTarget::GPU] = false;
-    pixelDataLocked = false;
 }
 
 
@@ -246,31 +238,4 @@ Context& AbstractBitmap::getContext() const {
 void AbstractBitmap::zero() {
     WriteLock lock(*this);
     memset(getData(0, 0), 0, getMemorySize());
-}
-
-
-AbstractBitmap::ReadLock::ReadLock(AbstractBitmap& bitmap, ProcessingTarget unit):
-    bitmap(bitmap)
-{
-    bitmap.lockPixels(unit);
-}
-
-AbstractBitmap::ReadLock::~ReadLock() {
-    bitmap.unlockPixels();
-}
-
-
-AbstractBitmap::WriteLock::WriteLock(AbstractBitmap& bitmap):
-    bitmap(bitmap)
-{
-    if (!bitmap.pixelDataLocked) {
-        bitmap.lockPixelData();
-        bitmap.pixelDataLocked = true;
-    }
-}
-
-AbstractBitmap::WriteLock::~WriteLock() {
-    bitmap.unlockPixels();
-    bitmap.upToDate[ProcessingTarget::GPU] = false;
-    bitmap.upToDate[ProcessingTarget::CPU] = true;
 }

@@ -203,14 +203,14 @@ bool AudioSignalPlot::process(TaskThread& thread) {
 void AudioSignalPlot::beforeProcessing(ThreadIndex threadCount, GraphicPipeline* gpu) {
     NullTaskInput::check(signal, "input signal");
     NullTaskInput::check(bitmap, "output bitmap");
-    bitmap->lockPixels(gpu ? ProcessingTarget::GPU : ProcessingTarget::CPU);
+    bitmap->lockContent(PixelFlow::CpuWrite);
     outputRect.normalize();
     signalWindow.normalize();
 }
 
 
-void AudioSignalPlot::afterProcessing(ThreadIndex, bool) {
-    bitmap->unlockPixels();
+void AudioSignalPlot::afterProcessing(ThreadIndex, GraphicPipeline*, bool) {
+    bitmap->unlockContent(PixelFlow::CpuWrite);
 }
 
 
@@ -220,7 +220,7 @@ AbstractTask::ExecutionTarget AudioSignalPlot::getExecutionTarget() const {
 
 
 ThreadIndex AudioSignalPlot::maxAllowedThreads() const {
-    BEATMUP_ASSERT_DEBUG(bitmap != NULL);
+    BEATMUP_ASSERT_DEBUG(bitmap != nullptr);
     return validThreadCount(bitmap->getWidth());
 }
 

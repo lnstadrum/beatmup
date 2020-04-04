@@ -363,9 +363,8 @@ bool Scene::MaskedBitmapLayer::testPoint(float x, float y) const {
             w = floorf_fast(mask->getWidth() * p.x),
             h = floorf_fast(mask->getHeight() * p.y);
         if (0 <= w && w < mask->getWidth() && 0 <= h && h < mask->getHeight()) {
-            mask->lockPixels(ProcessingTarget::CPU);
+            AbstractBitmap::ReadLock lock(*mask);
             bool result = mask->getPixelInt(w, h) > 0;
-            mask->unlockPixels();
             return result;
         }
         return false;

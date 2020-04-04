@@ -41,11 +41,11 @@ namespace Beatmup {
 
             std::map<std::pair<size_t, int>, std::pair<Storage*, int>> storage;
                 //!< (operation index, output index) mapped to (buffer, its reference count)
-            
+
             void clearStorage();
 
             void beforeProcessing(ThreadIndex threadCount, GraphicPipeline* gpu);
-            void afterProcessing(ThreadIndex threadCount, bool aborted);
+            void afterProcessing(ThreadIndex threadCount, GraphicPipeline* gpu, bool aborted);
             bool processOnGPU(GraphicPipeline& gpu, TaskThread& thread);
 
         public:

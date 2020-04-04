@@ -38,16 +38,16 @@ Filters::ImageTuning::ImageTuning() :
 void Filters::ImageTuning::beforeProcessing(ThreadIndex threadCount, GraphicPipeline* gpu) {
     NullTaskInput::check(inputBitmap, "input bitmap");
     NullTaskInput::check(outputBitmap, "output bitmap");
-    inputBitmap->lockPixels(ProcessingTarget::CPU);
+    outputBitmap->lockContent(nullptr, true);
     if (inputBitmap != outputBitmap)
-        outputBitmap->lockPixels(ProcessingTarget::CPU);
+        inputBitmap->lockContent(nullptr, false);
 }
 
 
-void Filters::ImageTuning::afterProcessing(ThreadIndex threadCount, bool aborted) {
-    inputBitmap->unlockPixels();
-    if (inputBitmap != outputBitmap)
-        outputBitmap->unlockPixels();
+void Filters::ImageTuning::afterProcessing(ThreadIndex threadCount, GraphicPipeline* gpu, bool aborted) {
+  outputBitmap->unlockContent(nullptr, true);
+  if (inputBitmap != outputBitmap)
+      inputBitmap->unlockContent(nullptr, false);
 }
 
 

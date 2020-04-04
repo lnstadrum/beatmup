@@ -205,5 +205,4 @@ void ImageShader::bindSamplerArray(const char* uniformName, int startingUnit, in
 
 void ImageShader::process(GraphicPipeline& gpu) {
     gpu.getRenderingPrograms().blend(false);
-    gpu.flush();
 }

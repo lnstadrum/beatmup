@@ -17,7 +17,7 @@ namespace Beatmup {
     protected:
         virtual bool process(TaskThread&);
         virtual void beforeProcessing(ThreadIndex, GraphicPipeline*);
-        virtual void afterProcessing(ThreadIndex, bool);
+        virtual void afterProcessing(ThreadIndex, GraphicPipeline*, bool);
     public:
         Crop();
 
@@ -25,7 +25,7 @@ namespace Beatmup {
 
         void setInput(AbstractBitmap* input);
         void setOutput(AbstractBitmap* output);
-        
+
         /**
             Sets crop rectangle in input bitmap
         */

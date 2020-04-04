@@ -130,18 +130,16 @@ void SceneRenderer::beforeProcessing(ThreadIndex threadCount, GraphicPipeline* g
 }
 
 
-void SceneRenderer::afterProcessing(ThreadIndex threadCount, bool aborted) {
-}
-
-
 bool SceneRenderer::doRender(GraphicPipeline& gpu, TaskThread& thread) {
     // check if there is the content to render
     if (!scene)
         return true;
 
     // setting output
-    if (output)
+    if (output) {
+        output->lockContent(PixelFlow::GpuWrite);
         gpu.bindOutput(*output);
+    }
     else {
         gpu.unbindOutput();
     }
@@ -186,7 +184,9 @@ bool SceneRenderer::doRender(GraphicPipeline& gpu, TaskThread& thread) {
             renderLayer(context, thread, layer, outputCoords);
     }
 
-    gpu.flush();
+    // unlock output
+    if (output)
+        output->unlockContent(PixelFlow::GpuWrite);
 
     // swap output if needed (and if the rendering task was not aborted)
     if (!thread.isTaskAborted()) {

@@ -21,7 +21,7 @@ namespace Beatmup {
     private:
         Scene* scene;								//!< content to render
         AbstractBitmap* background;					//!< used to pave the screen before rendering
-        BitmapPtr output;							//!< output bitmap
+        AbstractBitmap* output;							//!< output bitmap
         OutputMapping outputMapping;				//!< specfies how the scene coordinates [0,1] are mapped to the output (screen or bitmap)
         AffineMapping outputCoords;					//!< the actual output mapping used during the last rendering
         ImageResolution resolution;					//!< last rendered resolution
@@ -39,7 +39,6 @@ namespace Beatmup {
         bool process(TaskThread& thread);
         bool processOnGPU(GraphicPipeline& gpu, TaskThread& thread);
         void beforeProcessing(ThreadIndex threadCount, GraphicPipeline* gpu);
-        void afterProcessing(ThreadIndex threadCount, bool aborted);
     public:
         SceneRenderer();
         ~SceneRenderer();

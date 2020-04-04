@@ -8,7 +8,7 @@ void AbstractTask::beforeProcessing(ThreadIndex, GraphicPipeline*) {
 }
 
 
-void AbstractTask::afterProcessing(ThreadIndex, bool) {
+void AbstractTask::afterProcessing(ThreadIndex, GraphicPipeline*, bool) {
     // nothing to do by default
 }
 
@@ -34,5 +34,5 @@ ThreadIndex AbstractTask::validThreadCount(int N) {
 
 
 AbstractTask::ExecutionTarget AbstractTask::getExecutionTarget() const {
-    return doNotUseGPU;
+    return ExecutionTarget::doNotUseGPU;
 }

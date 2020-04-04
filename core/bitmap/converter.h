@@ -17,7 +17,7 @@ namespace Beatmup {
     protected:
         virtual bool process(TaskThread& thread);
         virtual void beforeProcessing(ThreadIndex threadCount, GraphicPipeline* gpu);
-        virtual void afterProcessing(ThreadIndex threadCount, bool aborted);
+        virtual void afterProcessing(ThreadIndex threadCount, GraphicPipeline* gpu, bool aborted);
     public:
         BitmapConverter();
         void setBitmaps(AbstractBitmap* input, AbstractBitmap* output);

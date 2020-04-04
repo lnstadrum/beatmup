@@ -63,14 +63,14 @@ void Crop::beforeProcessing(ThreadIndex threadCount, GraphicPipeline* gpu) {
                 output->getWidth(), output->getHeight());
         throw RuntimeError("Crop rectangle does not fit to bitmaps");
     }
-    input->lockPixels(ProcessingTarget::CPU);
-    output->lockPixels(ProcessingTarget::CPU);
+    input->lockContent(PixelFlow::CpuRead);
+    output->lockContent(PixelFlow::CpuWrite);
 }
 
 
-void Crop::afterProcessing(ThreadIndex threadCount, bool aborted) {
-    input->unlockPixels();
-    output->unlockPixels();
+void Crop::afterProcessing(ThreadIndex threadCount, GraphicPipeline* gpu, bool aborted) {
+    input->unlockContent(PixelFlow::CpuRead);
+    output->unlockContent(PixelFlow::CpuWrite);
 }
 
 

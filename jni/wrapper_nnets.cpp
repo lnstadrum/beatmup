@@ -278,23 +278,17 @@ JNIMETHOD(jfloat, test, Java_Beatmup_NNets_GPUBenchmark, test)(JNIEnv * jenv, jc
         Beatmup::GL::StorageBuffer output(*ctx, outputSize[0], outputSize[1], outputSize[2], sizeof(float));
         inference.supplyOutput(output, model.getLastAddedOp().getName());
         inference.supplyInput(*test, "in");
-        test->lockPixels(Beatmup::ProcessingTarget::GPU);
+        test->lockContent(Beatmup::PixelFlow::GpuRead);
         float totalTime = 0;
         for (int it = 0; it < 10; ++it)
             totalTime += ctx->performTask(inference);
-        test->unlockPixels();
+        test->unlockContent(Beatmup::PixelFlow::GpuRead);
 
         std::vector<float> data(outputSize[2]);
         Beatmup::GL::StorageBufferFetcher fetch(output, data.data(), data.size() * sizeof(float));
         ctx->performTask(fetch);
         for (int i = 0; i < 10; i++)
             LOG_I("%0.5f ", data[i]);
-
-        /*probe->getOutput().lockPixels(Beatmup::ProcessingTarget::CPU);
-        Beatmup::pixfloat4* data = (Beatmup::pixfloat4*)probe->getOutput().getData(0, 0);
-        probe->getOutput().unlockPixels();
-        for (size_t i = 0; i < 10 + 0 *probe->getOutput().getImageResolution().numPixels(); ++i)
-            LOG_I("%0.9f %0.9f %0.9f %0.9f\n", data[i].r, data[i].g, data[i].b, data[i].a);*/
 
         LOG_I(" == %0.2f ms\n", totalTime / 10);
 #ifdef BEATMUP_DEBUG

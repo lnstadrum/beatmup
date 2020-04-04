@@ -24,11 +24,10 @@ namespace Beatmup {
             CONVNET              //!< upsampling x2 using a convolutional neural network
         };
     private:
-        AbstractBitmap *input, *output;                     //!< input and output bitmaps
+        AbstractBitmap *input, *output;        //!< input and output bitmaps
         IntRectangle srcRect, destRect;
         Mode mode;
         float cubicParameter;
-
         X2UpsamplingNetwork* convnet;
 
     protected:
@@ -36,7 +35,8 @@ namespace Beatmup {
         virtual bool process(TaskThread& thread);
         virtual bool processOnGPU(GraphicPipeline& gpu, TaskThread& thread);
         virtual void beforeProcessing(ThreadIndex, GraphicPipeline*);
-        virtual void afterProcessing(ThreadIndex, bool);
+        virtual void afterProcessing(ThreadIndex, GraphicPipeline*, bool);
+
     public:
         static const float DEFAULT_CUBIC_PARAMETER;
 

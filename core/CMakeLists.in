@@ -62,6 +62,7 @@ set(BEATMUP_SOURCES
     ${BEATMUP_SRC_DIR}/scene/scene.cpp
     ${BEATMUP_SRC_DIR}/shading/image_shader.cpp
     ${BEATMUP_SRC_DIR}/shading/shader_applicator.cpp
+    ${BEATMUP_SRC_DIR}/utils/bitmap_locker.cpp
     ${BEATMUP_SRC_DIR}/utils/bmp_file.cpp
     ${BEATMUP_SRC_DIR}/utils/chunkfile.cpp
     ${BEATMUP_SRC_DIR}/utils/file_input_stream.cpp

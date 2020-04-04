@@ -80,15 +80,14 @@ void BitmapResampler::beforeProcessing(ThreadIndex threadCount, GraphicPipeline*
         }
     }
 
-    ProcessingTarget target = gpu ?  ProcessingTarget::GPU : ProcessingTarget::CPU;
-    input->lockPixels(target);
-    output->lockPixels(target);
+    input ->lockContent(gpu, false);
+    output->lockContent(gpu, true);
 }
 
 
-void BitmapResampler::afterProcessing(ThreadIndex threadCount, bool aborted) {
-    input->unlockPixels();
-    output->unlockPixels();
+void BitmapResampler::afterProcessing(ThreadIndex threadCount, GraphicPipeline* gpu, bool aborted) {
+    input ->unlockContent(gpu, false);
+    output->unlockContent(gpu, true);
 }
 
 

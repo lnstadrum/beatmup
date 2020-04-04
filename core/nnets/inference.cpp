@@ -127,7 +127,7 @@ void Inference::beforeProcessing(ThreadIndex threadCount, GraphicPipeline* gpu) 
         usedModelRevision = model->getRevision();
     }
 }
-void Inference::afterProcessing(ThreadIndex threadCount, bool aborted) {
+void Inference::afterProcessing(ThreadIndex threadCount, GraphicPipeline* gpu, bool aborted) {
     clearStorage();
 }
 bool Inference::processOnGPU(GraphicPipeline& gpu, TaskThread& thread) {

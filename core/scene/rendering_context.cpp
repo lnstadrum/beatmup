@@ -9,31 +9,13 @@ RenderingContext::RenderingContext(GraphicPipeline& gpu, EventListener* eventLis
 }
 
 
-RenderingContext::~RenderingContext() {
-    for (auto it : lockedBitmaps)
-        it.first->unlockPixels();
+void RenderingContext::lockBitmap(AbstractBitmap* bitmap) {
+    lockedBitmaps.lock(*bitmap, PixelFlow::GpuRead);
 }
 
 
-void RenderingContext::lockBitmap(BitmapPtr bitmap) {
-    if (lockedBitmaps.count(bitmap) == 0) {
-        // newbie got
-        lockedBitmaps[bitmap] = 1;
-        bitmap->lockPixels(ProcessingTarget::GPU);
-    }
-    else
-        // already locked, just increase reference counter
-        lockedBitmaps[bitmap]++;
-}
-
-
-void RenderingContext::unlockBitmap(BitmapPtr bitmap) {
-    BEATMUP_ASSERT_DEBUG(lockedBitmaps.count(bitmap) != 0);
-    int refs = --lockedBitmaps[bitmap];
-    if (refs == 0) {
-        bitmap->unlockPixels();
-        lockedBitmaps.erase(bitmap);
-    }
+void RenderingContext::unlockBitmap(AbstractBitmap* bitmap) {
+    lockedBitmaps.unlock(*bitmap);
 }
 
 
