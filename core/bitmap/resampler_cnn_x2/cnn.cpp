@@ -81,6 +81,8 @@ void X2UpsamplingNetwork::process(GraphicPipeline& gpu, GL::TextureHandler& inpu
     demux.prepare(gpu, &input, TextureParam::INTERP_LINEAR, &output, AffineMapping::IDENTITY);
     gpu.bind(layer5->getOutput(), 1, TextureParam::INTERP_NEAREST);
     demux.process(gpu);
+
+    gpu.flush();
 }
 
 
