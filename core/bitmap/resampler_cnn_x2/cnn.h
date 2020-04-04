@@ -33,7 +33,7 @@ namespace Beatmup {
             L2_SIZE = 8,
             L3_SIZE = 6,
             L4_SIZE = 4,
-            STORAGE_SIZE = 14;
+            STORAGE_SIZE = 14;    // min number of recyclable textures to cover the entire dataflow during the inference
 
         InternalBitmap* storage[STORAGE_SIZE];
 

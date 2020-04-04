@@ -33,10 +33,10 @@ void X2UpsamplingNetwork::Layer::process(Context& ctx, GraphicPipeline& gpu, Lay
         delete output;
         output = nullptr;
     }
-    if (!output) {
+    if (!output)
         output = new InternalBitmap(ctx, PixelFormat::QuadByte, input.getWidth(), input.getHeight(), false);
-        shader.setFloat("d1", 1.0 / input.getWidth(), 1.0 / input.getHeight());
-    }
+
+    shader.setFloat("d1", 1.0 / input.getWidth(), 1.0 / input.getHeight());
 
     shader.prepare(gpu, nullptr, output);
 
