@@ -49,7 +49,7 @@ class ThreadPool {
 
         ThreadPool& pool;
         ThreadIndex current;			//!< current thread index
-        bool running;					//!< if not, the thread will sleep
+        bool running;					//!< if not, the thread sleeps
         bool terminateFlag;				//!< if `true`, the thread is requested to terminate
         // declaration order matters!
         std::thread internalThread;		//!< worker's thread
@@ -273,13 +273,11 @@ private:
         while (!thread.terminateFlag) {
             // wait for a job
             while (
-                    !thread.running ||
-                    thread.current >= currentWorkerCount
+                    (!thread.running || thread.current >= currentWorkerCount)
+                    && !thread.terminateFlag
             ) {
                 std::this_thread::yield();
                 workersCvar.wait(lock);
-                if (thread.terminateFlag)
-                    break;
             }
             if (thread.terminateFlag) {
                 lock.unlock();
@@ -315,7 +313,7 @@ private:
             // stop
             thread.running = false;
 
-            // send a sign to other workers
+            // send a signal to other workers
             workersCvar.notify_all();
         }
 
@@ -327,7 +325,7 @@ private:
         std::unique_lock<std::mutex> lock(synchro);    //<------- LOCKING HERE
         syncHitsCount++;
 
-        // check if this thread is the last one passing the sytnchronization point
+        // check if this thread is the last one passing the synchronization point
         if (syncHitsCount >= syncHitsBound + remainingWorkers) {
             syncHitsBound = syncHitsCount;
             lock.unlock();    //<------- UNLOCKING HERE
@@ -420,23 +418,30 @@ public:
     inline void resize(ThreadIndex newThreadCount) {
         if (newThreadCount == threadCount)
             return;
-        std::unique_lock<std::mutex> lock(jobsAccess);
+        std::unique_lock<std::mutex> jobsLock(jobsAccess);
         // wait for task, if any
         while (!jobs.empty())
-            mainCvar.wait(lock);
+            mainCvar.wait(jobsLock);
 
-        // remove unnecessary threads, if any
+        std::unique_lock<std::mutex> workersLock(workersAccess);
+        // set termination flags for threads to be stopped, if any
         for (ThreadIndex t = newThreadCount; t < threadCount; t++)
             workers[t]->terminateFlag = true;
+
+        // unlock and notify
+        workersLock.unlock();
         synchroCvar.notify_all();
         mainCvar.notify_all();
         workersCvar.notify_all();
+
+        // join
         for (ThreadIndex t = newThreadCount; t < threadCount; t++) {
             workers[t]->internalThread.join();
             delete workers[t];
         }
 
-        // increase size if needed
+        // spawn new threads if needed
+        workersLock.lock();
         if (threadCount < newThreadCount) {
             TaskThreadImpl** newWorkers = new TaskThreadImpl*[newThreadCount];
             for (ThreadIndex t = 0; t < threadCount; t++)
@@ -448,7 +453,9 @@ public:
         }
         // update thread count
         threadCount = newThreadCount;
-        lock.unlock();
+
+        workersLock.unlock();
+        jobsLock.unlock();
     }
 
 
