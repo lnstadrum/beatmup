@@ -21,6 +21,7 @@ public class UpsamplingConvnetOnCamera extends TestSample {
     private ShaderApplicator textureCopy;
     private Multitask multitask;
     private TaskHolder resamplerTaskHolder;
+    private String info = "";
 
     @Override
     public String getCaption() {
@@ -40,6 +41,7 @@ public class UpsamplingConvnetOnCamera extends TestSample {
         int height = camera.getResolution().getHeight();
         Beatmup.Bitmap input  = new Beatmup.Bitmap(context, width, height, PixelFormat.TripleByte);
         Beatmup.Bitmap output = new Beatmup.Bitmap(context, 2 * width, 2 * height, PixelFormat.TripleByte);
+        info = String.format("%dx%d -> %dx%d", width, height, 2 * width, 2 * height);
 
         // Create a dummy shader copying camera texture onto another texture.
         // This is done because the upsampling may take a significant time, and when reconstructing
@@ -109,7 +111,7 @@ public class UpsamplingConvnetOnCamera extends TestSample {
     @Override
     public String getRuntimeInfo() {
         if (resamplerTaskHolder != null)
-            return String.format("%.2f FPS",1000 / resamplerTaskHolder.getRunTime());
+            return String.format("%s, %.2f FPS", info, 1000 / resamplerTaskHolder.getRunTime());
         else
             return "";
     }

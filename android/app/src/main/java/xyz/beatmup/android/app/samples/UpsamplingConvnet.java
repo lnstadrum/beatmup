@@ -32,25 +32,27 @@ public class UpsamplingConvnet extends TestSample {
         Scene scene = new Scene();
 
         Bitmap input = Bitmap.decodeStream(context, app.getAssets().open("butterfly.bmp"));
-        Beatmup.Bitmap subsampled    = new Beatmup.Bitmap(context, input.getWidth() / 2,  input.getHeight() / 2, PixelFormat.QuadByte);
-        Beatmup.Bitmap outputCubic   = new Beatmup.Bitmap(context, 2 * subsampled.getWidth(),  2 * subsampled.getHeight(), PixelFormat.QuadByte);
-        Beatmup.Bitmap outputConvnet = new Beatmup.Bitmap(context, 2 * subsampled.getWidth(),  2 * subsampled.getHeight(), PixelFormat.QuadByte);
+        Beatmup.Bitmap outputCubic   = new Beatmup.Bitmap(context, 2 * input.getWidth(),  2 * input.getHeight(), PixelFormat.QuadByte);
+        Beatmup.Bitmap outputConvnet = new Beatmup.Bitmap(context, 2 * input.getWidth(),  2 * input.getHeight(), PixelFormat.QuadByte);
 
         Resampler resampler = new Resampler(context);
         resampler.setMode(Resampler.Mode.CUBIC);
-        resampler.setBitmaps(input, subsampled);
-        resampler.execute();
-
-        resampler.setMode(Resampler.Mode.CUBIC);
-        resampler.setBitmaps(subsampled, outputCubic);
+        resampler.setBitmaps(input, outputCubic);
         float time = resampler.execute();
         Log.i("Beatmup", String.format("Bicubic resampling: %f ms", time));
 
         resampler.setMode(Resampler.Mode.CONVNET);
-        resampler.setBitmaps(subsampled, outputConvnet);
-        time = resampler.execute();
+        Beatmup.Bitmap dummy = Beatmup.Bitmap.createEmpty(input);
+        resampler.setBitmaps(dummy, outputConvnet);
+        float prepTime = resampler.execute();
+        Log.i("Beatmup", String.format("Preparing shaders: %f ms", time));
+
+        resampler.setBitmaps(input, outputConvnet);
+        Bitmap.recycle(dummy);
+        float infTime = resampler.execute();
         Log.i("Beatmup", String.format("Convnet resampling: %f ms", time));
-        runtimeInfo = String.format("%.2f ms", time);
+
+        runtimeInfo = String.format("Preparation : %.2f, inference: %.2f ms", prepTime, infTime);
 
         {
             Scene.BitmapLayer l = scene.newBitmapLayer();
