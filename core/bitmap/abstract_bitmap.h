@@ -40,12 +40,11 @@ namespace Beatmup {
     private:
         AbstractBitmap(const AbstractBitmap& that) = delete;		//!< disabling copying constructor
 
+    protected:
+        Context& ctx;									//!< context managing this bitmap
         bool upToDate[2];									//!< bitmap up-to-date state on CPU and GPU
 
-    protected:
         AbstractBitmap(Context& ctx);
-
-        Context& ctx;									//!< context managing this bitmap
 
         // overridden methods from TextureHandler
         virtual void prepare(GraphicPipeline& gpu);

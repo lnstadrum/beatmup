@@ -180,10 +180,10 @@ namespace Beatmup {
 
         /**
             Releases an allocated memory chunk, allowing to swap it; does not necessarily free the allocated memory.
-            \param chunk			the chunk id
-            \param unusedAnymore	the data in this chunk are not important and can be lost
+            \param chunk      the chunk id
+            \param garbage    the data in this chunk are not important and can be lost
         */
-        void releaseMemory(memchunk chunk, bool unusedAnymore);
+        void releaseMemory(memchunk chunk, bool garbage);
 
         /**
             Frees previously allocated memory.

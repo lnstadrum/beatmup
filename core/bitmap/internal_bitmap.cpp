@@ -18,6 +18,7 @@ InternalBitmap::InternalBitmap(Context& ctx, PixelFormat pixelFormat, int width,
     }
     if (allocate)
         memory = ctx.allocateMemory(getMemorySize());
+    upToDate[ProcessingTarget::CPU] = allocate;
 }
 
 

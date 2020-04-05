@@ -124,8 +124,16 @@ void AbstractBitmap::unlockContent(PixelFlow flow) {
     {
         unlockPixelData();
     }
-    upToDate[ProcessingTarget::CPU] = (flow & PixelFlow::CpuRead) || (flow & PixelFlow::CpuWrite);
-    upToDate[ProcessingTarget::GPU] = (flow & PixelFlow::GpuRead) || (flow & PixelFlow::GpuWrite);
+    const bool cpuWrite = flow & PixelFlow::CpuWrite;
+    const bool gpuWrite = flow & PixelFlow::GpuWrite;
+    if (cpuWrite) {
+        upToDate[ProcessingTarget::CPU] = true;
+        upToDate[ProcessingTarget::GPU] = gpuWrite;
+    }
+    if (gpuWrite) {
+        upToDate[ProcessingTarget::GPU] = true;
+        upToDate[ProcessingTarget::CPU] = cpuWrite;
+    }
 }
 
 

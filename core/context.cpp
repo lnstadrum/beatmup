@@ -427,7 +427,7 @@ public:
     }
 
 
-    void releaseMemory(memchunk chunk, bool unusedAnymore) {
+    void releaseMemory(memchunk chunk, bool garbage) {
         std::lock_guard<std::mutex> lock(memAccess);
         if (chunks.count(chunk) > 0) {
             ChunkState& C = chunks[chunk];
@@ -441,10 +441,10 @@ public:
                 else {
                     removeChunkFromSwappables(chunk);
 
-                    if (unusedAnymore) {
+                    if (garbage) {
                         C.swapping = ChunkSwappingState::SOMEWHERE;
                         free(C.data);
-                        C.data = NULL;
+                        C.data = nullptr;
                     } else
                         swappableChunks.push_back(chunk);
 
@@ -548,8 +548,8 @@ void* Context::acquireMemory(memchunk chunk) {
     return impl->acquireMemory(chunk);
 }
 
-void Context::releaseMemory(memchunk chunk, bool unusedAnymore) {
-    impl->releaseMemory(chunk, unusedAnymore);
+void Context::releaseMemory(memchunk chunk, bool garbage) {
+    impl->releaseMemory(chunk, garbage);
 }
 
 void Context::freeMemory(memchunk chunk) {
