@@ -233,11 +233,6 @@ AbstractBitmap::~AbstractBitmap() {
 }
 
 
-const ImageResolution AbstractBitmap::getSize() const {
-    return ImageResolution(getWidth(), getHeight());
-}
-
-
 Context& AbstractBitmap::getContext() const {
     return ctx;
 }

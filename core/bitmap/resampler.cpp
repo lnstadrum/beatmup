@@ -95,28 +95,28 @@ bool BitmapResampler::process(TaskThread& thread) {
     switch (mode) {
         case Mode::NEAREST_NEIGHBOR:
             BitmapProcessing::pipeline<BitmapResamplingTools::NearestNeigborResampling>(
-                *input, *output, 0, 0,
+                *input, *output,
                 srcRect, destRect, thread
             );
             break;
 
         case Mode::BOX:
             BitmapProcessing::pipeline<BitmapResamplingTools::BoxResampling>(
-                *input, *output, 0, 0,
+                *input, *output,
                 srcRect, destRect, thread
             );
             break;
 
         case Mode::LINEAR:
             BitmapProcessing::pipeline<BitmapResamplingTools::BilinearResampling>(
-                *input, *output, 0, 0,
+                *input, *output,
                 srcRect, destRect, thread
             );
             break;
 
         case Mode::CUBIC:
             BitmapProcessing::pipeline<BitmapResamplingTools::BicubicResampling>(
-                *input, *output, 0, 0,
+                *input, *output,
                 srcRect, destRect, cubicParameter, thread
             );
             break;

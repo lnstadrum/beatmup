@@ -125,25 +125,25 @@ namespace Beatmup {
         inline numeric getX2() const { return b.x; }
         inline numeric getY2() const { return b.y; }
 
-        numeric width() const {
+        inline numeric width() const {
             return b.x - a.x;
         }
 
-        numeric height() const {
+        inline numeric height() const {
             return b.y - a.y;
         }
 
         /**
             Computes the rectangle area
         */
-        numeric getArea() const {
+        inline numeric getArea() const {
             return (b.x - a.x) * (b.y - a.y);
         }
 
         /**
             Filps corners coordinates guaranteeing that it has a non negative area, i.e. a <= b (componentwise)
         */
-        void normalize() {
+        inline void normalize() {
             order<numeric>(a.x, b.x);
             order<numeric>(a.y, b.y);
         }
@@ -527,6 +527,13 @@ namespace Beatmup {
     */
     template<typename numeric> inline CustomMatrix2<numeric> operator*(numeric val, const CustomMatrix2<numeric>& matrix) {
         return matrix * val;
+    }
+
+    /**
+        Checks whether two rectangles are of the same size
+    */
+    template<typename numeric> inline bool operator&&(const CustomRectangle<numeric>& lhs, const CustomRectangle<numeric>& rhs) {
+        return lhs.width() == rhs.width() && lhs.height() == rhs.height();
     }
 
     typedef CustomPoint<float> Point;

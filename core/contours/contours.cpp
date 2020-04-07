@@ -7,7 +7,9 @@ using namespace Beatmup;
 
 template<class in_t> class ComputeBounds {
 public:
-    static void process(in_t in, std::vector<IntegerContour2D*>& boundary, std::vector<IntPoint>& border, BinaryMaskWriter& testedPixels, float level) {
+    static void process(AbstractBitmap& bitmap, std::vector<IntegerContour2D*>& boundary, std::vector<IntPoint>& border, BinaryMaskWriter& testedPixels, float level) {
+        in_t in(bitmap);
+
         typedef struct {
             int x, y;
         } Displacement;
@@ -144,10 +146,7 @@ void IntegerContour2D::addPoint(int x, int y) {
 
 
 void IntegerContour2D::computeBoundary(std::vector<IntegerContour2D*>& boundary, AbstractBitmap& bitmap, std::vector<IntPoint>& border, BinaryMaskWriter& testedPixels, float level) {
-    BitmapProcessing::read<ComputeBounds>(
-        bitmap, border[0].x, border[0].y,
-        boundary, border, testedPixels, level
-    );
+    BitmapProcessing::read<ComputeBounds>(bitmap, boundary, border, testedPixels, level);
 }
 
 

@@ -70,7 +70,7 @@ bool FloodFill::process(TaskThread& thread) {
         if (!thread.isTaskAborted()) {
             IntPoint seed = seeds[n];
             if (seed.x >= maskPos.x && seed.y >= maskPos.y && seed.x < maskPos.x + output->getWidth() && seed.y < maskPos.x + output->getHeight()) {
-                BitmapProcessing::pipelineWithMaskOutput<FillRegion>(*input, *output, maskPos.x, maskPos.y, maskPos, seed, tolerance, border, bounds);
+                BitmapProcessing::pipelineWithMaskOutput<FillRegion>(*input, *output, maskPos, seed, tolerance, border, bounds);
             }
         }
 
@@ -84,12 +84,12 @@ bool FloodFill::process(TaskThread& thread) {
     if (!thread.isTaskAborted())
         switch (borderMorphology) {
         case DILATE:
-            BitmapProcessing::writeToMask<CircularDilatation>(*output, 0, 0, border, 255, borderHold, borderRelease);
+            BitmapProcessing::writeToMask<CircularDilatation>(*output, border, 255, borderHold, borderRelease);
             bounds.grow((int) ceilf(borderHold + borderRelease));
-            bounds.limit(output->getSize().clientRect());
+            bounds.limit(output->getSize().rectangle());
             break;
         case ERODE:
-            BitmapProcessing::writeToMask<CircularErosion>(*output, 0, 0, border, 255, borderHold, borderRelease);
+            BitmapProcessing::writeToMask<CircularErosion>(*output, border, 255, borderHold, borderRelease);
             bounds.grow(-(int) floorf(borderHold));
             break;
         default: break;

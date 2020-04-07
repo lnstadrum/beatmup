@@ -21,7 +21,7 @@ namespace Beatmup {
         float getAspectRatio() const;
         float getInvAspectRatio() const;
         bool fat() const;
-        IntRectangle clientRect() const;
+        IntRectangle rectangle() const;
 
         unsigned int getWidth() const { return width; }
         unsigned int getHeight() const { return height; }

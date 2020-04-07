@@ -16,7 +16,10 @@ namespace BitmapResamplingTools{
         /**
             Resamples a rectangle from an input bitmap to a rectangle in an output bitmap by nearest neighbor interpolation
         */
-        static void process(in_t in, out_t out, IntRectangle& src, IntRectangle& dst, const TaskThread& tt) {
+        static void process(AbstractBitmap& input, AbstractBitmap& output, IntRectangle& src, IntRectangle& dst, const TaskThread& tt) {
+            in_t in(input);
+            out_t out(output);
+
             const int
                 srcW = src.width(), srcH = src.height(),
                 dstW = dst.width(), dstH = dst.height(),
@@ -52,7 +55,10 @@ namespace BitmapResamplingTools{
         /**
             Resamples a rectangle from an input bitmap to a rectangle in an output bitmap applying a box filter
         */
-        static void process(in_t in, out_t out, IntRectangle& src, IntRectangle& dst, const TaskThread& tt) {
+        static void process(AbstractBitmap& input, AbstractBitmap& output, IntRectangle& src, IntRectangle& dst, const TaskThread& tt) {
+            in_t in(input);
+            out_t out(output);
+
             const int
                 srcW = src.width(), srcH = src.height(),
                 dstW = dst.width(), dstH = dst.height();
@@ -104,7 +110,10 @@ namespace BitmapResamplingTools{
         /**
             Resamples a rectangle from an input bitmap to a rectangle in an output bitmap by bilinear interpolation
         */
-        static void process(in_t in, out_t out, IntRectangle& src, IntRectangle& dst, const TaskThread& tt) {
+        static void process(AbstractBitmap& input, AbstractBitmap& output, IntRectangle& src, IntRectangle& dst, const TaskThread& tt) {
+            in_t in(input);
+            out_t out(output);
+
             const int
                 srcW = src.width(), srcH = src.height(),
                 dstW = dst.width(), dstH = dst.height(),
@@ -205,7 +214,10 @@ namespace BitmapResamplingTools{
         /**
             Resamples a rectangle from an input bitmap to a rectangle in an output bitmap applying a bicubic kernel
         */
-        static void process(in_t in, out_t out, IntRectangle& src, IntRectangle& dst, const float alpha, const TaskThread& tt) {
+        static void process(AbstractBitmap& input, AbstractBitmap& output, IntRectangle& src, IntRectangle& dst, const float alpha, const TaskThread& tt) {
+            in_t in(input);
+            out_t out(output);
+
             const int
                 srcW = src.width(), srcH = src.height(),
                 dstW = dst.width(), dstH = dst.height(),

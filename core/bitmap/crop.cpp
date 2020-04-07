@@ -11,14 +11,17 @@ using namespace Beatmup;
 
 template<class in_t, class out_t> class Cropping {
 public:
-    static inline void process(in_t in, out_t out, const IntRectangle rect, const IntPoint outOrigin, const PixelFormat inputFormat, const PixelFormat outputFormat) {
+    static inline void process(AbstractBitmap& input, AbstractBitmap& output, const IntRectangle& rect, const IntPoint& outOrigin) {
         const unsigned char
-            bpp = AbstractBitmap::BITS_PER_PIXEL[inputFormat],
+            bpp = AbstractBitmap::BITS_PER_PIXEL[input.getPixelFormat()],
             ppb = 8 / bpp;		// pixels per byte
 
         // test if output origin and clip rect horizontal borders are byte-aligned and the pixel formats are identical
-        const bool mayCopy = (inputFormat == outputFormat) &&
+        const bool mayCopy = (input.getPixelFormat() == output.getPixelFormat()) &&
             (bpp >= 8 || (outOrigin.x % ppb == 0 && rect.a.x % ppb == 0 && rect.b.x % ppb == 0));
+
+        in_t in(input);
+        out_t out(output);
 
         if (mayCopy) {
             // direct copying
@@ -46,7 +49,7 @@ Crop::Crop() : outOrigin(0, 0), cropRect(0, 0, 0, 0)
 
 
 bool Crop::process(TaskThread& thread) {
-    BitmapProcessing::pipeline<Cropping>(*input, *output, outOrigin.x, outOrigin.y, cropRect, outOrigin, input->getPixelFormat(), output->getPixelFormat());
+    BitmapProcessing::pipeline<Cropping>(*input, *output, cropRect, outOrigin);
     return true;
 }
 
@@ -97,10 +100,10 @@ void Crop::setOutputOrigin(IntPoint pos) {
 bool Crop::isFit() const {
     if (!input || !output)
         return false;
-    if (!input->getSize().clientRect().isInside(cropRect.a))
+    if (!input->getSize().rectangle().isInside(cropRect.a))
         return false;
     IntPoint corner = cropRect.b - cropRect.a - 1 + outOrigin;
-    if (!output->getSize().clientRect().isInside(corner))
+    if (!output->getSize().rectangle().isInside(corner))
         return false;
     return true;
 }

@@ -28,8 +28,8 @@ namespace Beatmup {
     };
 
     enum PixelFlow {
-        CpuRead = 1 << 0,
-        GpuRead = 1 << 1,
+        CpuRead  = 1 << 0,
+        GpuRead  = 1 << 1,
         CpuWrite = 1 << 2,
         GpuWrite = 1 << 3
     };
@@ -143,7 +143,9 @@ namespace Beatmup {
         /**
             Returns the bitmap resolution within ImageResolution object
         */
-        const ImageResolution getSize() const;
+        const ImageResolution&& getSize() const {
+            return std::move(ImageResolution(getWidth(), getHeight()));
+        }
 
         Context& getContext() const;
 

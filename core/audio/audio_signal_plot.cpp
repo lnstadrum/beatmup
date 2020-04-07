@@ -13,15 +13,17 @@ public:
 
     /**
         Plots three vertical bars
-        \param ptr		a bitmap writer, must be set in the topmost position of the bars
+        \param bitmap		a bitmap
         \param x		the horizontal coordinate
+        \param y 		the bar top vertical coordinate
         \param y1		end of first bar (excluded)
         \param y2		end of second bar (included)
         \param y3		end of third bar (included)
         \param color1	color of 1st and 3rd bars
         \param color2	color of 2nd bar
     */
-    static void process(out_t ptr, int x, int y1, int y2, int y3, const color4i& color1, const color4i& color2) {
+    static void process(AbstractBitmap& bitmap, int x, int y, int y1, int y2, int y3, const color4i& color1, const color4i& color2) {
+        out_t ptr(bitmap, x, y);
         out_t ref = ptr;
         ref.goTo(x, y1);
         while (ptr < ref) {
@@ -50,8 +52,9 @@ public:
 
     /**
         Plots five vertical bars
-        \param ptr		a bitmap writer, must be set in the topmost position of the bars
+        \param ptr		a bitmap
         \param x		the horizontal coordinate
+        \param y 		the bar top vertical coordinate
         \param y1		end of first bar (excluded)
         \param y2		end of second bar (excluded)
         \param y3		end of third bar (included)
@@ -62,10 +65,11 @@ public:
         \param color3	color of 3rd bar
     */
     static void process(
-        out_t ptr,
-        int x, int y1, int y2, int y3, int y4, int y5,
+        AbstractBitmap& bitmap,
+        int x, int y, int y1, int y2, int y3, int y4, int y5,
         const color4i& color1, const color4i& color2, const color4i& color3
     ) {
+        out_t ptr(bitmap, x, y);
         out_t ref = ptr;
         ref.goTo(x, y1);
         while (ptr < ref) {
@@ -184,15 +188,14 @@ bool AudioSignalPlot::process(TaskThread& thread) {
     if (0 <= channels && channels < signal->getChannelCount())
         for (int x = x0; x < x1 && !thread.isTaskAborted(); x++) {
             int y0 = *y++, y1 = *y++;
-            BitmapProcessing::write<DrawBars3>(*bitmap, x, outputRect.a.y, x, y0, y1, outputRect.b.y, palette.bgColor, palette.color1);
+            BitmapProcessing::write<DrawBars3>(*bitmap, x, outputRect.a.y, y0, y1, outputRect.b.y, palette.bgColor, palette.color1);
         }
     // all channels
     else
         for (int x = x0; x < x1 && !thread.isTaskAborted(); x++) {
             int y0 = *y++, y1 = *y++, y2 = *y++, y3 = *y++;
             BitmapProcessing::write<DrawBars5>(
-                *bitmap, x, outputRect.a.y,
-                x, y0, y1, y2, y3, outputRect.b.y,
+                *bitmap, x, outputRect.a.y, y0, y1, y2, y3, outputRect.b.y,
                 palette.bgColor, palette.color1, palette.color2
             );
         }

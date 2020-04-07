@@ -9,7 +9,9 @@ using namespace Beatmup;
 
 template<class in_t> class ScanlineSearch {
 public:
-    static void process(in_t in, const typename in_t::pixtype& target, const IntPoint& start, IntPoint& result) {
+    static void process(AbstractBitmap& bitmap, const typename in_t::pixtype& target, const IntPoint& start, IntPoint& result) {
+        in_t in(bitmap, start.x, start.y);
+
         typename in_t::pixtype convTarget;
         convTarget = target;
         int x = start.x, y = start.y;
@@ -33,13 +35,17 @@ public:
 };
 
 
-template<class writer> inline void renderChessboard(writer out, int width, int height, int cellSize) {
-    for (int y = 0; y < height; y++)
-    for (int x = 0; x < width; x++) {
-        out = pixint1{ 255 * ((x / cellSize + y / cellSize) % 2) };
-        out++;
+template<class out_t> class RenderChessboard {
+public:
+    static void process(AbstractBitmap& bitmap, int width, int height, int cellSize) {
+        out_t out(bitmap);
+        for (int y = 0; y < height; y++)
+        for (int x = 0; x < width; x++) {
+            out = pixint1{ 255 * ((x / cellSize + y / cellSize) % 2) };
+            out++;
+        }
     }
-}
+};
 
 
 AbstractBitmap* BitmapTools::makeCopy(AbstractBitmap& source, PixelFormat newPixelFormat) {
@@ -60,19 +66,7 @@ AbstractBitmap* BitmapTools::chessboard(Context& ctx, int width, int height, int
     RuntimeError::check(cellSize > 0, "Chessboard cell size must be positive");
     AbstractBitmap* chess = new Beatmup::InternalBitmap(ctx, pixelFormat, width, height);
     AbstractBitmap::WriteLock lock(*chess);
-    switch (pixelFormat) {
-    case BinaryMask:
-        renderChessboard<BinaryMaskWriter>(BinaryMaskWriter(*chess), width, height, cellSize);
-        break;
-    case QuaternaryMask:
-        renderChessboard<QuaternaryMaskWriter>(QuaternaryMaskWriter(*chess), width, height, cellSize);
-        break;
-    case HexMask:
-        renderChessboard<HexMaskWriter>(HexMaskWriter(*chess), width, height, cellSize);
-        break;
-    default:
-        throw BitmapProcessing::ProcessingActionNotImplemented(pixelFormat);
-    }
+    BitmapProcessing::write<RenderChessboard>(*chess, width, height, cellSize);
     return chess;
 }
 
@@ -172,7 +166,7 @@ void BitmapTools::invert(AbstractBitmap& input, AbstractBitmap& output) {
 IntPoint BitmapTools::scanlineSearch(AbstractBitmap& source, pixint4 val, const IntPoint& startFrom) {
     IntPoint result;
     AbstractBitmap::ReadLock lock(source, ProcessingTarget::CPU);
-    BitmapProcessing::read<ScanlineSearch>(source, startFrom.x, startFrom.y, val, startFrom, result);
+    BitmapProcessing::read<ScanlineSearch>(source, val, startFrom, result);
     return result;
 }
 
@@ -180,6 +174,6 @@ IntPoint BitmapTools::scanlineSearch(AbstractBitmap& source, pixint4 val, const 
 IntPoint BitmapTools::scanlineSearch(AbstractBitmap& source, pixfloat4 val, const IntPoint& startFrom) {
     IntPoint result;
     AbstractBitmap::ReadLock lock(source, ProcessingTarget::CPU);
-    BitmapProcessing::read<ScanlineSearch>(source, startFrom.x, startFrom.y, val, startFrom, result);
+    BitmapProcessing::read<ScanlineSearch>(source, val, startFrom, result);
     return result;
 }

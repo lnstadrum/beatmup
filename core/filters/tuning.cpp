@@ -9,9 +9,11 @@ using namespace Beatmup;
 template<class in_t, class out_t> class ApplyTuning {
 public:
     static inline void process(
-        in_t in, out_t out,
+        AbstractBitmap& input, AbstractBitmap &output, int x, int y,
         msize nPix, float hueOffset, float saturationFactor, float valueFactor, float contrast, float brightness
     ) {
+        in_t in(input, x, y);
+        out_t out(output, x, y);
         while (--nPix > 0) {
             // first apply brightness / contrast
             colorhsv hsv(in());

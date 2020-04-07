@@ -2,6 +2,7 @@
 
 */
 #pragma once
+#include "../bitmap/abstract_bitmap.h"
 #include "../geometry.h"
 #include <queue>
 #include <mutex>
@@ -21,14 +22,17 @@ namespace Beatmup {
             \param border		a vector to put border points to for further processing
         */
         static void process(
-            in_t in,
-            out_t out,
+            AbstractBitmap& input,
+            AbstractBitmap& output,
             IntPoint maskOffset,
             IntPoint seed,
             inpixvaltype tolerance,
             std::vector<IntPoint>& border,
             IntRectangle& bounds
         ) {
+            in_t in(input);
+            out_t out(output);
+
             const int
                 W = in.getWidth() - 1, H = in.getHeight() - 1,
                 MW = out.getWidth() - 1, MH = out.getHeight() - 1;
@@ -36,7 +40,7 @@ namespace Beatmup {
             std::queue<IntPoint> queue;
             queue.push(IntPoint(seed.x, seed.y));
             in.goTo(seed.x, seed.y);
-            
+
             const typename in_t::pixtype ref = in();	// reference input value
             const int range = out.MAX_UNNORM_VALUE;
 
@@ -121,13 +125,14 @@ namespace Beatmup {
     public:
         /**
             Circular dilatation of a mask at given points
-            \param mask			the mask
+            \param bitmap			the mask bitmap
             \param pointSet		the points
             \param val			max value (amplitude)
             \param holdRad		inner kernel radius; all pixels inside take `val` value
             \param releaseRad	release ring outer radius; all pixels in the ring take linearly attenuated `val` value
         */
-        static void process(out_t mask, std::vector<IntPoint>& pointSet, int val, float holdRad, float releaseRad) {
+        static void process(AbstractBitmap& bitmap, std::vector<IntPoint>& pointSet, int val, float holdRad, float releaseRad) {
+            out_t mask(bitmap);
             const int morphoSize = (int)ceilf(holdRad + releaseRad);
             const float morphoReleaseRing = releaseRad - holdRad;
             // for each point in the point set...
@@ -163,13 +168,14 @@ namespace Beatmup {
     public:
         /**
             Circular erosion of a mask at given points
-            \param mask			the mask
+            \param bitmap			the mask bitmap
             \param pointSet		the points
             \param val			max value (amplitude)
             \param holdRad		inner kernel radius; all pixels inside take `val` value
             \param releaseRad	release ring outer radius; all pixels in the ring take linearly attenuated `val` value
         */
-        static void process(out_t mask, std::vector<IntPoint>& pointSet, int val, float holdRad, float releaseRad) {
+        static void process(AbstractBitmap& bitmap, std::vector<IntPoint>& pointSet, int val, float holdRad, float releaseRad) {
+            out_t mask(bitmap);
             const int morphoSize = (int)ceilf(holdRad + releaseRad);
             const float morphoReleaseRing = releaseRad - holdRad;
             // for each point in the point set...

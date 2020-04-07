@@ -14,7 +14,10 @@ Filters::ColorMatrix::ColorMatrix() : allowIntApprox(true)
 
 template <class in_t, class out_t> class ApplyColorMatrix {
 public:
-    static void process(in_t in, out_t out, const pixfloat4 &addF, const Color::Matrix& matrixF, bool useIntApprox, msize nPix) {
+    static void process(AbstractBitmap& input, AbstractBitmap& output, int startx, int starty, const pixfloat4 &addF, const Color::Matrix& matrixF, bool useIntApprox, msize nPix) {
+        in_t in(input, startx, starty);
+        out_t out(output, startx, starty);
+
         if (useIntApprox) {
             pixint4 matrixI[4], addI;
             addI = addF;
