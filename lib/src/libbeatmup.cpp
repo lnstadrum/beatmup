@@ -203,7 +203,7 @@ bool BeatmupImageResolutionFat(const beatmup_image_resolution_t* handle) {
 
 beatmup_int_rectangle_t BeatmupImageResolutionClientRect(const beatmup_image_resolution_t* handle) {
     Beatmup::ImageResolution self(handle->_1, handle->_2);
-    Beatmup::IntRectangle result = self.rectangle();
+    Beatmup::IntRectangle result = self.closedRectangle();
     return beatmup_int_rectangle_t{ result.getX1(), result.getY1(), result.getX2(), result.getY2() };
 }
 

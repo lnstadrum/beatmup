@@ -233,6 +233,13 @@ namespace Beatmup {
             b.y += r;
         }
 
+        inline CustomRectangle<numeric> split(const int part, const int totalParts) {
+            return CustomRectangle<numeric>(
+                a.x, a.y + (b.y - a.y) * part / totalParts,
+                b.x, a.y + (b.y - a.y) * (part + 1) / totalParts
+            );
+        }
+
         /**
             Typecast to float-valued coordinates
         */

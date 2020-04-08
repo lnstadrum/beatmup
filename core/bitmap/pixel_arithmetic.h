@@ -66,6 +66,7 @@ namespace Beatmup {
         pixint4		operator*(const pixint4 P) const;
         pixfloat4	operator*(const pixfloat4 P) const;
         pixint1		operator/(const int P) const;
+        pixfloat1 makeFloat() const;
         void		zero() { x = 0; }
         int			sum() const { return x; }
         float		mean() const { return (float)x; }
@@ -116,6 +117,7 @@ namespace Beatmup {
         pixfloat4	operator*(const pixint4 P) const;
         pixfloat4	operator*(const pixfloat4 P) const;
         pixfloat1	operator/(const int P) const;
+        pixfloat1 makeFloat() const;
         void		zero() { x = 0; }
         float		sum() const { return x; }
         float		mean() const { return x; }
@@ -169,6 +171,7 @@ namespace Beatmup {
         pixint4		operator*(const pixint4 P) const;
         pixfloat4	operator*(const pixfloat4 P) const;
         pixint3		operator/(const int P) const;
+        pixfloat3 makeFloat() const;
         void		zero() { r = g = b = 0; }
         int			sum() const { return r + g + b; }
         float		mean() const { return (float)(r + g + b) / 3; }
@@ -222,6 +225,7 @@ namespace Beatmup {
         pixfloat4	operator*(const pixint4 P) const;
         pixfloat4	operator*(const pixfloat4 P) const;
         pixfloat3	operator/(const int P) const;
+        pixfloat3 makeFloat() const;
         void		zero() { r = g = b = 0; }
         float		sum() const { return r + g + b; }
         float		mean() const { return (r + g + b) / 3; }
@@ -288,6 +292,7 @@ namespace Beatmup {
         pixint4		operator*(const pixint4 P) const;
         pixfloat4	operator*(const pixfloat4 P) const;
         pixint4		operator/(const int P) const;
+        pixfloat4 makeFloat() const;
         void		zero() { r = g = b = a = 0; }
         int			sum() const { return r + g + b + a; }
         float		mean() const { return (float)(r + g + b + a) / 4; }
@@ -358,6 +363,7 @@ namespace Beatmup {
         pixfloat4	operator*(const pixint4 P) const;
         pixfloat4	operator*(const pixfloat4 P) const;
         pixfloat4	operator/(const int P) const;
+        pixfloat4 makeFloat() const;
         void		zero() { r = g = b = a = 0; }
         float		sum() const { return r + g + b + a; }
         float		mean() const { return (r + g + b + a) / 4; }
@@ -493,7 +499,7 @@ namespace Beatmup {
     inline pixint1 pixint1::operator-(const pixint1 P) const {
         return pixint1{ x - P.x };
     }
-        
+
     inline pixint3 pixint1::operator-(const pixint3 P) const {
         return pixint3{ x - P.r, x - P.g, x - P.b };
     }
@@ -550,6 +556,11 @@ namespace Beatmup {
     // division
     inline pixint1 pixint1::operator/(const int P) const {
         return pixint1{ x / P };
+    }
+
+    // promotion to pixfloat
+    inline pixfloat1 pixint1::makeFloat() const {
+        return pixfloat1{ x / 255.0f };
     }
 
     //////////////////////////////////////////////////////////
@@ -710,6 +721,11 @@ namespace Beatmup {
         return pixfloat1{ x / P };
     }
 
+    // promotion to pixfloat
+    inline pixfloat1 pixfloat1::makeFloat() const {
+        return *this;
+    }
+
     //////////////////////////////////////////////////////////
     //					Trichromatic integer				//
     //////////////////////////////////////////////////////////
@@ -737,7 +753,7 @@ namespace Beatmup {
     inline bool pixint3::operator==(const pixint3 P) const {
         return (r == P.r) && (g == P.g) && (b == P.b);
     }
-    
+
     inline void pixint3::operator=(const pixint1 P) {
         r = g = b = P.x;
     }
@@ -872,6 +888,11 @@ namespace Beatmup {
     // division
     inline pixint3 pixint3::operator/(const int P) const {
         return pixint3{ r / P, g / P, b / P };
+    }
+
+    // promotion to pixfloat
+    inline pixfloat3 pixint3::makeFloat() const {
+        return pixfloat3{ r / 255.0f, g / 255.0f, b / 255.0f };
     }
 
     //////////////////////////////////////////////////////////
@@ -1041,6 +1062,11 @@ namespace Beatmup {
         return pixfloat3{ r / P, g / P, b / P };
     }
 
+    // promotion to pixfloat
+    inline pixfloat3 pixfloat3::makeFloat() const {
+        return *this;
+    }
+
     //////////////////////////////////////////////////////////
     //					4-channel integer					//
     //////////////////////////////////////////////////////////
@@ -1068,7 +1094,7 @@ namespace Beatmup {
     inline bool pixint4::operator==(const pixint4 P) const {
         return (r == P.r) && (g == P.g) && (b == P.b) && (a == P.a);
     }
-    
+
     inline void pixint4::operator=(const pixint1 P) {
         r = g = b = P.x;
         a = 255;
@@ -1209,6 +1235,11 @@ namespace Beatmup {
     // division
     inline pixint4 pixint4::operator/(const int P) const {
         return pixint4(r / P, g / P, b / P, a / P);
+    }
+
+    // promotion to pixfloat
+    inline pixfloat4 pixint4::makeFloat() const {
+        return pixfloat4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
     }
 
     //////////////////////////////////////////////////////////
@@ -1389,6 +1420,11 @@ namespace Beatmup {
     // division
     inline pixfloat4 pixfloat4::operator/(const int P) const {
         return pixfloat4(r / P, g / P, b / P, a / P);
+    }
+
+    // promotion to pixfloat
+    inline pixfloat4 pixfloat4::makeFloat() const {
+        return *this;
     }
 
     //////////////////////////////////////////////////////////

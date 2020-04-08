@@ -86,7 +86,7 @@ bool FloodFill::process(TaskThread& thread) {
         case DILATE:
             BitmapProcessing::writeToMask<CircularDilatation>(*output, border, 255, borderHold, borderRelease);
             bounds.grow((int) ceilf(borderHold + borderRelease));
-            bounds.limit(output->getSize().rectangle());
+            bounds.limit(output->getSize().closedRectangle());
             break;
         case ERODE:
             BitmapProcessing::writeToMask<CircularErosion>(*output, border, 255, borderHold, borderRelease);

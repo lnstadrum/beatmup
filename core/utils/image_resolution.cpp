@@ -35,11 +35,6 @@ bool ImageResolution::fat() const {
     return width >= height;
 }
 
-IntRectangle ImageResolution::rectangle() const {
-    return IntRectangle(0, 0, width - 1, height - 1);
-}
-
-
 void ImageResolution::set(unsigned int width, unsigned int height) {
     this->width = width;
     this->height = height;

@@ -100,10 +100,10 @@ void Crop::setOutputOrigin(IntPoint pos) {
 bool Crop::isFit() const {
     if (!input || !output)
         return false;
-    if (!input->getSize().rectangle().isInside(cropRect.a))
+    if (!input->getSize().closedRectangle().isInside(cropRect.a))
         return false;
     IntPoint corner = cropRect.b - cropRect.a - 1 + outOrigin;
-    if (!output->getSize().rectangle().isInside(corner))
+    if (!output->getSize().closedRectangle().isInside(corner))
         return false;
     return true;
 }

@@ -61,9 +61,10 @@ namespace Beatmup {
         virtual void unlockPixelData() = 0;
 
     public:
-        static const char* PIXEL_FORMAT_NAMES[9];			//!< pixel format names
-        static const unsigned char CHANNELS_PER_PIXEL[9];	//!< number of channels for each pixel format
-        static const unsigned char BITS_PER_PIXEL[9];		//!< number of bits per pixel for each pixel format
+        static const int NUM_PIXEL_FORMATS = 9;
+        static const char* PIXEL_FORMAT_NAMES[NUM_PIXEL_FORMATS];            //!< pixel format names
+        static const unsigned char CHANNELS_PER_PIXEL[NUM_PIXEL_FORMATS];    //!< number of channels for each pixel format
+        static const unsigned char BITS_PER_PIXEL[NUM_PIXEL_FORMATS];        //!< number of bits per pixel for each pixel format
 
         const int getDepth() const { return 1; }
 
@@ -143,8 +144,8 @@ namespace Beatmup {
         /**
             Returns the bitmap resolution within ImageResolution object
         */
-        const ImageResolution&& getSize() const {
-            return std::move(ImageResolution(getWidth(), getHeight()));
+        const ImageResolution getSize() const {
+            return ImageResolution(getWidth(), getHeight());
         }
 
         Context& getContext() const;

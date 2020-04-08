@@ -2,6 +2,7 @@
 #include "bitmap_access.h"
 #include "converter.h"
 #include "processing.h"
+#include <cstdlib>
 
 
 using namespace Beatmup;
@@ -83,7 +84,7 @@ void BitmapTools::noise(AbstractBitmap& bitmap, IntRectangle area) {
             pixfloat* p = (pixfloat*)bitmap.getData(area.a.x, y);
             for (int x = area.a.x; x <= area.b.x; ++x)
                 for (int i = 0; i < n; ++i, ++p)
-                    *p = (float)rand() / RAND_MAX;
+                    *p = (float)std::rand() / RAND_MAX;
         }
     // integer bitmap
     else if (bitmap.isInteger()) {
@@ -91,7 +92,7 @@ void BitmapTools::noise(AbstractBitmap& bitmap, IntRectangle area) {
             pixbyte* p = bitmap.getData(area.a.x, y);
             for (int x = area.a.x; x <= area.b.x; ++x)
                 for (int i = 0; i < n; ++i, ++p)
-                    *p = rand() % 256;
+                    *p = std::rand() % 256;
         }
     }
 }
