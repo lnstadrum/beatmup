@@ -268,20 +268,6 @@ public class MainActivity extends Activity {
             new WavFilePlayback()
     };
 
-    private class TestListAdapter extends ArrayAdapter<TestSample> {
-
-        TestListAdapter(Activity activity) {
-            super(activity, android.R.layout.simple_list_item_1, TEST_SAMPLES);
-        }
-
-        @Override
-        public boolean isEnabled(int position) {
-            return !TEST_SAMPLES[position].usesCamera() ||
-                    (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA)
-                            == PackageManager.PERMISSION_GRANTED);
-        }
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -367,6 +353,14 @@ public class MainActivity extends Activity {
         final TestSampleClickListener testSampleClickListener = new TestSampleClickListener();
 
         for (TestSample sample : TEST_SAMPLES) {
+            if (sample.usesCamera() &&
+                    (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA)
+                            != PackageManager.PERMISSION_GRANTED)
+            )
+                continue;
+            if (!sample.getCaption().contains("CNN"))
+                continue;
+
             View entry = getLayoutInflater().inflate(R.layout.test_samples_dialog_entry, null);
             entry.setTag(sample);
             ((TextView) entry.findViewById(R.id.textSampleTitle)).setText(sample.getCaption());

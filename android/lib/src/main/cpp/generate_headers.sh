@@ -1,4 +1,4 @@
-javah -d ../../../../../jni/jniheaders -classpath ~/Android/Sdk/platforms/android-26/android.jar:../../../build/intermediates/classes/full/debug\
+javah -d ../../../../../jni/jniheaders -classpath ~/Android/Sdk/platforms/android-26/android.jar:../../../build/intermediates/classes/full/release\
   Beatmup.Object\
   Beatmup.Context\
   Beatmup.Android.Context\
