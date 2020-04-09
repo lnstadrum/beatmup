@@ -26,6 +26,8 @@ public class Bitmap extends Beatmup.Object {
     private native void zero(long handle);
     private native void crop(long handle, long outputHandle, int x1, int y1, int x2, int y2, int outLeft, int outTop);
 
+    protected native static void pullPixels(long handle);
+
 
     private static long createNativeBitmapEnsuringPixelFormat(Context context, android.graphics.Bitmap bitmap) throws BadPixelFormat {
         if (bitmap.getConfig() != android.graphics.Bitmap.Config.ALPHA_8  &&  bitmap.getConfig() != android.graphics.Bitmap.Config.ARGB_8888)
@@ -176,6 +178,13 @@ public class Bitmap extends Beatmup.Object {
      */
     public void projectOn(Bitmap bitmap, int left, int top) {
         crop(handle, bitmap.handle, left, top, left+bitmap.getWidth(), top+bitmap.getHeight(), 0, 0);
+    }
+
+    /**
+     * Transfers pixel data from GPU to CPU
+     */
+    public void pullPixels() {
+        pullPixels(handle);
     }
 
     /**

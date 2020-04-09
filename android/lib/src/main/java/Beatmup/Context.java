@@ -47,7 +47,6 @@ public class Context extends Object {
     private native void limitWorkerCount(long ctx, int poolIndex, int count);
 
     private native long swapOnDisk(long ctx, long howMuch);
-    private static native void fetchPixelsFromGPU(long bitmap);
 
     private native boolean isGPUQueried(long ctx);
     private native boolean isGPUReady(long ctx);

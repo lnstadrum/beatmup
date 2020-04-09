@@ -153,14 +153,6 @@ JNIEXPORT jlong JNICALL Java_Beatmup_Context_swapOnDisk
 
 /*
  * Class:     Beatmup_Context
- * Method:    fetchPixelsFromGPU
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_Beatmup_Context_fetchPixelsFromGPU
-  (JNIEnv *, jclass, jlong);
-
-/*
- * Class:     Beatmup_Context
  * Method:    isGPUQueried
  * Signature: (J)Z
  */

@@ -667,6 +667,15 @@ JNIMETHOD(void, crop, Java_Beatmup_Bitmap, crop)(JNIEnv *jenv, jobject, jlong hI
     input->getContext().performTask(crop);
 }
 
+
+JNIMETHOD(void, pullPixels, Java_Beatmup_Bitmap, pullPixels)
+    (JNIEnv * jenv, jclass, jlong hBitmap)
+{
+    BEATMUP_ENTER;
+    BEATMUP_OBJ(Beatmup::AbstractBitmap, bitmap, hBitmap);
+    Beatmup::Swapper::pullPixels(*bitmap);
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 //                                       EXTERNAL BITMAP
 /////////////////////////////////////////////////////////////////////////////////////////////

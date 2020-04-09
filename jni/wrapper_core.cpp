@@ -287,13 +287,6 @@ JNIMETHOD(jlong, swapOnDisk, Java_Beatmup_Context, swapOnDisk)(JNIEnv * jenv, jo
 }
 
 
-JNIMETHOD(void, fetchPixelsFromGPU, Java_Beatmup_Context, fetchPixelsFromGPU)(JNIEnv * jenv, jclass, jlong hBitmap) {
-    BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::AbstractBitmap, bitmap, hBitmap);
-    Beatmup::Swapper::pullPixels(*bitmap);
-}
-
-
 JNIMETHOD(jboolean, isGpuQueried, Java_Beatmup_Context, isGpuQueried)(JNIEnv * jenv, jobject, jlong hEnv) {
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::Android::Context, ctx, hEnv);
