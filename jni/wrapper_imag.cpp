@@ -581,12 +581,12 @@ JNIMETHOD(void, setBackgroundBitmap, Java_Beatmup_Rendering_SceneRenderer, setBa
 }
 
 
-JNIMETHOD(jobject, pickLayer, Java_Beatmup_Rendering_SceneRenderer, pickLayer)(JNIEnv * jenv, jobject, jlong hRenderer, jfloat x, jfloat y, jboolean normalized) {
+JNIMETHOD(jobject, pickLayer, Java_Beatmup_Rendering_SceneRenderer, pickLayer)(JNIEnv * jenv, jobject, jlong hRenderer, jfloat x, jfloat y, jboolean inPixels) {
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::SceneRenderer, renderer, hRenderer);
-    Beatmup::Scene::Layer* layer = renderer->pickLayer(x, y, normalized == JNI_TRUE);
+    Beatmup::Scene::Layer* layer = renderer->pickLayer(x, y, inPixels == JNI_TRUE);
     if (!layer)
-        return NULL;
+        return nullptr;
     return $pool.getJavaReference(layer);
 }
 

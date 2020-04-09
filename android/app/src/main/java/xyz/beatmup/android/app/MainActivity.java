@@ -295,7 +295,7 @@ public class MainActivity extends Activity {
 
         // setting up a renderer
         renderer = new SceneRenderer(context);
-        renderer.setOutputMapping(SceneRenderer.OutputMapping.FIT_WIDTH_TO_TOP);
+        renderer.setOutputMapping(SceneRenderer.OutputMapping.FIT_WIDTH);
         renderer.setOutputReferenceWidth(1000);
         renderer.setOutputPixelsFetching(true);
         try {
@@ -324,8 +324,7 @@ public class MainActivity extends Activity {
 
             @Override
             public void onTap(float x, float y) {
-                float ar = (float)display.getWidth() / display.getHeight();
-                Scene.Layer tappedLayer = renderer.pickLayer(x, y, true);
+                Scene.Layer tappedLayer = renderer.pickLayer(x, y, false);
                 if (tappedLayer != null)
                     currentTest.onTap(tappedLayer);
             }
@@ -334,7 +333,7 @@ public class MainActivity extends Activity {
             public void onFirstTouch(float x, float y) {
                 if (renderer.getScene() == null)
                     return;
-                pickedLayer = renderer.pickLayer(x, y, true);
+                pickedLayer = renderer.pickLayer(x, y, false);
                 if (pickedLayer != null)
                     setGesture(pickedLayer.getTransform(), 0.2f, 5.0f);
             }

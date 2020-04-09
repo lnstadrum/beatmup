@@ -25,7 +25,7 @@ public class SceneRenderer extends Task {
     private native void setOutputPixelsFetching(long handle, boolean fetch);
     private native boolean getOutputPixelsFetching(long handle);
     private native void setBackgroundBitmap(long handle, Bitmap bitmap);
-    private native Scene.Layer pickLayer(long handle, float x, float y, boolean normalized);
+    private native Scene.Layer pickLayer(long handle, float x, float y, boolean inPixels);
 
     /**
      * Scene coordinates to output (screen or bitmap) mapping
@@ -159,12 +159,11 @@ public class SceneRenderer extends Task {
      * Retrieves a scene layer at a given point, if any.
      * @param x             X coordinate.
      * @param y             Y coordinate.
-     * @param normalized    If `true`, the coordinates are normalized to [0..1)*[0..h/w) range.
-     *                      Otherwise they are interpreted in pixels.
+     * @param inPixels      If `true`, the coordinates taken in pixels.
      * @return the topmost layer at the given point if any, null otherwise.
      */
-    public Scene.Layer pickLayer(float x, float y, boolean normalized) {
-        return pickLayer(handle, x, y, normalized);
+    public Scene.Layer pickLayer(float x, float y, boolean inPixels) {
+        return pickLayer(handle, x, y, inPixels);
     }
 
     public void repeatRender(boolean abortCurrent) {

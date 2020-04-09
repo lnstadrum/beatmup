@@ -107,11 +107,10 @@ namespace Beatmup {
             In contrast to Scene::getLayer() it takes into account the output mapping.
             \param x			x coordinate.
             \param y			y coordinate.
-            \param normalized	If `true`, the coordinates are normalized to [0..1)*[0..h/w) range.
-                                Otherwise they are interpreted in pixels.
+            \param pixels	If `true`, the coordinates are taken in pixels.
             \return the topmost layer at the given position if any, `null` if no layer found.
         */
-        Scene::Layer* pickLayer(float x, float y, bool normalized) const;
+        Scene::Layer* pickLayer(float x, float y, bool inPixels) const;
 
         void setRenderingEventListener(RenderingContext::EventListener* eventListener);
     };}

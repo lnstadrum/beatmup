@@ -76,21 +76,19 @@ public class UpsamplingConvnetOnCamera extends TestSample {
         AffineMapping imgTransform = new AffineMapping();
         imgTransform.rotateAround(0.5f, 0.5f * height / width, orientation);
 
-        int outWidth = app.getWindow().getDecorView().getWidth();
-        int outHeight = app.getWindow().getDecorView().getHeight();
-        float ar = (float)outWidth / outHeight;
-
         Scene scene = new Scene();
         {
             Scene.BitmapLayer l = scene.newBitmapLayer();
-            l.setCenterPosition(0.5f, 0.25f / ar);
+            l.scale(0.5f);
+            l.setCenterPosition(0.5f, 0.25f);
             l.setImageTransform(imgTransform);
             l.setBitmap(input);
         }
 
         {
             Scene.BitmapLayer l = scene.newBitmapLayer();
-            l.setCenterPosition(0.5f, 0.75f / ar);
+            l.scale(0.5f);
+            l.setCenterPosition(0.5f, 0.75f);
             l.setImageTransform(imgTransform);
             l.setBitmap(output);
         }

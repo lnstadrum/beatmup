@@ -100,19 +100,15 @@ bool SceneRenderer::getOutputPixelsFetching() const {
 }
 
 
-Scene::Layer* SceneRenderer::pickLayer(float x, float y, bool normalized) const {
+Scene::Layer* SceneRenderer::pickLayer(float x, float y, bool inPixels) const {
     if (scene == nullptr)
         return nullptr;
-    // mapping to [0..1]^2 domain first
-    if (normalized) {
-        y *= resolution.getAspectRatio();
+    if (inPixels) {
+        const Point p = outputCoords.getInverse(x / resolution.getWidth(), y / resolution.getHeight());
+        return scene->getLayer(p.x, p.y);
     }
-    else {
-        x /= resolution.getWidth();
-        y /= resolution.getHeight();
-    }
-    const Point p = outputCoords.getInverse(x, y);
-    return scene->getLayer(p.x, p.y);
+    else
+        return scene->getLayer(x, y);
 }
 
 

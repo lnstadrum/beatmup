@@ -6,6 +6,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
+import Beatmup.Rendering.SceneRenderer;
 import Beatmup.Visual.GestureListener;
 
 /**
@@ -40,6 +41,9 @@ public class Display extends BasicDisplay {
             mainLastPos,
             secondLastPos;
 
+        float scaleX, scaleY;    //!< scaling factors to map gestures to Renderer space
+        int shiftX, shiftY;      //!< shift values to map gestures to Renderer space
+
         int mainPtrId, secondPtrId;         //!< pointer IDs
         boolean userActionsEnabled;
 
@@ -50,7 +54,34 @@ public class Display extends BasicDisplay {
             secondStartPos = new PointF();
             secondLastPos = new PointF();
             mainPtrId = secondPtrId = INVALID_POINTER_ID;
+            scaleX = scaleY = 1;
+            shiftX = shiftY = 0;
         }
+
+
+        private void updateGestureMapping() {
+            SceneRenderer renderer = Display.this.getRenderer();
+            if (renderer != null)
+                switch (renderer.getOutputMapping()) {
+                    case FIT_WIDTH_TO_TOP:
+                        scaleX = scaleY = 1.0f / getWidth();
+                        shiftX = shiftY = 0;
+                        return;
+                    case FIT_WIDTH:
+                        scaleX = scaleY = 1.0f / getWidth();
+                        shiftX = 0;
+                        shiftY = (getWidth() - getHeight()) / 2;
+                        return;
+                    case FIT_HEIGHT:
+                        scaleX = scaleY = 1.0f / getHeight();
+                        shiftX = (getHeight() - getWidth()) / 2;
+                        shiftY = 0;
+                        return;
+                }
+            scaleX = scaleY = 1.0f / getWidth();
+            shiftX = shiftY = 0;
+        }
+
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
@@ -60,10 +91,14 @@ public class Display extends BasicDisplay {
             switch (event.getActionMasked()) {
                 // main pointer down: new gesture
                 case MotionEvent.ACTION_DOWN: {
+                    updateGestureMapping();
                     final int ptrIdx = event.getActionIndex();
                     if (ptrIdx < 0)
                         break;
-                    mainStartPos.set(event.getX(ptrIdx) / getWidth(), event.getY(ptrIdx) / getWidth());
+                    mainStartPos.set(
+                            scaleX * (event.getX(ptrIdx) + shiftX),
+                            scaleY * (event.getY(ptrIdx) + shiftY)
+                    );
                     mainLastPos.set(mainStartPos.x, mainStartPos.y);
                     mainPtrId = event.getPointerId(ptrIdx);
                     gestureListener.pointerDown(mainStartPos.x, mainStartPos.y);
@@ -75,7 +110,8 @@ public class Display extends BasicDisplay {
                     final int ptrIdx = event.getActionIndex();
                     if (ptrIdx < 0)
                         break;
-                    float x = event.getX(ptrIdx) / getWidth(), y = event.getY(ptrIdx) / getWidth();
+                    float x = scaleX * (event.getX(ptrIdx) + shiftX);
+                    float y = scaleY * (event.getY(ptrIdx) + shiftY);
                     if (secondPtrId == INVALID_POINTER_ID) {
                         secondPtrId = event.getPointerId(ptrIdx);
                         secondStartPos.set(x, y);
@@ -95,13 +131,19 @@ public class Display extends BasicDisplay {
                         break;
                     }
 
-                    mainLastPos.set(event.getX(mainIdx) / getWidth(), event.getY(mainIdx) / getWidth());
+                    mainLastPos.set(
+                            scaleX * (event.getX(mainIdx) + shiftX),
+                            scaleY * (event.getY(mainIdx) + shiftY)
+                    );
 
                     // if both pointers got, rotation/scaling
                     if (secondPtrId != INVALID_POINTER_ID) {
                         final int secondIdx = event.findPointerIndex(secondPtrId);
                         if (secondIdx >= 0) {
-                            secondLastPos.set(event.getX(secondIdx) / getWidth(), event.getY(secondIdx) / getWidth());
+                            secondLastPos.set(
+                                    scaleX * (event.getX(secondIdx) + shiftX),
+                                    scaleY * (event.getY(secondIdx) + shiftY)
+                            );
                             gestureListener.gestureUpdated(
                                     mainStartPos.x, mainStartPos.y, secondStartPos.x, secondStartPos.y,
                                     mainLastPos.x, mainLastPos.y, secondLastPos.x, secondLastPos.y
