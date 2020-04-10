@@ -1,7 +1,14 @@
 #!/bin/sh -l
 
 cd /beatmup
+
+# build a C++ app
 mkdir build
 cd build
 cmake -DUSE_GLX=1 ../apps
-make all
+make BasicRendering
+cd ..
+
+# build android lib
+cd android/lib
+gradle clean assembleFullRelease
