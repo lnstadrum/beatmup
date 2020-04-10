@@ -71,10 +71,20 @@ msize getAvailableMemory() {
     MEMORYSTATUSEX status;
     status.dwLength = sizeof(status);
     GlobalMemoryStatusEx(&status);
+#ifndef BEATMUP_PLATFORM_64BIT_
+    static const uint32_t LIMIT = 0xffffffff;
+    if (status.ullAvailPhys > LIMIT)
+        return LIMIT;
+#endif
     return status.ullAvailPhys;
 #else
     struct sysinfo info;
     sysinfo(&info);
+#ifndef BEATMUP_PLATFORM_64BIT_
+    static const uint32_t LIMIT = 0xffffffff;
+    if (info.freeram * info.mem_unit > LIMIT)
+        return LIMIT;
+#endif
     return info.freeram * info.mem_unit;
 #endif
 }
