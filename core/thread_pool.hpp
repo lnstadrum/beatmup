@@ -529,6 +529,15 @@ public:
     */
     inline void waitForJob(Job job) {
         std::unique_lock<std::mutex> lock(jobsAccess);
+#ifdef BEATMUP_DEBUG
+        if (currentJob.task && currentJob.id != job && currentJob.mode == TaskExecutionMode::PERSISTENT && !abortExternally) {
+            class BlockingOnPersistentJob : public Exception {
+            public:
+                BlockingOnPersistentJob(): Exception("Waiting for a persistent job to finish: potential deadlock") {}
+            };
+            throw BlockingOnPersistentJob();
+        }
+#endif
         while (true) {
             // check if the job is in the queue
             bool found = false;
@@ -557,9 +566,9 @@ public:
         std::unique_lock<std::mutex> lock(jobsAccess);
 
         // check if the rask is running now, abort if it is
-        if (!jobs.empty() && jobs.front().id == job) {
+        if (currentJob.task && currentJob.id == job) {
             abortExternally = true;
-            while (!jobs.empty() && jobs.front().id == job)
+            while (!jobs.empty() && currentJob.task && currentJob.id == job)
                 mainCvar.wait(lock);
             lock.unlock();
             return true;

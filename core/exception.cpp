@@ -18,9 +18,12 @@ Beatmup::Exception::Exception(const char * message, ...) {
 #endif
     va_end(argptr);
     this->message.assign(out);
-      
+
 #if BEATMUP_PLATFORM_ANDROID
-    __android_log_print(ANDROID_LOG_ERROR, "Beatmup", "%s", out);
+    __android_log_print(ANDROID_LOG_ERROR, "Beatmup", "*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*");
+    __android_log_print(ANDROID_LOG_ERROR, "Beatmup", "* Beatmup engine raises an exception");
+    __android_log_print(ANDROID_LOG_ERROR, "Beatmup", "* %s", out);
+    __android_log_print(ANDROID_LOG_ERROR, "Beatmup", "*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*-=-*");
 #endif
 #ifdef BEATMUP_DEBUG
     printf("%s\n", out);
