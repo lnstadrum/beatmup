@@ -10,5 +10,5 @@ make BasicRendering
 cd ..
 
 # build android lib
-cd android/lib
-gradle clean assembleFullRelease
+cd android/app
+gradle clean assembleRelease
