@@ -1,4 +1,4 @@
-package xyz.beatmup.android.app.samples;
+package xyz.beatmup.androidapp.samples;
 
 import android.app.Activity;
 
@@ -7,6 +7,7 @@ import java.io.IOException;
 import Beatmup.Android.Bitmap;
 import Beatmup.Android.Camera;
 import Beatmup.Context;
+import Beatmup.Geometry.AffineMapping;
 import Beatmup.Imaging.PixelFormat;
 import Beatmup.Shading.Shader;
 import Beatmup.Rendering.Scene;
@@ -20,17 +21,20 @@ public class BasicRendering extends TestSample {
 
     @Override
     public String getDescription() {
-        return
-            "A basic rendering example featuring common bitmap operations, Scene, SceneRenderer and custom shading.\n" +
-            "Builds up a scene and renders it to a bitmap.";
+        return "A basic rendering example featuring common bitmap operations, Scene, SceneRenderer and custom shading";
     }
 
     @Override
-    public Scene designScene(Task drawingTask, Activity app, Camera camera) throws IOException {
+    public Scene designScene(Task drawingTask, Activity app, Camera camera, String extFile) throws IOException {
         Context context = drawingTask.getContext();
         Scene scene = new Scene();
 
         Bitmap androidBitmap = Bitmap.decodeStream(context, app.getAssets().open("fecamp.bmp"));
+
+        // render chessboard
+        Beatmup.Bitmap chess = context.renderChessboard( 512, 512, 32, PixelFormat.BinaryMask);
+        Beatmup.Bitmap chess2 = chess.clone();
+        chess2.invert();
 
         // setting up a radial image distortion shader
         Shader distortShader = new Shader(context);
@@ -64,20 +68,6 @@ public class BasicRendering extends TestSample {
                 "    1.0);\n" +
                 "}");
 
-        // setting up a recoloring shader (applying a random matrix to RGB triplets)
-        Shader recolorShader = new Shader(context);
-        recolorShader.setSourceCode(
-                "beatmupInputImage image;\n" +
-                "varying highp vec2 texCoord;\n" +
-                "uniform mediump mat3 matrix;\n" +
-                "void main() {\n" +
-                "  gl_FragColor = vec4(matrix * texture2D(image, texCoord).rgb, 1);\n" +
-                "}");
-        float matrix[] = new float[9];
-        for (int i = 0; i < 9 ; ++i)
-            matrix[i] = (float) Math.random();
-        recolorShader.setFloatMatrix("matrix", matrix);
-
         Beatmup.Bitmap bitmap1 = context.copyBitmap(androidBitmap, PixelFormat.SingleByte);
         Beatmup.Bitmap bitmap3 = context.copyBitmap(androidBitmap, PixelFormat.TripleByte);
         Beatmup.Bitmap bitmap3f = context.copyBitmap(androidBitmap, PixelFormat.TripleFloat);
@@ -99,7 +89,7 @@ public class BasicRendering extends TestSample {
             layer.setShader(distortShader);
             layer.setBitmap(bitmap4f);
             layer.scale(0.48f);
-            layer.rotate(-2);
+            layer.rotate(-1);
             layer.setCenterPosition(0.75f, 0.25f);
         }
 
@@ -113,14 +103,21 @@ public class BasicRendering extends TestSample {
         }
 
         {
-            Scene.ShadedBitmapLayer layer = scene.newShadedBitmapLayer();
-            layer.setShader(recolorShader);
-            layer.setBitmap(bitmap3f);
+            Scene subscene = new Scene();
+            Scene.SceneLayer layer = scene.newSceneLayer(subscene);
             layer.scale(0.45f);
             layer.rotate(-3);
             layer.setCenterPosition(0.25f, 0.25f);
 
+            Scene.MaskedBitmapLayer l1 = subscene.newMaskedBitmapLayer();
+            l1.setMask(chess);
+            l1.setBitmap(bitmap1);
+
+            Scene.MaskedBitmapLayer l2 = subscene.newMaskedBitmapLayer();
+            l2.setMask(chess2);
+            l2.setBitmap(bitmap3f);
         }
+
         return scene;
     }
 }

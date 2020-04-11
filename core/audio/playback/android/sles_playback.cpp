@@ -86,7 +86,7 @@ public:
                 (SLuint32) mode.sampleRate * 1000,      //in "milliHertz"
                 (SLuint32) AUDIO_SAMPLE_SIZE[mode.sampleFormat] *8,
                 (SLuint32) AUDIO_SAMPLE_SIZE[mode.sampleFormat] *8,
-                SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT,
+                0,
                 SL_BYTEORDER_LITTLEENDIAN
         };
         SLDataSource audioSrc = {&bufferQueueConfig, &formatConfig};

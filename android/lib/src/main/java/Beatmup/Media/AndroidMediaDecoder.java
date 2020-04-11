@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
- * Created by HomePlaneR on 12/04/2016.
+ * Media decoder
  */
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
 public abstract class AndroidMediaDecoder {

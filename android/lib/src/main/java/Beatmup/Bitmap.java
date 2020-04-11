@@ -25,6 +25,7 @@ public class Bitmap extends Beatmup.Object {
 
     private native void zero(long handle);
     private native void crop(long handle, long outputHandle, int x1, int y1, int x2, int y2, int outLeft, int outTop);
+    private native static void invert(long handle);
 
     protected native static void pullPixels(long handle);
 
@@ -178,6 +179,13 @@ public class Bitmap extends Beatmup.Object {
      */
     public void projectOn(Bitmap bitmap, int left, int top) {
         crop(handle, bitmap.handle, left, top, left+bitmap.getWidth(), top+bitmap.getHeight(), 0, 0);
+    }
+
+    /**
+     * Pixelwise bitmap inversion
+     */
+    public void invert() {
+        invert(handle);
     }
 
     /**

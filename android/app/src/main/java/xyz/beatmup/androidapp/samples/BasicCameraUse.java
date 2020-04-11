@@ -1,4 +1,4 @@
-package xyz.beatmup.android.app.samples;
+package xyz.beatmup.androidapp.samples;
 
 import android.app.Activity;
 
@@ -18,11 +18,11 @@ public class BasicCameraUse extends TestSample {
     }
 
     public String getDescription() {
-        return "Camera usage example. A layer displaying the camera image and a shader layer applying a fancy transformation to it.";
+        return "A layer displaying the camera image and a shader layer applying a fancy transformation to it.";
     }
 
     @Override
-    public Scene designScene(Task drawingTask, Activity app, Camera camera) throws IOException {
+    public Scene designScene(Task drawingTask, Activity app, Camera camera, String extFile) throws IOException {
         Scene scene = new Scene();
 
         Scene.BitmapLayer layer1 = scene.newBitmapLayer();

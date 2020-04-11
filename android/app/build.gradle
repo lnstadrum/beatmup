@@ -4,7 +4,7 @@ android {
     compileSdkVersion 29
     flavorDimensions "version"
     defaultConfig {
-        applicationId "xyz.beatmup.android.app"
+        applicationId "xyz.beatmup.androidapp"
         minSdkVersion 21
         targetSdkVersion 29
         versionCode 1

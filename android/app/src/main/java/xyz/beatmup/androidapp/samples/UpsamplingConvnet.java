@@ -1,4 +1,4 @@
-package xyz.beatmup.android.app.samples;
+package xyz.beatmup.androidapp.samples;
 
 import android.app.Activity;
 import android.util.Log;
@@ -27,7 +27,7 @@ public class UpsamplingConvnet extends TestSample {
     }
 
     @Override
-    public Scene designScene(Task drawingTask, Activity app, Camera camera) throws IOException {
+    public Scene designScene(Task drawingTask, Activity app, Camera camera, String extFile) throws IOException {
         Context context = drawingTask.getContext();
         Scene scene = new Scene();
 

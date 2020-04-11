@@ -9,6 +9,7 @@ import android.util.ArrayMap;
 import android.util.Log;
 import android.view.Surface;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -324,6 +325,21 @@ public class Decoder {
             throw new FileNotFoundException(file.toString());
     }
 
+
+    public void open(File file) throws FileNotFoundException {
+        if (!file.canRead())
+            throw new FileNotFoundException(file.toString());
+
+        extractor = new MediaExtractor();
+        try {
+            extractor.setDataSource(file.getAbsolutePath());
+        } catch (IOException e) {
+            throw new FileNotFoundException(file.toString());
+        }
+
+        if (extractor.getTrackCount() == 0)
+            throw new FileNotFoundException(file.toString());
+    }
 
     /**
      * Looks for a default video track in the input.

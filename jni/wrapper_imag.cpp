@@ -20,23 +20,24 @@
 #include "android/external_bitmap.h"
 #include "../core/bitmap/resampler.h"
 
+#include <core/color/matrix.h>
 #include <core/context.h>
-#include <core/geometry.h>
-#include <core/bitmap/internal_bitmap.h>
-#include <core/bitmap/resampler.h>
-#include <core/bitmap/crop.h>
-#include <core/bitmap/operator.h>
-#include <core/masking/flood_fill.h>
-#include <core/scene/renderer.h>
-#include <core/shading/shader_applicator.h>
+#include <core/contours/contours.h>
+#include <core/exception.h>
 #include <core/filters/local/pixelwise_filter.h>
 #include <core/filters/local/color_matrix.h>
 #include <core/filters/local/sepia.h>
 #include <core/filters/tuning.h>
-#include <core/color/matrix.h>
-#include <core/contours/contours.h>
+#include <core/geometry.h>
 #include <core/gpu/swapper.h>
-#include <core/exception.h>
+#include <core/bitmap/internal_bitmap.h>
+#include <core/bitmap/resampler.h>
+#include <core/bitmap/crop.h>
+#include <core/bitmap/operator.h>
+#include <core/bitmap/tools.h>
+#include <core/masking/flood_fill.h>
+#include <core/scene/renderer.h>
+#include <core/shading/shader_applicator.h>
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 //                                          SCENE
@@ -665,6 +666,14 @@ JNIMETHOD(void, crop, Java_Beatmup_Bitmap, crop)(JNIEnv *jenv, jobject, jlong hI
     crop.setCropRect(rect);
     crop.setOutputOrigin(outOrigin);
     input->getContext().performTask(crop);
+}
+
+
+JNIMETHOD(void, invert, Java_Beatmup_Bitmap, invert)(JNIEnv * jenv, jclass, jlong hBitmap)
+{
+    BEATMUP_ENTER;
+    BEATMUP_OBJ(Beatmup::AbstractBitmap, bitmap, hBitmap);
+    Beatmup::BitmapTools::invert(*bitmap, *bitmap);
 }
 
 

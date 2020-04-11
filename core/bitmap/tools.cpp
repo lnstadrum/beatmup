@@ -133,8 +133,10 @@ void BitmapTools::invert(AbstractBitmap& input, AbstractBitmap& output) {
     RuntimeError::check(input.getPixelFormat() == output.getPixelFormat(),
         "Input/output pixel formats mismatch");
 
-    AbstractBitmap::ReadLock inputLock(input, ProcessingTarget::CPU);
     AbstractBitmap::WriteLock outputLock(output);
+    if (&input != &output)
+      input.lockContent(PixelFlow::CpuRead);
+
 
     const size_t NPIX = input.getSize().numPixels();
     if (input.isFloat()) {
@@ -161,6 +163,9 @@ void BitmapTools::invert(AbstractBitmap& input, AbstractBitmap& output) {
         for (int r = 0; r < N % sizeof(pixint_platform); ++r)
             *(ro++) = ~*(ri++);
     }
+
+    if (&input != &output)
+      input.unlockContent(PixelFlow::CpuRead);
 }
 
 

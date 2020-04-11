@@ -93,5 +93,7 @@ public class Color {
             YELLOW      = new Color(255, 255, 0, 255),
             PURPLE      = new Color(255, 0, 255, 255),
             ORANGE      = new Color(255, 127, 0, 255),
-            GRAY        = new Color(127, 127, 127, 255);
+            GRAY        = new Color(127, 127, 127, 255),
+
+            FECAMP_SKY  = new Color(100, 140, 189, 255);    // sky color in fecamp.bmp
 }

@@ -65,6 +65,14 @@ JNIEXPORT void JNICALL Java_Beatmup_Bitmap_crop
 
 /*
  * Class:     Beatmup_Bitmap
+ * Method:    invert
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_Beatmup_Bitmap_invert
+  (JNIEnv *, jclass, jlong);
+
+/*
+ * Class:     Beatmup_Bitmap
  * Method:    pullPixels
  * Signature: (J)V
  */

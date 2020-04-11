@@ -3,7 +3,6 @@ apply plugin: 'com.android.library'
 android {
     compileSdkVersion 29
 	defaultPublishConfig "fullRelease"
-    publishNonDefault true
 
     defaultConfig {
         minSdkVersion 21
@@ -15,10 +14,10 @@ android {
 
 		externalNativeBuild {
             cmake {
-                arguments /*"-DANDROID_ARM_NEON=TRUE",*/ "-DANDROID_STL=c++_shared", "-DANDROID_CPP_FEATURES=exceptions"
+                arguments "-DANDROID_ARM_NEON=TRUE", "-DANDROID_STL=c++_shared", "-DANDROID_CPP_FEATURES=exceptions"
                 cppFlags.addAll(["-std=c++11", "-fexceptions", "-fvisibility=hidden", "-ffunction-sections", "-fdata-sections",
                                  "-Wl,--gc-sections", "-Os", "-fno-rtti"])
-                abiFilters.addAll(["arm64-v8a"/*, "armeabi", "armeabi-v7a"*/, "x86"/*, "x86_64"*/])
+                abiFilters.addAll(["arm64-v8a", "armeabi-v7a", "x86", "x86_64"])
             }
         }
     }

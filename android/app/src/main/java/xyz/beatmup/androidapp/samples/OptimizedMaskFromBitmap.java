@@ -1,4 +1,4 @@
-package xyz.beatmup.android.app.samples;
+package xyz.beatmup.androidapp.samples;
 
 import android.app.Activity;
 
@@ -27,7 +27,7 @@ public class OptimizedMaskFromBitmap extends TestSample {
     }
 
     @Override
-    public Scene designScene(Task drawingTask, Activity app, Camera camera) throws IOException {
+    public Scene designScene(Task drawingTask, Activity app, Camera camera, String extFile) throws IOException {
         Scene scene = new Scene();
 
         Beatmup.Bitmap heart = Bitmap.decodeStream(drawingTask.getContext(), app.getAssets().open("heart.png"));

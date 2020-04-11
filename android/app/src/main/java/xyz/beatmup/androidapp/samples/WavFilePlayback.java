@@ -1,6 +1,7 @@
-package xyz.beatmup.android.app.samples;
+package xyz.beatmup.androidapp.samples;
 
 import android.app.Activity;
+import android.app.job.JobInfo;
 import android.os.Environment;
 import android.util.Log;
 
@@ -20,7 +21,11 @@ import Beatmup.Rendering.Scene;
 import Beatmup.Task;
 
 public class WavFilePlayback extends TestSample {
-    Playback playback;
+    private int playbackJob;
+    private Context context;
+
+    long plotPrepareTime;
+    float plotRenderTime;
 
     @Override
     public String getCaption() {
@@ -28,34 +33,35 @@ public class WavFilePlayback extends TestSample {
     }
 
     @Override
-    public Scene designScene(Task drawingTask, Activity app, Camera camera) throws IOException {
-        Log.i("External storage path", Environment.getExternalStorageDirectory().getAbsolutePath());
+    public String getDescription() {
+        return "Plays a WAV file and plots its magnitude graph.";
+    }
 
-        Context context = drawingTask.getContext();
+    @Override
+    public Scene designScene(Task drawingTask, Activity app, Camera camera, String extFile) throws IOException {
+        context = drawingTask.getContext();
 
-        Signal wav = new Signal(context, "/storage/emulated/0/test.wav");
+        Signal wav = new Signal(context, extFile);
 
         SignalPlot plot = new SignalPlot(context);
         plot.setSignal(wav);
-        plot.setBitmap(Bitmap.createColorBitmap(context, 1024, 400));
+        plot.setBitmap(Bitmap.createColorBitmap(context, 2048, 400));
         plot.setPlotArea(plot.getBitmap().clientRectangle());
-        plot.setWindow(new IntRectangle(0, -32000, (int)wav.getLength(), 32000), 1);
+        plot.setWindow(new IntRectangle(0, -0x8000, (int)wav.getLength(), 0x7fff), 1);
         plot.setPalette(Color.WHITE, Color.byHue(123), Color.byHue(133));
 
         long start = System.currentTimeMillis();
         plot.prepareMetering();
-        long preparingTime = System.currentTimeMillis() - start;
-
-        float renderingTime = plot.execute();
-        Log.i("Beatmup", String.format("Metering preparation: %d msec, plotting: %f msec", (int)preparingTime, renderingTime));
+        plotPrepareTime = System.currentTimeMillis() - start;
+        plotRenderTime = plot.execute();
 
         Signal.Source source = new Signal.Source(context, wav);
-        playback = new Playback(context);
+        Playback playback = new Playback(context);
         playback.setSource(source);
         try {
             playback.configure(SampleFormat.Int16, 44100, 2, 2, 1024);
             playback.start();
-            context.submitPersistentTask(playback, 1);
+            playbackJob = context.submitPersistentTask(playback, 1);
         } catch (PlaybackException e) {
             e.printStackTrace();
         }
@@ -64,5 +70,20 @@ public class WavFilePlayback extends TestSample {
         Scene.BitmapLayer layer = scene.newBitmapLayer();
         layer.setBitmap(plot.getBitmap());
         return scene;
+    }
+
+    @Override
+    public String usesExternalFile() {
+        return "audio/wav";
+    }
+
+    @Override
+    public void stop() {
+        context.abortJob(playbackJob, 1);
+    }
+
+    @Override
+    public String getRuntimeInfo() {
+        return String.format("Metering preparation: %d ms, plotting: %.1f ms", (int)plotPrepareTime, plotRenderTime);
     }
 }

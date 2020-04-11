@@ -1,4 +1,4 @@
-package xyz.beatmup.android.app.samples;
+package xyz.beatmup.androidapp.samples;
 
 import android.app.Activity;
 
@@ -7,6 +7,7 @@ import java.io.IOException;
 import Beatmup.Android.Camera;
 import Beatmup.Context;
 import Beatmup.Geometry.AffineMapping;
+import Beatmup.Geometry.Rectangle;
 import Beatmup.Imaging.Filters.Resampler;
 import Beatmup.Imaging.PixelFormat;
 import Beatmup.Pipelining.Multitask;
@@ -30,11 +31,11 @@ public class UpsamplingConvnetOnCamera extends TestSample {
 
     @Override
     public String getDescription() {
-        return "Inferring 2x upsampling neural net on the camera preview.";
+        return "Inferring 2x upsampling neural net on the camera preview (bottom half; top half is linear interpolation).";
     }
 
     @Override
-    public Scene designScene(Task drawingTask, Activity app, Camera camera) throws IOException {
+    public Scene designScene(Task drawingTask, Activity app, Camera camera, String extFile) throws IOException {
         Context context = drawingTask.getContext();
 
         int width =  camera.getResolution().getWidth();
@@ -79,17 +80,16 @@ public class UpsamplingConvnetOnCamera extends TestSample {
         Scene scene = new Scene();
         {
             Scene.BitmapLayer l = scene.newBitmapLayer();
-            l.scale(0.5f);
-            l.setCenterPosition(0.5f, 0.25f);
+            l.setCenterPosition(0.5f, 0.5f);
             l.setImageTransform(imgTransform);
             l.setBitmap(input);
         }
 
         {
-            Scene.BitmapLayer l = scene.newBitmapLayer();
-            l.scale(0.5f);
-            l.setCenterPosition(0.5f, 0.75f);
+            Scene.ShapedBitmapLayer l = scene.newShapedBitmapLayer();
+            l.setCenterPosition(0.5f, 0.5f);
             l.setImageTransform(imgTransform);
+            l.setMaskPosition(0, 0.5f * height / width);
             l.setBitmap(output);
         }
 

@@ -1,11 +1,10 @@
-package xyz.beatmup.android.app.samples;
+package xyz.beatmup.androidapp.samples;
 
 import android.app.Activity;
 
 import java.io.IOException;
 
 import Beatmup.Android.Camera;
-import Beatmup.Context;
 import Beatmup.Geometry.AffineMapping;
 import Beatmup.Rendering.Scene;
 import Beatmup.Task;
@@ -40,7 +39,12 @@ public abstract class TestSample {
      * @return the scene.
      * @throws IOException if cannot load some images
      */
-    public abstract Scene designScene(Task drawingTask, Activity app, Camera camera) throws IOException;
+    public abstract Scene designScene(Task drawingTask, Activity app, Camera camera, String extFile) throws IOException;
+
+    /**
+     * Called when the test sample is being replaced by another test sample
+     */
+    public void stop() {}
 
     @Override
     public String toString() {
@@ -51,6 +55,11 @@ public abstract class TestSample {
      * @return `true` if the test sample uses camera.
      */
     public boolean usesCamera() { return false; }
+
+    /**
+     * @return MIME type of an external file to be used in the test; null if not needed.
+     */
+    public String usesExternalFile() { return null; }
 
     /**
      * @return test sample drawing task. If null is given, the default renderer rendering the scene
