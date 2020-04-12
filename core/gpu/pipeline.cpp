@@ -153,7 +153,12 @@ public:
         pfd.cColorBits = 32;
         pfd.cDepthBits = 16;
         pfd.iLayerType = PFD_MAIN_PLANE;
-        hwnd = CreateWindowEx(WS_EX_TOOLWINDOW, "STATIC", "glctx",
+        hwnd = CreateWindowEx(WS_EX_TOOLWINDOW,
+#ifdef UNICODE
+            L"STATIC", L"glctx",
+#else
+            "STATIC", "glctx",
+#endif
             WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
             0, 0, 1, 1, 0, 0, GetModuleHandle(NULL), 0);
         if (!hwnd)

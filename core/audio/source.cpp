@@ -2,6 +2,7 @@
 #include "../exception.h"
 #include "../debug.h"
 #include <cmath>
+#include <algorithm>
 
 using namespace Beatmup;
 using namespace Audio;
