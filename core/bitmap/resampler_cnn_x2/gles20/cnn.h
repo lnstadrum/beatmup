@@ -3,13 +3,11 @@
 */
 
 #pragma once
-#include "../internal_bitmap.h"
-#include "../../shading/image_shader.h"
-#include "../../gpu/pipeline.h"
+#include "../cnn_interface.h"
 
 namespace Beatmup {
 
-    class X2UpsamplingNetwork {
+    class GLES20X2UpsamplingNetwork : public X2UpsamplingNetwork {
     private:
         class Layer {
         public:
@@ -49,8 +47,8 @@ namespace Beatmup {
         Layer::Storage& nextStorage(int& i) { return storage[i++ % STORAGE_SIZE]; }
 
     public:
-        X2UpsamplingNetwork(GL::RecycleBin& recycleBin, GraphicPipeline& gpu);
-        ~X2UpsamplingNetwork();
+        GLES20X2UpsamplingNetwork(GL::RecycleBin& recycleBin, GraphicPipeline& gpu);
+        ~GLES20X2UpsamplingNetwork();
 
         void process(GraphicPipeline& gpu, GL::TextureHandler& input, AbstractBitmap& output);
     };

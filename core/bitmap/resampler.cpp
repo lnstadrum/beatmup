@@ -1,7 +1,8 @@
 #include "resampler.h"
 #include "resampler_tools.h"
 #include "processing.h"
-#include "resampler_cnn_x2/cnn.h"
+#include "resampler_cnn_x2/gles20/cnn.h"
+
 
 using namespace Beatmup;
 
@@ -76,7 +77,7 @@ void BitmapResampler::beforeProcessing(ThreadIndex threadCount, GraphicPipeline*
             "convnet resampling is only applicable for 2x upsampling"
         );
         if (!convnet) {
-            convnet = new X2UpsamplingNetwork(*input->getContext().getGpuRecycleBin(), *gpu);
+            convnet = new GLES20X2UpsamplingNetwork(*input->getContext().getGpuRecycleBin(), *gpu);
         }
     }
 

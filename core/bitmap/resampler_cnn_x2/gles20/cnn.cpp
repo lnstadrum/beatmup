@@ -3,22 +3,22 @@
 using namespace Beatmup;
 
 
-X2UpsamplingNetwork::Layer::Layer(GL::RecycleBin& recycleBin, GraphicPipeline& gpu, Storage& outputStorage, const char* sourceCode):
+GLES20X2UpsamplingNetwork::Layer::Layer(GL::RecycleBin& recycleBin, GraphicPipeline& gpu, Storage& outputStorage, const char* sourceCode):
   shader(recycleBin), output(outputStorage)
 {
     shader.setSourceCode(sourceCode);
 }
 
 
-void X2UpsamplingNetwork::Layer::process(Context& ctx, GraphicPipeline& gpu, GL::TextureHandler& input) {
+void GLES20X2UpsamplingNetwork::Layer::process(Context& ctx, GraphicPipeline& gpu, GL::TextureHandler& input) {
     if (output && (output->getWidth() != input.getWidth() || output->getHeight() != input.getHeight())) {
         delete output;
         output = nullptr;
     }
     if (!output) {
         output = new InternalBitmap(ctx, PixelFormat::QuadByte, input.getWidth(), input.getHeight(), false);
-        shader.setFloat("d1", 1.0 / input.getWidth(), 1.0 / input.getHeight());
-        shader.setFloat("d2", 2.0 / input.getWidth(), 2.0 / input.getHeight());
+        shader.setFloat("d1", 1.0f / input.getWidth(), 1.0f / input.getHeight());
+        shader.setFloat("d2", 2.0f / input.getWidth(), 2.0f / input.getHeight());
     }
 
     AbstractBitmap::ContentLock outputLock(*output, PixelFlow::GpuWrite);
@@ -27,7 +27,7 @@ void X2UpsamplingNetwork::Layer::process(Context& ctx, GraphicPipeline& gpu, GL:
 }
 
 
-void X2UpsamplingNetwork::Layer::process(Context& ctx, GraphicPipeline& gpu, Layer** inputs, int inputsCount) {
+void GLES20X2UpsamplingNetwork::Layer::process(Context& ctx, GraphicPipeline& gpu, Layer** inputs, int inputsCount) {
     const InternalBitmap& input = inputs[0]->getOutput();
     if (output && (output->getWidth() != input.getWidth() || output->getHeight() != input.getHeight())) {
         delete output;
@@ -37,7 +37,7 @@ void X2UpsamplingNetwork::Layer::process(Context& ctx, GraphicPipeline& gpu, Lay
         output = new InternalBitmap(ctx, PixelFormat::QuadByte, input.getWidth(), input.getHeight(), false);
 
     AbstractBitmap::ContentLock outputLock(*output, PixelFlow::GpuWrite);
-    shader.setFloat("d1", 1.0 / input.getWidth(), 1.0 / input.getHeight());
+    shader.setFloat("d1", 1.0f / input.getWidth(), 1.0f / input.getHeight());
     shader.prepare(gpu, nullptr, output);
 
     // bind images
@@ -50,7 +50,7 @@ void X2UpsamplingNetwork::Layer::process(Context& ctx, GraphicPipeline& gpu, Lay
 }
 
 
-void X2UpsamplingNetwork::process(GraphicPipeline& gpu, GL::TextureHandler& input, AbstractBitmap& output) {
+void GLES20X2UpsamplingNetwork::process(GraphicPipeline& gpu, GL::TextureHandler& input, AbstractBitmap& output) {
     // disable alpha blend
     gpu.switchAlphaBlending(false);
 
@@ -86,7 +86,7 @@ void X2UpsamplingNetwork::process(GraphicPipeline& gpu, GL::TextureHandler& inpu
 }
 
 
-X2UpsamplingNetwork::X2UpsamplingNetwork(GL::RecycleBin& recycleBin, GraphicPipeline& gpu):
+GLES20X2UpsamplingNetwork::GLES20X2UpsamplingNetwork(GL::RecycleBin& recycleBin, GraphicPipeline& gpu):
     demux(recycleBin)
 {
     for (int i = 0; i < STORAGE_SIZE; ++i)
@@ -230,7 +230,7 @@ X2UpsamplingNetwork::X2UpsamplingNetwork(GL::RecycleBin& recycleBin, GraphicPipe
 }
 
 
-X2UpsamplingNetwork::~X2UpsamplingNetwork() {
+GLES20X2UpsamplingNetwork::~GLES20X2UpsamplingNetwork() {
     for (int i = 0; i < L1_SIZE; ++i)
         delete layer1[i];
     for (int i = 0; i < L2_SIZE; ++i)

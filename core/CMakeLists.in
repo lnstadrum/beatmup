@@ -34,7 +34,7 @@ set(BEATMUP_SOURCES
     ${BEATMUP_SRC_DIR}/bitmap/operator.cpp
     ${BEATMUP_SRC_DIR}/bitmap/tools.cpp
     ${BEATMUP_SRC_DIR}/bitmap/resampler.cpp
-    ${BEATMUP_SRC_DIR}/bitmap/resampler_cnn_x2/cnn.cpp
+    ${BEATMUP_SRC_DIR}/bitmap/resampler_cnn_x2/gles20/cnn.cpp
     ${BEATMUP_SRC_DIR}/color/color_spaces.cpp
     ${BEATMUP_SRC_DIR}/color/matrix.cpp
     ${BEATMUP_SRC_DIR}/contours/contours.cpp
