@@ -63,6 +63,26 @@ InternalBitmap::~InternalBitmap() {
 }
 
 
+void Beatmup::InternalBitmap::reshape(int width, int height) {
+    if (this->width * this->height != width * height && memory) {
+        ctx.freeMemory(memory);
+        this->width = width;
+        this->height = height;
+        memory = ctx.allocateMemory(getMemorySize());
+    }
+    else {
+        this->width = width;
+        this->height = height;
+    }
+
+    if (upToDate[ProcessingTarget::GPU])
+        TextureHandler::invalidate(*ctx.getGpuRecycleBin());
+
+    upToDate[ProcessingTarget::CPU] = false;
+    upToDate[ProcessingTarget::GPU] = false;
+}
+
+
 const PixelFormat InternalBitmap::getPixelFormat() const {
     return pixelFormat;
 }

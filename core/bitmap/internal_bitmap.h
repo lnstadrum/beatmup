@@ -39,6 +39,14 @@ namespace Beatmup {
 
         virtual ~InternalBitmap();
 
+        /**
+            Changes bitmap size. Reallocates the memory if necessary.
+            Bitmap becomes "dirty" (contains no valid content).
+            \param[in] width     New width in pixels
+            \param[in] height    New height in pixels
+        */
+        void reshape(int width, int height);
+
         const PixelFormat getPixelFormat() const;
         const int getWidth() const;
         const int getHeight() const;
