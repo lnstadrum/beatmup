@@ -89,6 +89,11 @@ namespace Beatmup {
             */
             virtual const TextureFormat getTextureFormat() const = 0;
 
+            const bool isFloatingPoint() const {
+                const TextureFormat format = getTextureFormat();
+                return format == TextureFormat::Rx32f || format == TextureFormat::RGBx32f || format == TextureFormat::RGBAx32f;
+            }
+
             const int getNumberOfChannels() const;
 
             /**

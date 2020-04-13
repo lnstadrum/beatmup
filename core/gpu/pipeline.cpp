@@ -361,8 +361,38 @@ public:
 #ifdef BEATMUP_OPENGLVERSION_GLES20
         throw GL::Unsupported("Images binding is not supported in GL ES 2.0.");
 #else
+
         const GL::glhandle handle = useTexture(texture);
         texture.prepare(front);
+
+        // simple check of the allocated texture
+        glBindTexture(GL_TEXTURE_2D, handle);
+        GLint check = 0;
+        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &check);
+        if (check != texture.getWidth()) {
+            // (re)allocate texture
+            static const GLint formats[] = {
+                GL_RED, GL_RGB, GL_RGBA,
+                GL_RED, GL_RGB, GL_RGBA, GL_RGBA
+            };
+
+            glTexImage2D(
+                GL_TEXTURE_2D, 0,
+                GL::TEXTUREHANDLER_INTERNALFORMATS[texture.getTextureFormat()],
+                texture.getWidth(), texture.getHeight(),
+                0,
+                formats[texture.getTextureFormat()],
+                texture.isFloatingPoint() ? GL_FLOAT : GL_UNSIGNED_BYTE,
+                nullptr
+            );
+
+            // if the following is not set, black images are out when writing with imageStore()
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            GL::GLException::check("allocating texture image");
+        }
+
+        // binding, actually
         glBindImageTexture(imageUnit,
             handle,
             0, texture.getDepth() > 1 ? GL_TRUE : GL_FALSE, 0,
