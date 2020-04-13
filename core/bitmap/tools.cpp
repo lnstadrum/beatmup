@@ -49,8 +49,8 @@ public:
 };
 
 
-AbstractBitmap* BitmapTools::makeCopy(AbstractBitmap& source, PixelFormat newPixelFormat) {
-    AbstractBitmap* copy = new Beatmup::InternalBitmap(source.getContext(), newPixelFormat, source.getWidth(), source.getHeight());
+InternalBitmap* BitmapTools::makeCopy(AbstractBitmap& source, PixelFormat newPixelFormat) {
+    InternalBitmap* copy = new Beatmup::InternalBitmap(source.getContext(), newPixelFormat, source.getWidth(), source.getHeight());
     BitmapConverter converter;
     converter.setBitmaps(&source, copy);
     source.getContext().performTask(converter);
@@ -58,14 +58,14 @@ AbstractBitmap* BitmapTools::makeCopy(AbstractBitmap& source, PixelFormat newPix
 }
 
 
-AbstractBitmap* BitmapTools::makeCopy(AbstractBitmap& source) {
+InternalBitmap* BitmapTools::makeCopy(AbstractBitmap& source) {
     return makeCopy(source, source.getPixelFormat());
 }
 
 
-AbstractBitmap* BitmapTools::chessboard(Context& ctx, int width, int height, int cellSize, PixelFormat pixelFormat) {
+InternalBitmap* BitmapTools::chessboard(Context& ctx, int width, int height, int cellSize, PixelFormat pixelFormat) {
     RuntimeError::check(cellSize > 0, "Chessboard cell size must be positive");
-    AbstractBitmap* chess = new Beatmup::InternalBitmap(ctx, pixelFormat, width, height);
+    InternalBitmap* chess = new Beatmup::InternalBitmap(ctx, pixelFormat, width, height);
     AbstractBitmap::WriteLock lock(*chess);
     BitmapProcessing::write<RenderChessboard>(*chess, width, height, cellSize);
     return chess;
