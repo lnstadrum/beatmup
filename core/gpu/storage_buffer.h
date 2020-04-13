@@ -9,20 +9,17 @@ namespace Beatmup {
         class StorageBuffer {
             friend class AbstractProgram;
         private:
-            const size_t width, height, depth, entrySize;
-            Context& ctx;
+            size_t sizeBytes;
+            GL::RecycleBin& recycleBin;
             glhandle handle;
         public:
-            StorageBuffer(Context& ctx, size_t width, size_t height, size_t depth, const size_t entrySize);
+            StorageBuffer(GL::RecycleBin& recycleBin);
             ~StorageBuffer();
-            void allocate(GraphicPipeline& gpu, const void* data = nullptr);
+            void allocate(GraphicPipeline& gpu, const size_t sizeBytes, const void* data = nullptr);
             void bind(GraphicPipeline& gpu, int unit) const;
             void fetch(GraphicPipeline& gpu, void* data, size_t limit);
-            inline size_t getWidth()  const { return width; }
-            inline size_t getHeight() const { return height; }
-            inline size_t getDepth()  const { return depth; }
-            inline size_t getEntrySize() const { return entrySize; }
         };
+
         class StorageBufferFetcher : public GpuTask {
         private:
             StorageBuffer& buffer;
@@ -32,4 +29,5 @@ namespace Beatmup {
         public:
             StorageBufferFetcher(StorageBuffer& buffer, void* outputBuffer, size_t outputBufferSize);
         };
-    }}
+    }
+}

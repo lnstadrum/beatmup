@@ -65,7 +65,7 @@ namespace Beatmup {
 
             void supplyInput(AbstractBitmap& bitmap, const std::string& opName, int index = 0);
             void supplyOutput(AbstractBitmap& bitmap, const std::string& opName, int index = 0);
-            void supplyOutput(GL::StorageBuffer& data, const std::string& opName, int index = 0);
+            void supplyOutput(GL::StorageBuffer& data, const size_t capacity, const std::string& opName, int index = 0);
 
             void enableCache(const std::string& filename);
 

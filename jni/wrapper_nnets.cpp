@@ -275,8 +275,8 @@ JNIMETHOD(jfloat, test, Java_Beatmup_NNets_GPUBenchmark, test)(JNIEnv * jenv, jc
 
         LOG_I("INFERRING...");
         const Beatmup::NNets::Size outputSize = model.getLastAddedOp().getOutputSize();
-        Beatmup::GL::StorageBuffer output(*ctx, outputSize[0], outputSize[1], outputSize[2], sizeof(float));
-        inference.supplyOutput(output, model.getLastAddedOp().getName());
+        Beatmup::GL::StorageBuffer output(*ctx->getGpuRecycleBin());
+        inference.supplyOutput(output, outputSize.volume() * sizeof(float), model.getLastAddedOp().getName());
         inference.supplyInput(*test, "in");
         test->lockContent(Beatmup::PixelFlow::GpuRead);
         float totalTime = 0;

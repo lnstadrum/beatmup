@@ -102,7 +102,7 @@ namespace Beatmup {
             */
             enum class Type {
                 TEXTURE_REFERENCE,		//!< storage is a reference to an externally managed 2D texture handler
-                BUFFER_REFERENCE,		//!< storage is a reference to an externally managed storage buffer
+                BUFFER_REFERENCE,		//!< storage is a reference to an externally managed floating point storage buffer
                 TENSOR,					//!< storage is a single precision floating point 3D tensor
                 BUFFER_1D,				//!< storage is a single precision floating point 1D storage buffer
                 TENSOR_8FP_SIGNED,		//!< storage is a 8 bit fixed point 3D tensor in [-0.5..0.5] range
@@ -186,10 +186,11 @@ namespace Beatmup {
             Storage(GL::TextureHandler* texture);
 
             /**
-                Creates a 2D storage pointing to an externally managed buffer.
-                \param[in] buffer		The buffer
+                Creates a 2D storage pointing to an externally managed buffer of scalar floating point values.
+                \param[in] buffer    The buffer
+                \param[in] length    Buffer size (number of floating point entries)
             */
-            Storage(GL::StorageBuffer* buffer);
+            Storage(GL::StorageBuffer* buffer, const int length);
 
             ~Storage();
 

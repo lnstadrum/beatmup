@@ -33,17 +33,17 @@ Storage::Storage(Context& ctx, const int width, const int height, const int scal
 
     case Type::TENSOR_8FP_SIGNED:
     case Type::TENSOR_8FP_BRELU6:
-        buffer = new GL::StorageBuffer(ctx, width, height, ceili(scalarDepth, 4) * 4, 1);
+        buffer = new GL::StorageBuffer(*ctx.getGpuRecycleBin());
         break;
 
     case Type::TENSOR_16FP_BRELU6:
-        buffer = new GL::StorageBuffer(ctx, width, height, ceili(scalarDepth, 4) * 4, 2);
+        buffer = new GL::StorageBuffer(*ctx.getGpuRecycleBin());
         break;
 
     case Type::BUFFER_1D:
         if (size[0] != 1 || size[1] != 1)
             throw DimensionsMismatch(Type::BUFFER_1D);
-        buffer = new GL::StorageBuffer(ctx, size[0], size[1], size[2], sizeof(float));
+        buffer = new GL::StorageBuffer(*ctx.getGpuRecycleBin());
         break;
 
     default:
@@ -56,7 +56,7 @@ Storage::Storage(Context& ctx, const int length) :
     type(Type::BUFFER_1D),
     size(1, 1, length)
 {
-    buffer = new GL::StorageBuffer(ctx, size[0], size[1], size[2], sizeof(float));
+    buffer = new GL::StorageBuffer(*ctx.getGpuRecycleBin());
 }
 
 
@@ -67,13 +67,11 @@ Storage::Storage(GL::TextureHandler* texture):
 {}
 
 
-Storage::Storage(GL::StorageBuffer* buffer):
+Storage::Storage(GL::StorageBuffer* buffer, const int length):
     type(Type::BUFFER_REFERENCE),
-    size(buffer->getWidth(), buffer->getHeight(), buffer->getDepth() * sizeof(float)),
+    size(1, 1, length),
     buffer(buffer)
-{
-    RuntimeError::check(buffer->getEntrySize() == sizeof(float), "Unsupported buffer type");
-}
+{}
 
 
 Storage::~Storage() {
@@ -105,10 +103,18 @@ void Storage::bind(GraphicPipeline& gpu, GL::ComputeProgram& program, int unit, 
 
     case Type::BUFFER_1D:
     case Type::BUFFER_REFERENCE:
+        buffer->allocate(gpu, size.volume() * sizeof(float));
+        buffer->bind(gpu, unit);
+        break;
+
     case Type::TENSOR_8FP_SIGNED:
     case Type::TENSOR_8FP_BRELU6:
+        buffer->allocate(gpu, size.volume());
+        buffer->bind(gpu, unit);
+        break;
+
     case Type::TENSOR_16FP_BRELU6:
-        buffer->allocate(gpu);
+        buffer->allocate(gpu, size.volume() * 2);
         buffer->bind(gpu, unit);
         break;
 

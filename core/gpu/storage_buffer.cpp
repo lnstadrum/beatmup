@@ -3,12 +3,13 @@
 #include "recycle_bin.h"
 #include "../exception.h"
 
+#ifndef BEATMUP_OPENGLVERSION_GLES20
+
 using namespace Beatmup;
 using namespace GL;
 
-StorageBuffer::StorageBuffer(Context& ctx, size_t width, size_t height, size_t depth, const size_t entrySize):
-    width(width), height(height), depth(depth), entrySize(entrySize),
-    ctx(ctx), handle(0)
+StorageBuffer::StorageBuffer(GL::RecycleBin& recycleBin):
+    sizeBytes(0), recycleBin(recycleBin), handle(0)
 {}
 
 
@@ -24,16 +25,23 @@ StorageBuffer::~StorageBuffer() {
     };
 
     if (handle)
-        ctx.getGpuRecycleBin()->put(new Deleter(handle));
+        recycleBin.put(new Deleter(handle));
 }
 
 
-void StorageBuffer::allocate(GraphicPipeline& gpu, const void* data) {
-    if (!handle) {
+void StorageBuffer::allocate(GraphicPipeline& gpu, const size_t sizeBytes, const void* data) {
+    if (handle && this->sizeBytes != sizeBytes) {
+        glDeleteBuffers(1, &handle);
+        handle = 0;
+    }
+
+    if (!handle && sizeBytes > 0) {
         glGenBuffers(1, &handle);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, handle);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, width * height * depth * entrySize, data, GL_DYNAMIC_COPY);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, sizeBytes, data, GL_DYNAMIC_COPY);
     }
+
+    this->sizeBytes = sizeBytes;
 }
 
 
@@ -67,3 +75,5 @@ bool StorageBufferFetcher::processOnGPU(GraphicPipeline& gpu, TaskThread& thread
     buffer.fetch(gpu, outputBuffer, outputBufferSize);
     return true;
 }
+
+#endif

@@ -61,8 +61,8 @@ Convolution2D::Convolution2D(
     mode(chooseMode(kernelSize, outChannelsNum, depthwise)),
     actFunc(actFunc),
     depthwise(depthwise),
-    weights(ctx, kernelSize[0], kernelSize[1], kernelSize[2] * outChanNumRoundUp4, sizeof(float)),
-    biases(ctx, 1, 1, outChanNumRoundUp4, sizeof(float))
+    weights(*ctx.getGpuRecycleBin()),
+    biases(*ctx.getGpuRecycleBin())
 {}
 
 
@@ -660,8 +660,8 @@ std::vector<std::string> Convolution2D::generateCode(GraphicPipeline& gpu, Chunk
             kernelSize[0], kernelSize[2], ceili(outChannelsNum, 4));
 
         // allocate
-        this->weights.allocate(gpu, kernels.data());
-        this->biases.allocate(gpu, biases.data());
+        this->weights.allocate(gpu, kernelSize.volume() * outChanNumRoundUp4 * sizeof(float), kernels.data());
+        this->biases.allocate(gpu, outChanNumRoundUp4 * sizeof(float), biases.data());
     }
 
     for (int sliceIdx = 0; sliceIdx < numSlices; ++sliceIdx) {
@@ -743,6 +743,7 @@ std::vector<std::string> Convolution2D::generateCode(GraphicPipeline& gpu, Chunk
             break;
         }
     }
+
     return code;
 }
 
