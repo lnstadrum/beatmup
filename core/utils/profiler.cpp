@@ -2,11 +2,19 @@
 #include "../exception.h"
 #include <algorithm>
 #include <iomanip>
+
 using namespace Beatmup;
+
 Profiler::Profiler() : total(0) {}
+
+void Beatmup::Profiler::reset() {
+    tracks.clear();
+}
+
 void Profiler::operator()(const std::string& track) {
     running.emplace_back(track, std::chrono::system_clock::now());
 }
+
 void Profiler::lap() {
     BEATMUP_ASSERT_DEBUG(!running.empty());
     std::chrono::system_clock::time_point endTime(std::chrono::system_clock::now());
@@ -25,7 +33,11 @@ void Profiler::lap() {
     }
     total += sample;
 }
+
 void Profiler::report(std::ostream& stream, ReportType type) const {
+    if (tracks.empty())
+        return;
+
     typedef std::pair<std::string, time_t> Entry;
     std::vector<Entry> idx;
     idx.reserve(tracks.size());

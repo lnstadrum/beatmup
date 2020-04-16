@@ -31,6 +31,7 @@ namespace Beatmup {
             FULL
         };
         Profiler();
+        void reset();
         
         void operator ()(const std::string& track);
         void lap();
