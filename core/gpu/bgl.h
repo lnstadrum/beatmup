@@ -17,7 +17,6 @@
   #else
     #error OpenGL ES version is not specified
   #endif
-    #define BGL_TEXTURE_TARGET GL_TEXTURE_EXTERNAL_OES
   #ifdef BEATMUP_PLATFORM_ANDROID
     #include <android/native_window_jni.h>
   #endif
@@ -27,11 +26,9 @@
     #undef max
     #include <gl/glew.h>
     #include <gl/wglew.h>
-    #define BGL_TEXTURE_TARGET GL_TEXTURE_2D
 #else
     #include <X11/Xlib.h>
     #include <GL/glxew.h>
-    #define BGL_TEXTURE_TARGET GL_TEXTURE_2D
 #endif
 
 #include "../exception.h"

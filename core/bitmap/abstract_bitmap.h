@@ -47,7 +47,7 @@ namespace Beatmup {
         AbstractBitmap(Context& ctx);
 
         // overridden methods from TextureHandler
-        virtual void prepare(GraphicPipeline& gpu);
+        virtual void prepare(GraphicPipeline& gpu, bool queryData);
         virtual const TextureFormat getTextureFormat() const;
 
         /**

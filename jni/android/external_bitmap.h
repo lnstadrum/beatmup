@@ -20,7 +20,7 @@ namespace Beatmup {
             bool textureUpdated;
 
         protected:
-            virtual void prepare(GraphicPipeline& gpu);
+            virtual void prepare(GraphicPipeline& gpu, bool queryData);
             void lockPixelData() {}
             void unlockPixelData() {}
 

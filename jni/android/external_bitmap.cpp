@@ -127,12 +127,18 @@ void ExternalBitmap::notifyUpdate(const int width, const int height) {
 }
 
 
-void ExternalBitmap::prepare(GraphicPipeline& gpu) {
+void ExternalBitmap::prepare(GraphicPipeline& gpu, bool queryData) {
+    TextureHandler::prepare(gpu, queryData);
+
     // call updateTexImage()
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, this->textureHandle);
     if (textureUpdated && jvm) {
         if (!persistentJEnv)
             jvm->AttachCurrentThread(&persistentJEnv, nullptr);
         persistentJEnv->CallVoidMethod(surfaceTexture, updateTexImageMethodId);
         textureUpdated = false;
     }
+
+    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 }

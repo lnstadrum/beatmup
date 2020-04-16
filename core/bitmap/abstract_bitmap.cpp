@@ -39,19 +39,17 @@ public:
 };
 
 
-void AbstractBitmap::prepare(GraphicPipeline& gpu) {
+void AbstractBitmap::prepare(GraphicPipeline& gpu, bool queryData) {
+    TextureHandler::prepare(gpu, queryData);
     glBindTexture(GL_TEXTURE_2D, textureHandle);
-
-    // check if there is data to transfer
-    if (!upToDate[ProcessingTarget::CPU])
-        return;
 
     // if the GPU version is up to date, return
     if (upToDate[ProcessingTarget::GPU])
         return;
 
     // setup alignment
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    if (queryData)
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     if (isMask()) {
         // masks are stored as horizontally-stretched bitmaps
@@ -61,11 +59,12 @@ void AbstractBitmap::prepare(GraphicPipeline& gpu) {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, W, getHeight(), 0, GL_ALPHA, GL_UNSIGNED_BYTE, getData(0, 0));
 #else
         glTexStorage2D(GL_TEXTURE_2D, 1, GL_R8, W, getHeight());
-        glTexSubImage2D(GL_TEXTURE_2D,
-            0, 0, 0, W, getHeight(),
-            GL_RED,
-            GL_UNSIGNED_BYTE,
-            getData(0, 0));
+        if (queryData)
+            glTexSubImage2D(GL_TEXTURE_2D,
+                0, 0, 0, W, getHeight(),
+                GL_RED,
+                GL_UNSIGNED_BYTE,
+                getData(0, 0));
 #endif
         GL::GLException::check("allocating texture image (mask)");
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -75,24 +74,26 @@ void AbstractBitmap::prepare(GraphicPipeline& gpu) {
     else {
 #ifdef BEATMUP_OPENGLVERSION_GLES20
         glTexImage2D(GL_TEXTURE_2D,
-                0,
-                GL::BITMAP_INTERNALFORMATS[getPixelFormat()],
-                getWidth(), getHeight(),
-                0,
+            0,
+            GL::BITMAP_INTERNALFORMATS[getPixelFormat()],
+            getWidth(), getHeight(),
+            0,
+            GL::BITMAP_PIXELFORMATS[getPixelFormat()],
+            GL::BITMAP_PIXELTYPES[getPixelFormat()],
+            queryData ? getData(0, 0) : nullptr);
+#else
+        glTexStorage2D(GL_TEXTURE_2D, 1, GL::BITMAP_INTERNALFORMATS[getPixelFormat()], getWidth(), getHeight());
+        if (queryData)
+            glTexSubImage2D(GL_TEXTURE_2D,
+                0, 0, 0, getWidth(), getHeight(),
                 GL::BITMAP_PIXELFORMATS[getPixelFormat()],
                 GL::BITMAP_PIXELTYPES[getPixelFormat()],
                 getData(0, 0));
-#else
-        glTexStorage2D(GL_TEXTURE_2D, 1, GL::BITMAP_INTERNALFORMATS[getPixelFormat()], getWidth(), getHeight());
-        glTexSubImage2D(GL_TEXTURE_2D,
-            0, 0, 0, getWidth(), getHeight(),
-            GL::BITMAP_PIXELFORMATS[getPixelFormat()],
-            GL::BITMAP_PIXELTYPES[getPixelFormat()],
-            getData(0, 0));
 #endif
         GL::GLException::check("allocating texture image");
     }
 
+    // the GPU version of the bitmap actually has changed
     upToDate[ProcessingTarget::GPU] = true;
 }
 

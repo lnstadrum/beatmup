@@ -46,8 +46,10 @@ namespace Beatmup {
             /**
                 Prepares (eventually uploads) texture data on GPU.
                 Called only by the context managing thread.
+                \param[in] gpu          Graphic pipeline instance
+                \param[in] queryData    If true, the texture data is intended to be used
             */
-            virtual void prepare(GraphicPipeline& gpu);
+            virtual void prepare(GraphicPipeline& gpu, bool queryData);
 
             /**
                 Forces disposing the texture data, e.g. when it is not used any more

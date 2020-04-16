@@ -21,8 +21,9 @@ namespace Beatmup {
             void load(GraphicPipeline& gpu, int channel, const AbstractBitmap& bitmap);
 
             static TextureFormat getFormat(int scalarDepth);
+
         protected:
-            void prepare(GraphicPipeline& gpu);
+            void prepare(GraphicPipeline& gpu, bool queryData);
 
         public:
             Tensor(Context& ctx, const int width, const int height, const int scalarDepth);

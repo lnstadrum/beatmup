@@ -57,17 +57,6 @@ private:
     } glLimits;
 
 
-    /**
-        \internal
-        Associates a valid texture handle and mark the handler as currently used
-    */
-    GLuint useTexture(GL::TextureHandler& handler) {
-        if (!handler.hasValidHandle())
-            glGenTextures(1, &handler.textureHandle);
-        return handler.textureHandle;
-    }
-
-
 public:
     Impl(GraphicPipeline& front) : front(front), output(nullptr)
     {
@@ -362,39 +351,16 @@ public:
         throw GL::Unsupported("Images binding is not supported in GL ES 2.0.");
 #else
 
-        const GL::glhandle handle = useTexture(texture);
-        texture.prepare(front);
+        texture.prepare(front, read);
 
-        // simple check of the allocated texture
-        glBindTexture(GL_TEXTURE_2D, handle);
-        GLint check = 0;
-        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &check);
-        if (check != texture.getWidth()) {
-            // (re)allocate texture
-            static const GLint formats[] = {
-                GL_RED, GL_RGB, GL_RGBA,
-                GL_RED, GL_RGB, GL_RGBA, GL_RGBA
-            };
-
-            glTexImage2D(
-                GL_TEXTURE_2D, 0,
-                GL::TEXTUREHANDLER_INTERNALFORMATS[texture.getTextureFormat()],
-                texture.getWidth(), texture.getHeight(),
-                0,
-                formats[texture.getTextureFormat()],
-                texture.isFloatingPoint() ? GL_FLOAT : GL_UNSIGNED_BYTE,
-                nullptr
-            );
-
-            // if the following is not set, black images are out when writing with imageStore()
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            GL::GLException::check("allocating texture image");
-        }
+        // if the following is not set, black images are out when writing with imageStore()
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        GL::GLException::check("allocating texture image");
 
         // binding, actually
         glBindImageTexture(imageUnit,
-            handle,
+            texture.textureHandle,
             0, texture.getDepth() > 1 ? GL_TRUE : GL_FALSE, 0,
             read && write ? GL_READ_WRITE : (write ? GL_WRITE_ONLY : GL_READ_ONLY),
             GL::TEXTUREHANDLER_INTERNALFORMATS[ texture.getTextureFormat() ]
@@ -410,8 +376,7 @@ public:
         case GL::TextureHandler::TextureFormat::Rx8:
         case GL::TextureHandler::TextureFormat::RGBx8:
         case GL::TextureHandler::TextureFormat::RGBAx8:
-            useTexture(texture);
-            texture.prepare(front);
+            texture.prepare(front, true);
             if (param & TextureParam::INTERP_LINEAR) {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -425,8 +390,7 @@ public:
         case GL::TextureHandler::TextureFormat::Rx32f:
         case GL::TextureHandler::TextureFormat::RGBx32f:
         case GL::TextureHandler::TextureFormat::RGBAx32f:
-            useTexture(texture);
-            texture.prepare(front);
+            texture.prepare(front, true);
 #ifndef BEATMUP_OPENGLVERSION_GLES
             if (param & TextureParam::INTERP_LINEAR) {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -444,10 +408,7 @@ public:
             break;
 
         case GL::TextureHandler::TextureFormat::OES_Ext:
-            glBindTexture(BGL_TEXTURE_TARGET, texture.textureHandle);
-            texture.prepare(front);
-            glTexParameteri(BGL_TEXTURE_TARGET, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexParameteri(BGL_TEXTURE_TARGET, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            texture.prepare(front, true);
             break;
         }
 
@@ -471,34 +432,9 @@ public:
 
         // setting up a texture
         glBindFramebuffer(GL_FRAMEBUFFER, hFrameBuffer);
-        GLuint handle = useTexture(bitmap);
+        bitmap.prepare(front, false);
 
-        // if the GPU version is outdated, feed it with blank pixels
-        if (!bitmap.isUpToDate(ProcessingTarget::GPU))  {
-            glBindTexture(GL_TEXTURE_2D, handle);
-
-            static const GLint formats[] = {
-                0,
-#ifdef BEATMUP_OPENGLVERSION_GLES20
-                GL_LUMINANCE,
-#else
-                GL_RED,
-#endif
-                0, // not used
-                GL_RGB, GL_RGBA
-            };
-
-            glTexImage2D(
-                GL_TEXTURE_2D, 0, formats[bitmap.getNumberOfChannels()],
-                bitmap.getWidth(), bitmap.getHeight(),
-                0,
-                formats[bitmap.getNumberOfChannels()], GL::BITMAP_PIXELTYPES[bitmap.getPixelFormat()],
-                nullptr
-            );
-            GL::GLException::check("allocating output texture image");
-        }
-
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, handle, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, bitmap.textureHandle, 0);
 #ifdef BEATMUP_DEBUG
         GLuint err = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (err != GL_FRAMEBUFFER_COMPLETE)
@@ -544,10 +480,9 @@ public:
                 // 'cause GLES does not support such data to be transfered from GPU to CPU memory
 #endif
 
-        GLuint handle = useTexture(bitmap);
         glBindFramebuffer(GL_FRAMEBUFFER, hFrameBuffer);
-        glBindTexture(GL_TEXTURE_2D, handle);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, handle, 0);
+        bitmap.prepare(front, false);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, bitmap.textureHandle, 0);
 
         // disable high order alignment
         glPixelStorei(GL_PACK_ALIGNMENT, 1);

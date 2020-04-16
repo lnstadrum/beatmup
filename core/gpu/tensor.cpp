@@ -46,7 +46,9 @@ Tensor::~Tensor() {
 }
 
 
-void Tensor::prepare(GraphicPipeline& gpu) {
+void Tensor::prepare(GraphicPipeline& gpu, bool queryData) {
+    TextureHandler::prepare(gpu, queryData);
+
     const GLenum target = arrayTexture ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D;
     glBindTexture(target, textureHandle);
     if (!allocated) {

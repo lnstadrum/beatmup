@@ -46,8 +46,9 @@ TextureHandler::~TextureHandler() {
 }
 
 
-void TextureHandler::prepare(GraphicPipeline& gpu) {
-    // nothing to do by default
+void TextureHandler::prepare(GraphicPipeline& gpu, bool) {
+    if (!hasValidHandle())
+        glGenTextures(1, &textureHandle);
 }
 
 
