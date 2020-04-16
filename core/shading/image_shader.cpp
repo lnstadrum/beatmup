@@ -195,11 +195,7 @@ void ImageShader::prepare(GraphicPipeline& gpu, AbstractBitmap* output) {
 
 
 void ImageShader::bindSamplerArray(const char* uniformName, int startingUnit, int numUnits) {
-    int* vals = new int[numUnits];
-    for (int i = 0; i < numUnits; ++i)
-        vals[i] = startingUnit + i;
-    program->setIntegerArray(uniformName, vals, numUnits);
-    delete[] vals;
+    program->setIntegerArray(uniformName, startingUnit, numUnits);
 }
 
 

@@ -248,6 +248,18 @@ void AbstractProgram::setIntegerArray(const char* name, const int* values, const
 }
 
 
+void AbstractProgram::setIntegerArray(const char* name, const int firstValue, const int length) {
+    GLint* values = new GLint[length];
+    for (int i = 0; i < length; ++i)
+        values[i] = firstValue + i;
+    glUniform1iv(glGetUniformLocation(handle, name), length, values);
+    delete[] values;
+#ifdef BEATMUP_DEBUG
+    GL::GLException::check("seting shader integer array");
+#endif
+}
+
+
 void AbstractProgram::bindSampler(GraphicPipeline& gpu, GL::TextureHandler& image, const char* uniformId, TextureParam param) {
     glhandle uniform = getUniformLocation(uniformId);
     GLint unit;

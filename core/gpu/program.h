@@ -134,6 +134,7 @@ namespace Beatmup {
               { setMatrix3(name.c_str(), mapping); }
 
             void setIntegerArray(const char* name, const int* values, const int length);
+            void setIntegerArray(const char* name, const int firstValue, const int length);
 
             void bindSampler(GraphicPipeline& gpu, GL::TextureHandler& image, const char* uniformId, TextureParam param);
             void bindImage(GraphicPipeline& gpu, GL::TextureHandler& image, const char* uniformId, bool read, bool write);
