@@ -3,7 +3,9 @@
  */
 #pragma once
 #include "../context.h"
-#include "../gpu/gpu_task.h"
+#include "gpu_task.h"
+#include "../bitmap/abstract_bitmap.h"
+
 namespace Beatmup {
     namespace GL {
         class StorageBuffer {
@@ -16,8 +18,20 @@ namespace Beatmup {
             StorageBuffer(GL::RecycleBin& recycleBin);
             ~StorageBuffer();
             void allocate(GraphicPipeline& gpu, const size_t sizeBytes, const void* data = nullptr);
+            void allocateStatic(GraphicPipeline& gpu, const size_t sizeBytes, const void* data);
             void bind(GraphicPipeline& gpu, int unit) const;
             void fetch(GraphicPipeline& gpu, void* data, size_t limit);
+
+            /**
+                Copies buffer content to a bitmap
+                \param[in] gpu        Graphic pipeline instance
+                \param[in] offset     Offset in the buffer in bytes
+                \param[in] stride     Stride between entries to be copied to the bitmap in the buffer in bytes
+                \param[out] bitmap    The bitmap to fill
+            */
+            void fetchToBitmap(GraphicPipeline& gpu, size_t offset, size_t stride, AbstractBitmap& bitmap);
+
+            inline size_t getCurrentCapacity() const { return sizeBytes; }
         };
 
         class StorageBufferFetcher : public GpuTask {
