@@ -1,9 +1,7 @@
 #include "compute_program.h"
 #include "bgl.h"
 
-#ifdef BEATMUP_OPENGLVERSION_GLES20
-#error Insufficient OpenGL ES version: compute shaders are not available in OpenGL ES 2.0.
-#endif
+#ifndef BEATMUP_OPENGLVERSION_GLES20
 
 using namespace Beatmup;
 using namespace GL;
@@ -45,3 +43,5 @@ void ComputeProgram::dispatch(const GraphicPipeline& gpu, msize w, msize h, msiz
 #endif
     glFinish();	// fixme: this helps my Radeon not to crash
 }
+
+#endif

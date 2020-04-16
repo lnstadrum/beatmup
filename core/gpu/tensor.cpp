@@ -1,10 +1,7 @@
  #include "tensor.h"
 #include "bgl.h"
 
-#ifdef BEATMUP_OPENGLVERSION_GLES20
-#error Insufficient OpenGL ES version: image arrays are not available in OpenGL ES 2.0.
-#endif
-
+#ifndef BEATMUP_OPENGLVERSION_GLES20
 
 using namespace Beatmup;
 using namespace GL;
@@ -82,3 +79,5 @@ void Tensor::load(GraphicPipeline& gpu, int channel, const AbstractBitmap& bitma
     GLException::check("3D tensor pixel transfer");
 #endif
 }
+
+#endif
