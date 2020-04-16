@@ -3,6 +3,7 @@
 */
 #pragma once
 #include "../basic_types.h"
+#include "../exception.h"
 #include "recycle_bin.h"
 
 namespace Beatmup {
@@ -122,4 +123,14 @@ namespace Beatmup {
             bool isAssignedToGroup() const;
         };
     }
+
+    /**
+        Exception thrown when texture format does not match any supported format
+    */
+    class UnsupportedTextureFormat : public Exception {
+    public:
+        UnsupportedTextureFormat(const GL::TextureHandler::TextureFormat& format) :
+            Exception("Input texture format is not supported: %s", GL::TextureHandler::textureFormatToString(format))
+        {}
+    };
 }

@@ -105,7 +105,7 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, const
                     "#define " + INPUT_IMAGE_DECL_TYPE + " uniform samplerExternalOES\n" + sourceCode;
                 break;
             default:
-                throw UnsupportedInputTextureFormat(inputFormat);
+                throw UnsupportedTextureFormat(inputFormat);
             }
         }
         else {

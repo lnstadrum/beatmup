@@ -89,14 +89,4 @@ namespace Beatmup {
         public:
             NoSource() : Exception("Layer shader has no source code") {}
         };
-
-        /**
-            Exception thrown when the input texture format does not match any supported format
-        */
-        class UnsupportedInputTextureFormat : public Exception {
-        public:
-            UnsupportedInputTextureFormat(const GL::TextureHandler::TextureFormat& format):
-                Exception("Input texture format is not supported: %s", GL::TextureHandler::textureFormatToString(format))
-            {}
-        };
     };}

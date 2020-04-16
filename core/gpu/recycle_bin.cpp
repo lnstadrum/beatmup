@@ -29,7 +29,7 @@ public:
     bool processOnGPU(GraphicPipeline& gpu, TaskThread& thread) {
         for (auto& item : items) {
             RecycleBin::Item* deleting = item;
-            item = NULL;
+            item = nullptr;
             if (deleting)
                 delete deleting;
         }
