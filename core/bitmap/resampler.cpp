@@ -2,7 +2,9 @@
 #include "resampler_tools.h"
 #include "processing.h"
 #include "resampler_cnn_x2/gles20/cnn.h"
-
+#ifndef BEATMUP_OPENGLVERSION_GLES20
+#include "resampler_cnn_x2/gles31/cnn.h"
+#endif
 
 using namespace Beatmup;
 
@@ -10,7 +12,8 @@ const float BitmapResampler::DEFAULT_CUBIC_PARAMETER = -0.5f;
 
 
 BitmapResampler::BitmapResampler() :
-    input(nullptr), output(nullptr), mode(Mode::CUBIC), cubicParameter(DEFAULT_CUBIC_PARAMETER), convnet(nullptr)
+    input(nullptr), output(nullptr), mode(Mode::CUBIC), cubicParameter(DEFAULT_CUBIC_PARAMETER), convnet(nullptr),
+    isUsingEs31IfAvailable(false)
 {}
 
 
@@ -76,9 +79,22 @@ void BitmapResampler::beforeProcessing(ThreadIndex threadCount, GraphicPipeline*
             destRect.width() == 2 * srcRect.width() && destRect.height() == 2 * srcRect.height(),
             "convnet resampling is only applicable for 2x upsampling"
         );
-        if (!convnet) {
-            convnet = new GLES20X2UpsamplingNetwork(*input->getContext().getGpuRecycleBin(), *gpu);
+
+#ifndef BEATMUP_OPENGLVERSION_GLES20
+        // check if the ES backend needed to be upgraded to 3.1
+        if (convnet && isUsingEs31IfAvailable && !convnet->usesEs31Backend()) {
+            delete convnet;
+            convnet = nullptr;
         }
+#endif
+
+        // init convnet instance if not yet
+#ifndef BEATMUP_OPENGLVERSION_GLES20
+        if (!convnet && isUsingEs31IfAvailable)
+            convnet = new GLES31X2UpsamplingNetwork(input->getContext(), *gpu);
+#endif
+        if (!convnet)
+            convnet = new GLES20X2UpsamplingNetwork(*input->getContext().getGpuRecycleBin(), *gpu);
     }
 
     input ->lockContent(gpu, false);

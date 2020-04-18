@@ -95,6 +95,9 @@ namespace Beatmup {
             void setInteger(const char* name, const int value, bool safe = false);
             void setInteger(const std::string& name, const int value, bool safe = false)
               { setInteger(name.c_str(), value, safe); }
+            void setUnsignedInteger(const char* name, const unsigned int value, bool safe = false);
+            void setUnsignedInteger(const std::string& name, const unsigned int value, bool safe = false)
+              { setUnsignedInteger(name.c_str(), value, safe); }
 
             /**
                 Assignes a value to a specified floating poitn variable in the program

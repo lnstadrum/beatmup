@@ -5,6 +5,7 @@
 #pragma once
 #include "../cnn_interface.h"
 
+
 namespace Beatmup {
 
     class GLES20X2UpsamplingNetwork : public X2UpsamplingNetwork {
@@ -51,6 +52,7 @@ namespace Beatmup {
         ~GLES20X2UpsamplingNetwork();
 
         void process(GraphicPipeline& gpu, GL::TextureHandler& input, AbstractBitmap& output);
+        bool usesEs31Backend() const { return false; }
     };
 
 }

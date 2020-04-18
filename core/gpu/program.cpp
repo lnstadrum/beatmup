@@ -161,6 +161,21 @@ void AbstractProgram::setInteger(const char* name, const int value, bool safe) {
 }
 
 
+void AbstractProgram::setUnsignedInteger(const char* name, const unsigned int value, bool safe) {
+    if (safe) {
+        GLint location = glGetUniformLocation(handle, name);
+        if (location == -1)
+            return;
+        glUniform1ui(location, (GLuint)value);
+    }
+    else
+        glUniform1ui(glGetUniformLocation(handle, name), (GLuint)value);
+#ifdef BEATMUP_DEBUG
+    GL::GLException::check("setting shader integer");
+#endif
+}
+
+
 void AbstractProgram::setFloat(const char* name, const float value, bool safe) {
     if (safe) {
         GLint location = glGetUniformLocation(handle, name);

@@ -19,7 +19,7 @@ void Profiler::lap() {
     BEATMUP_ASSERT_DEBUG(!running.empty());
     std::chrono::system_clock::time_point endTime(std::chrono::system_clock::now());
     Track& track = tracks[running.back().first];
-    time_t sample = (time_t)std::chrono::duration<float, std::milli>(endTime - running.back().second).count();
+    time_t sample = (time_t)std::chrono::duration<float, std::micro>(endTime - running.back().second).count();
     running.pop_back();
     if (track.n == 0) {
         track.min = track.max = track.sum = sample;
@@ -47,7 +47,7 @@ void Profiler::report(std::ostream& stream, ReportType type) const {
         maxlen = std::max(_.first.size(), maxlen);
     }
     std::sort(idx.begin(), idx.end(), [&](Entry& _1, Entry& _2) { return _1.second < _2.second; });
-    stream << "=== " << total << " ms" << std::endl;
+    stream << "=== " << total << " us" << std::endl;
     if (type == ReportType::FULL) {
         stream
             << std::setw(maxlen) << "<id>"

@@ -12,11 +12,11 @@ set(BEATMUP_GLEW_DIR "${BEATMUP_ROOT_DIR}/glew-cmake")
 
 # platform-specific flags
 if (WIN32)
-	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DBEATMUP_PLATFORM_WINDOWS")
+    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DBEATMUP_PLATFORM_WINDOWS")
     link_libraries(gdiplus)
 else()
-	find_package(Threads REQUIRED)
-	link_libraries(${CMAKE_THREAD_LIBS_INIT})
+    find_package(Threads REQUIRED)
+    link_libraries(${CMAKE_THREAD_LIBS_INIT})
 endif (WIN32)
 
 
@@ -35,6 +35,7 @@ set(BEATMUP_SOURCES
     ${BEATMUP_SRC_DIR}/bitmap/tools.cpp
     ${BEATMUP_SRC_DIR}/bitmap/resampler.cpp
     ${BEATMUP_SRC_DIR}/bitmap/resampler_cnn_x2/gles20/cnn.cpp
+    ${BEATMUP_SRC_DIR}/bitmap/resampler_cnn_x2/gles31/cnn.cpp
     ${BEATMUP_SRC_DIR}/color/color_spaces.cpp
     ${BEATMUP_SRC_DIR}/color/matrix.cpp
     ${BEATMUP_SRC_DIR}/contours/contours.cpp
@@ -44,12 +45,15 @@ set(BEATMUP_SOURCES
     ${BEATMUP_SRC_DIR}/filters/local/sepia.cpp
     ${BEATMUP_SRC_DIR}/fragments/fragment.cpp
     ${BEATMUP_SRC_DIR}/fragments/sequence.cpp
+    ${BEATMUP_SRC_DIR}/gpu/compute_program.cpp
     ${BEATMUP_SRC_DIR}/gpu/display_switch.cpp
     ${BEATMUP_SRC_DIR}/gpu/gpu_task.cpp
     ${BEATMUP_SRC_DIR}/gpu/pipeline.cpp
     ${BEATMUP_SRC_DIR}/gpu/program.cpp
     ${BEATMUP_SRC_DIR}/gpu/recycle_bin.cpp
+    ${BEATMUP_SRC_DIR}/gpu/storage_buffer.cpp
     ${BEATMUP_SRC_DIR}/gpu/swapper.cpp
+    ${BEATMUP_SRC_DIR}/gpu/tensor.cpp
     ${BEATMUP_SRC_DIR}/gpu/texture_handler.cpp
     ${BEATMUP_SRC_DIR}/gpu/variables_bundle.cpp
     ${BEATMUP_SRC_DIR}/masking/flood_fill.cpp
@@ -71,15 +75,13 @@ set(BEATMUP_SOURCES
     ${BEATMUP_SRC_DIR}/utils/progress_tracking.cpp
     ${BEATMUP_SRC_DIR}/utils/string_builder.cpp
 )
+
 if (PLATFORM_ANDROID)
     set(BEATMUP_SOURCES ${BEATMUP_SOURCES} ${BEATMUP_SRC_DIR}/utils/android/asset.cpp)
 endif()
 
 if (PROFILE_NNETS)
     set(BEATMUP_SOURCES ${BEATMUP_SOURCES}
-        ${BEATMUP_SRC_DIR}/gpu/compute_program.cpp
-        ${BEATMUP_SRC_DIR}/gpu/storage_buffer.cpp
-        ${BEATMUP_SRC_DIR}/gpu/tensor.cpp
         ${BEATMUP_SRC_DIR}/nnets/gpu_bench.cpp
         ${BEATMUP_SRC_DIR}/nnets/inference.cpp
         ${BEATMUP_SRC_DIR}/nnets/model.cpp
@@ -123,76 +125,77 @@ endif()
 # selecting OpenGL backend
 if (USE_OPENGL OR USE_GLX)
     add_subdirectory(${BEATMUP_GLEW_DIR} "${BEATMUP_BUILD_DIR}/glew-build")
-	link_directories("${BEATMUP_BUILD_DIR}/lib")
-	include_directories("${BEATMUP_GLEW_DIR}/include")
-	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DGLEW_STATIC")
+    link_directories("${BEATMUP_BUILD_DIR}/lib")
+    include_directories("${BEATMUP_GLEW_DIR}/include")
 
-	find_package(OpenGL REQUIRED)
-	link_libraries(${OPENGL_LIBRARY})
-	if (USE_GLX)
-		find_package(X11 REQUIRED)
-		link_libraries(${X11_LIBRARIES} glewmx)
-	endif()
+    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DGLEW_STATIC")
 
-	if (WIN32)
-		link_libraries(glew$<$<CONFIG:Debug>:d>)
-	endif()
+    find_package(OpenGL REQUIRED)
+    link_libraries(${OPENGL_LIBRARY})
+    if (USE_GLX)
+        find_package(X11 REQUIRED)
+        link_libraries(${X11_LIBRARIES} glewmx)
+    endif()
+
+    if (WIN32)
+        link_libraries(glew$<$<CONFIG:Debug>:d>)
+    endif()
 
 elseif(USE_EGL)
-	message("Searching for OpenGL ES libraries...")
-	set(USE_BRCM_LIBS NO)
-	set(USE_PKGCONFIG NO)
+    message("Searching for OpenGL ES libraries...")
+    set(USE_BRCM_LIBS NO)
+    set(USE_PKGCONFIG NO)
 
-	# handling raspberry pi having closed-source EGL/GLES implementation
-	if (EXISTS "/opt/vc/lib/libbrcmEGL.so")
-		set(USE_BRCM_LIBS YES)
-		set(EGL_LIBRARY "/opt/vc/lib/libbrcmEGL.so")
-		message("EGL binaries are found; we are likely running a Raspberry Pi")
-	else()
-		find_library(EGL_LIBRARY   EGL)
-		if (NOT EGL_LIBRARY)
-			set(USE_PKGCONFIG YES)
-			message(WARNING "Unable to find EGL lib. Trying with PkgConfig...")
-			find_package(PkgConfig)
-			pkg_check_modules(EGL REQUIRED egl)
-		endif()
-	endif()
+    # handling raspberry pi having closed-source EGL/GLES implementation
+    if (EXISTS "/opt/vc/lib/libbrcmEGL.so")
+        set(USE_BRCM_LIBS YES)
+        set(EGL_LIBRARY "/opt/vc/lib/libbrcmEGL.so")
+        message("EGL binaries are found; we are likely running a Raspberry Pi")
+    else()
+        find_library(EGL_LIBRARY   EGL)
+        if (NOT EGL_LIBRARY)
+            set(USE_PKGCONFIG YES)
+            message(WARNING "Unable to find EGL lib. Trying with PkgConfig...")
+            find_package(PkgConfig)
+            pkg_check_modules(EGL REQUIRED egl)
+        endif()
+    endif()
 
-	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DBEATMUP_OPENGLVERSION_GLES")
+    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DBEATMUP_OPENGLVERSION_GLES")
 
-	if (GLES_VERSION EQUAL 20)
-		if (USE_PKGCONFIG)
-			pkg_check_modules(GLES2 REQUIRED glesv2)
-		elseif (USE_BRCM_LIBS)
-			set(GLES_LIBRARY "/opt/vc/lib/libbrcmGLESv2.so")
-		else()
-			find_library(GLES_LIBRARY  GLESv2)
-		endif()
-		set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DBEATMUP_OPENGLVERSION_GLES20")
-	elseif (GLES_VERSION EQUAL 31)
-		if (USE_PKGCONFIG)
-			pkg_check_modules(GLES3 REQUIRED glesv3)
-		elseif (USE_BRCM_LIBS)
-			message(FATAL_ERROR "OpenGL ES 3.0 is not supported on Raspberry Pi.")
-		else()
-			find_library(GLES_LIBRARY  GLESv3)
-		endif()
-		set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DBEATMUP_OPENGLVERSION_GLES31")
-	else()
-		message(FATAL_ERROR "GLES_VERSION must specify a valid OpenGL ES version.")
-	endif()
+    if (GLES_VERSION EQUAL 20)
+        if (USE_PKGCONFIG)
+            pkg_check_modules(GLES2 REQUIRED glesv2)
+        elseif (USE_BRCM_LIBS)
+            set(GLES_LIBRARY "/opt/vc/lib/libbrcmGLESv2.so")
+        else()
+            find_library(GLES_LIBRARY  GLESv2)
+        endif()
+        set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DBEATMUP_OPENGLVERSION_GLES20")
+    elseif (GLES_VERSION EQUAL 31)
+        if (USE_PKGCONFIG)
+            pkg_check_modules(GLES3 REQUIRED glesv3)
+        elseif (USE_BRCM_LIBS)
+            message(FATAL_ERROR "OpenGL ES 3.1 is not supported on Raspberry Pi.")
+        else()
+            find_library(GLES_LIBRARY  GLESv3)
+        endif()
+        set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DBEATMUP_OPENGLVERSION_GLES31")
+    else()
+        message(FATAL_ERROR "GLES_VERSION must specify a valid OpenGL ES version.")
+    endif()
 
-	if (USE_PKGCONFIG)
-		link_libraries(${EGL_LIBRARIES} ${GLES2_LIBRARIES})
-		include_directories(${EGL_INCLUDE_DIR} ${GLES2_INCLUDE_DIR})
-	else()
-		message("EGL library used: ${EGL_LIBRARY} ${GLES_LIBRARY}")
-		link_libraries(${EGL_LIBRARY} ${GLES_LIBRARY})
-		if (USE_BRCM_LIBS)
-			include_directories("/opt/vc/include")
-		endif()
-	endif()
+    if (USE_PKGCONFIG)
+        link_libraries(${EGL_LIBRARIES} ${GLES2_LIBRARIES})
+        include_directories(${EGL_INCLUDE_DIR} ${GLES2_INCLUDE_DIR})
+    else()
+        message("EGL library used: ${EGL_LIBRARY} ${GLES_LIBRARY}")
+        link_libraries(${EGL_LIBRARY} ${GLES_LIBRARY})
+        if (USE_BRCM_LIBS)
+            include_directories("/opt/vc/include")
+        endif()
+    endif()
 
 else()
-	message(FATAL_ERROR "OpenGL backend not specified. Please define USE_OPENGL, USE_GLX or USE_EGL.")
+    message(FATAL_ERROR "OpenGL backend not specified. Please define USE_OPENGL, USE_GLX or USE_EGL.")
 endif()

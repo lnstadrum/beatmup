@@ -13,6 +13,7 @@ namespace Beatmup {
     public:
         virtual ~X2UpsamplingNetwork() {};
         virtual void process(GraphicPipeline& gpu, GL::TextureHandler& input, AbstractBitmap& output) = 0;
+        virtual bool usesEs31Backend() const = 0;
     };
 
 }
