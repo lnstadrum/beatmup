@@ -1,6 +1,4 @@
 [submodule "glew-cmake"]
 	path = glew-cmake
 	url = https://github.com/Perlmint/glew-cmake
-[submodule "lib/structify"]
-	path = lib/structify
-	url = git@github.com:lnstadrum/structify.git
+
