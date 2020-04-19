@@ -19,7 +19,7 @@ STRINGIFY(
             y2 = texCoord.y + d1.y;
             
         lowp vec4 i0, i1, i2, i3, i4, i5, i6, i7, i8;
-        highp vec4 sum;
+        mediump vec4 sum;
     
             i0 = fetch(images[0], x0, y0);
             i1 = fetch(images[0], x1, y0);
