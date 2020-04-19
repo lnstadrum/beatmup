@@ -1,0 +1,30 @@
+name: Make apps
+
+on:
+  push:
+    branches: [ develop ]
+
+jobs:
+  make-apps:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          path: beatmup
+          ref: develop
+
+      - name: Checkout glew
+        uses: actions/checkout@v2
+        with:
+          repository:  Perlmint/glew-cmake 
+          ref: glew-cmake-release
+          path: ./beatmup/glew-cmake
+
+      - name: Prepare docker action
+        run: |
+            mv ./beatmup/.github/workflows/make-apps/* ./beatmup
+      - name: Make apps
+        uses: ./beatmup
+
