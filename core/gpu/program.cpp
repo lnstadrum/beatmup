@@ -166,10 +166,19 @@ void AbstractProgram::setUnsignedInteger(const char* name, const unsigned int va
         GLint location = glGetUniformLocation(handle, name);
         if (location == -1)
             return;
+#ifdef BEATMUP_OPENGLVERSION_GLES20
+        glUniform1i(location, (GLint)value);
+#else
         glUniform1ui(location, (GLuint)value);
+#endif
     }
-    else
+    else {
+#ifdef BEATMUP_OPENGLVERSION_GLES20
+        glUniform1i(glGetUniformLocation(handle, name), (GLint)value);
+#else
         glUniform1ui(glGetUniformLocation(handle, name), (GLuint)value);
+#endif
+    }
 #ifdef BEATMUP_DEBUG
     GL::GLException::check("setting shader integer");
 #endif
