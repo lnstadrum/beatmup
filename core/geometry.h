@@ -543,6 +543,13 @@ namespace Beatmup {
         return lhs.width() == rhs.width() && lhs.height() == rhs.height();
     }
 
+    /**
+        Checks whether two rectangles are actually the same
+    */
+    template<typename numeric> inline bool operator==(const CustomRectangle<numeric>& lhs, const CustomRectangle<numeric>& rhs) {
+        return lhs.a == rhs.a && lhs.b == rhs.b;
+    }
+
     typedef CustomPoint<float> Point;
     typedef CustomRectangle<float> Rectangle;
     typedef CustomMatrix2<float> Matrix2;

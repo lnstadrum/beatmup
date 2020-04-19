@@ -68,6 +68,10 @@ void BitmapResampler::beforeProcessing(ThreadIndex threadCount, GraphicPipeline*
     NullTaskInput::check(input, "input bitmap");
     NullTaskInput::check(output, "output bitmap");
     RuntimeError::check(input != output, "input and output is the same bitmap");
+    RuntimeError::check(
+        srcRect == input->getSize().halfOpenedRectangle() && destRect == output->getSize().halfOpenedRectangle(),
+        "input and output rectangular areas not matching the corresponding bitmaps are not supported when using GPU"
+    );
     srcRect.normalize();
     srcRect.limit(IntRectangle(0, 0, input->getWidth(), input->getHeight()));
     destRect.normalize();
