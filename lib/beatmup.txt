@@ -1,0 +1,80 @@
+cd ../core
+
+### Context-related
+input basic_types.h
+input parallelism.h
+input exception.h
+input context.h
+scope Beatmup::Context
+export
+ignore EventListener
+ignore setEventListener
+ignore getEventListener
+ignore Mem
+
+### Geometry
+input geometry.h
+structify Beatmup::CustomRectangle getX1 getY1 getX2 getY2
+structify Beatmup::CustomPoint getX getY
+structify Beatmup::CustomMatrix2 getA11 getA12 getA21 getA22
+
+### Bitmaps
+input gpu/recycle_bin.h
+input utils/image_resolution.h
+structify Beatmup::ImageResolution getWidth getHeight
+export-file bitmap/abstract_bitmap.h
+ignore Beatmup::AbstractBitmap::toString
+
+export-file bitmap/internal_bitmap.h
+export-file bitmap/converter.h
+export-file bitmap/crop.h
+export-file bitmap/operator.h
+export-file bitmap/resampler.h
+
+export-file bitmap/tools.h
+scope Beatmup::BitmapTools
+ignore scanlineSearch(Beatmup::AbstractBitmap &, Beatmup::pixfloat4, const Beatmup::IntPoint &)
+ignore scanlineSearch(Beatmup::AbstractBitmap &, Beatmup::pixint4, const Beatmup::IntPoint &)
+
+### Color
+input color/matrix.h
+structify Beatmup::Color::Matrix r g b a
+
+### Filters
+export-file filters/tuning.h
+export-file filters/local/sepia.h
+export-file filters/local/color_matrix.h
+ignore Beatmup::Filters::ColorMatrix::getMatrix
+
+### GPU
+input gpu/pipeline.h
+input gpu/texture_handler.h
+
+### Masking
+export-file contours/contours.h
+ignore Beatmup::IntegerContour2D::computeBoundary
+export-file masking/flood_fill.h
+ignore Beatmup::FloodFill::setSeeds(const Beatmup::IntPoint *, int)
+
+### Pipelining
+export-file pipelining/multitask.h
+export-file pipelining/custom_pipeline.h
+
+### Scene
+input scene/rendering_context.h
+export-file scene/scene.h
+ignore Beatmup::Scene::SceneIntegrityError
+export-file scene/renderer.h
+
+### Shading
+export-file shading/image_shader.h
+ignore Beatmup::ImageShader::setSourceCode(const int &)
+export-file shading/shader_applicator.h
+
+cd ../lib
+
+set backend-h-output-template include/libbeatmup.h.template
+set backend-c-output-template src/libbeatmup.cpp.template
+
+set backend-h-output include/libbeatmup.h
+set backend-c-output src/libbeatmup.cpp
