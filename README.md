@@ -21,10 +21,11 @@ Beatmup is an extensible parallel image and signal processing and visualization 
 * Beatmup is tested in **linux**, **Windows** and **Android**. It works on **Raspberry Pi** and uses its GPU as well.
   - Android Java API is available.
     * Provides access to the camera. Enables realtime camera preview processing with custom shaders
+  - Compiles with gcc, clang, MSVC
   - Few to no dependencies; git and CMake is all you need
 * Beatmup evolves as much as it can!
   - Basic OpenSL ES and AAudio support to play audio (Android)
-  - Efficient audio signals graph plotting
+  - Efficient audio signal graph plotting
   - Video decoding support (Android)
   - Neural networks inference using OpenGL compute shaders (in progress)
   
@@ -41,10 +42,10 @@ To build **X2** app upscaling an image using a neural net inferred with OpenGL y
     cd beatmup
     mkdir build
     cd build
-    cmake -DUSE_OPENGL=1 ../apps
+    cmake -DUSE_OPENGL=ON ../apps
     make X2
 
-Use *-DUSE_GLX=1* instead *-DUSE_OPENGL=1* if there are issues. On **Raspberry Pi** replace it with *-DUSE_EGL=1*.
+Use *-DUSE_GLX=ON* instead *-DUSE_OPENGL=ON* if there are issues. On **Raspberry Pi** replace it with *-DUSE_EGL=ON*.
 
 You can then feed the app with an image of your choice and get the upscaled result as follows:
 
@@ -59,7 +60,7 @@ To build the **X2** app in Windows you may install *Visual Studio* (tested on 20
     cd beatmup
     mkdir build
     cd build
-    cmake -DUSE_OPENGL=1 ../apps
+    cmake -DUSE_OPENGL=ON ../apps
 
 Then open the *.sln* solution file in Visual Studio and build the executable.
 

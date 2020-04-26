@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.2.1)
 
+option(USE_OPENGL "Use standard OpenGL backend" OFF)
+option(USE_GLX    "Use GLX backend"             OFF)
+option(USE_OPENGL "Use EGL backend"             OFF)
+
 # main stuff
 set(BEATMUP_ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}/..")
 set(BEATMUP_SRC_DIR "${CMAKE_CURRENT_LIST_DIR}")
@@ -113,13 +117,6 @@ endif()
 
 
 include_directories(${BEATMUP_SRC_DIR})
-
-# trying to guess OpenGL backend
-if (NOT (USE_OPENGL OR USE_GLX OR USE_EGL))
-    if (WIN32)
-        set(USE_OPENGL YES)
-    endif()
-endif()
 
 
 # selecting OpenGL backend
