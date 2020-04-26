@@ -3,6 +3,8 @@ name: Make apps
 on:
   push:
     branches: [ develop ]
+  schedule:
+    - cron: '5 9 * * SAT'
 
 jobs:
   make-apps:
@@ -23,8 +25,8 @@ jobs:
           path: ./beatmup/glew-cmake
 
       - name: Prepare docker action
-        run: |
-            mv ./beatmup/.github/workflows/make-apps/* ./beatmup
+        run: mv ./beatmup/.github/workflows/make-apps/* ./beatmup
+
       - name: Make apps
         uses: ./beatmup
 

@@ -521,6 +521,7 @@ JNIMETHOD(jint, getRepetitionPolicy, Java_Beatmup_Pipelining_Multitask, getRepet
     BEATMUP_CATCH({
         return static_cast<jint>(multitask->getRepetitionPolicy(*taskHolder));
     });
+    return 0;
 }
 
 

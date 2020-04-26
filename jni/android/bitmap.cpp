@@ -53,8 +53,9 @@ const PixelFormat Bitmap::getPixelFormat() const {
             return QuadByte;
         case ANDROID_BITMAP_FORMAT_A_8:
             return SingleByte;
+        default:
+            Insanity::insanity("AndroidBitmap_getInfo() returned unexpected format");
     }
-    Insanity::insanity("AndroidBitmap_getInfo() returned unexpected format");
 }
 
 
