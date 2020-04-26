@@ -5,11 +5,11 @@ cd /beatmup
 
 # build a C++ app
 if [ -d "/android-build" ]; then
-    echo "Android build output folder given: skipping a C++ app build"
+    echo "Android build output folder given: skipping C++ apps build"
 else
     mkdir build
     cd build
-    cmake -DUSE_GLX=1 ../apps
+    cmake -DUSE_GLX=ON -DUSE_LIB=OFF ../apps
     make BasicRendering
     
     if [ $? -ne 0 ]; then
