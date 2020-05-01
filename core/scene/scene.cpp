@@ -382,8 +382,8 @@ Scene::ShapedBitmapLayer::ShapedBitmapLayer() :
 void Scene::ShapedBitmapLayer::render(RenderingContext& context) {
     GL::TextureHandler* content = CustomMaskedBitmapLayer::resolveContent(context);
 
-    // program selection
     if (content) {
+        // program selection
         switch (content->getTextureFormat()) {
         case GL::TextureHandler::TextureFormat::OES_Ext:
             context.enableProgram(RenderingPrograms::Program::SHAPED_BLEND_EXT);
@@ -406,6 +406,8 @@ void Scene::ShapedBitmapLayer::render(RenderingContext& context) {
         const Point borderProfile(scale * mat.getScalingX(), scale * mat.getScalingY());
         context.getProgram().setVector2("borderProfile", borderProfile.x, borderProfile.y);
         context.getProgram().setFloat("cornerRadius", cornerRadius + borderWidth);
+        context.getProgram().setFloat("slope", slopeWidth);
+        context.getProgram().setFloat("border", borderWidth);
 
         context.blend();
     }
