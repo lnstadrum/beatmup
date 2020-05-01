@@ -27,7 +27,7 @@ public class Context extends Object {
     // native methods
     private static native long attachEventListener(long ctx);
     private static native void detachEventListener(long eventListenerHandle);
-    private static native long getTotalRAM();
+    private static native long getTotalRam();
 
     private native float performTask(long ctx, int poolIndex, Task task);
     private native int submitTask(long ctx, int poolIndex, Task task);
@@ -306,7 +306,7 @@ public class Context extends Object {
      * @return total size of RAM in bytes
      */
     public static long getTotalRAMBytes() {
-        return getTotalRAM();
+        return getTotalRam();
     }
 
     public static final IntPoint SCANLINE_SEARCH_NOT_FOUND = new IntPoint(-1, -1);
