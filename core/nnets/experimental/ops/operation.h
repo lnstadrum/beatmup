@@ -6,8 +6,10 @@
 #include "../../../utils/chunkfile.h"
 #include "../../../utils/progress_tracking.h"
 #include <string>
+
 namespace Beatmup {
     namespace NNets {
+
         class AbstractOperation {
             friend class Model;
             friend class Inference;
@@ -87,6 +89,7 @@ namespace Beatmup {
             */
             virtual int getMaxProgress() const { return 1; }
         };
+
         /**
             An operation running on GPU using one or several compute programs
         */
@@ -126,6 +129,7 @@ namespace Beatmup {
                 Storage* allocateOutput(int outputIndex = 0) const;
             };
         }
+
         /**
             A GPU operation having a single input and a single output
         */
@@ -189,4 +193,5 @@ namespace Beatmup {
             void setInput(Storage& input, int inputIndex = 0);
             AbstractBitmap& getOutput() { return *output; }
         };
-    }}
+    }
+}

@@ -203,8 +203,7 @@ public:
             // attribute buffer initialization
             glGenBuffers(1, &hVertexAttribBuffer);
             glBindBuffer(GL_ARRAY_BUFFER, hVertexAttribBuffer);
-            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-            vertexAttribBuffer[0] = { 0.0f, 0.0f, 0.0f, 0.0f };
+            vertexAttribBuffer[0] = { 0.0f, 0.0f, 0.0f,      0.0f };
             vertexAttribBuffer[1] = { 1.0f, 0.0f, texScaleX, 0.0f };
             vertexAttribBuffer[2] = { 0.0f, 1.0f, 0.0f,      texScaleY };
             vertexAttribBuffer[3] = { 1.0f, 1.0f, texScaleX, texScaleY };
@@ -215,6 +214,7 @@ public:
         {
             vertexAttribBuffer[1].s = vertexAttribBuffer[3].s = texScaleX;
             vertexAttribBuffer[2].t = vertexAttribBuffer[3].t = texScaleY;
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
             glBufferData(GL_ARRAY_BUFFER, sizeof(vertexAttribBuffer), vertexAttribBuffer, GL_DYNAMIC_DRAW);
             vertexAttrBufSet = true;
         }

@@ -147,6 +147,9 @@ namespace Beatmup {
 #endif
         };
 
+        /**
+            Regular OpenGL program
+        */
         class Program : public AbstractProgram {
         private:
             const VertexShader* vertexShader;
