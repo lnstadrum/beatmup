@@ -26,6 +26,7 @@ include("../core/CMakeLists.in")
 
 if (USE_LIB)
     add_library(beatmup STATIC ${BEATMUP_SOURCES})
+    add_dependencies(beatmup libglewmx_static)
 endif (USE_LIB)
 
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -O3")
