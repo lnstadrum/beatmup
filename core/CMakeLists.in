@@ -87,12 +87,12 @@ endif()
 if (PROFILE_NNETS)
     set(BEATMUP_SOURCES ${BEATMUP_SOURCES}
         ${BEATMUP_SRC_DIR}/nnets/gpu_bench.cpp
-        ${BEATMUP_SRC_DIR}/nnets/inference.cpp
-        ${BEATMUP_SRC_DIR}/nnets/model.cpp
-        ${BEATMUP_SRC_DIR}/nnets/storage.cpp
-        ${BEATMUP_SRC_DIR}/nnets/ops/operation.cpp
-        ${BEATMUP_SRC_DIR}/nnets/ops/convs_2d.cpp
-        ${BEATMUP_SRC_DIR}/nnets/ops/pooling.cpp
+        ${BEATMUP_SRC_DIR}/nnets/experimental/inference.cpp
+        ${BEATMUP_SRC_DIR}/nnets/experimental/model.cpp
+        ${BEATMUP_SRC_DIR}/nnets/experimental/storage.cpp
+        ${BEATMUP_SRC_DIR}/nnets/experimental/ops/operation.cpp
+        ${BEATMUP_SRC_DIR}/nnets/experimental/ops/convs_2d.cpp
+        ${BEATMUP_SRC_DIR}/nnets/experimental/ops/pooling.cpp
     )
 endif()
 

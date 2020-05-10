@@ -3,8 +3,8 @@
  */
 #pragma once
 #include "../storage.h"
-#include "../../utils/chunkfile.h"
-#include "../../utils/progress_tracking.h"
+#include "../../../utils/chunkfile.h"
+#include "../../../utils/progress_tracking.h"
 #include <string>
 namespace Beatmup {
     namespace NNets {

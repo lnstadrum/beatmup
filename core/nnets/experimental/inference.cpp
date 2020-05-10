@@ -1,6 +1,6 @@
 #include "inference.h"
-#include "../exception.h"
-#include "../utils/bitset.h"
+#include "../../exception.h"
+#include "../../utils/bitset.h"
 #include <iostream>
 
 using namespace Beatmup;
