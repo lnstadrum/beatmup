@@ -15,7 +15,7 @@ function(add_app APP_NAME APP_SOURCES)
 
     if (WIN32)
         set_property(TARGET ${APP_NAME} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${BEATMUP_ROOT_DIR})
-    elseif(USE_GLX AND NOT USE_LIB)
+    elseif((USE_GLX OR USE_OPENGL) AND NOT USE_LIB)
         add_dependencies(${APP_NAME} libglewmx_static)
     endif (WIN32)
 
@@ -26,7 +26,9 @@ include("../core/CMakeLists.in")
 
 if (USE_LIB)
     add_library(beatmup STATIC ${BEATMUP_SOURCES})
-    add_dependencies(beatmup libglewmx_static)
+    if (USE_GLX OR USE_OPENGL)
+        add_dependencies(beatmup libglewmx_static)
+    endif()
 endif (USE_LIB)
 
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -O3")
