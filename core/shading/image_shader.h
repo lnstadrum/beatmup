@@ -25,8 +25,9 @@ namespace Beatmup {
         GL::Program* program;
         GL::FragmentShader* fragmentShader;
         std::string sourceCode;                             //!< last passed fragment shader source code
-        GL::TextureHandler::TextureFormat inputFormat;		//!< last used input texture format; when changed, the shader is recompiled
+        GL::TextureHandler::TextureFormat inputFormat;      //!< last used input texture format; when changed, the shader is recompiled
         bool fragmentShaderReady;                           //!< if `true`, shader is ready to go
+        IntRectangle outputClipRect;                        //!< output clip rectangle: only this specified area of the output image will be changed
     public:
         ImageShader(GL::RecycleBin& recycleBin);
         ImageShader(Context& ctx);
@@ -41,6 +42,14 @@ namespace Beatmup {
         void setSourceCode(const std::string& sourceCode) {
             setSourceCode(sourceCode.c_str());
         }
+
+        /**
+            \brief Specifies output clipping area.
+            Only this specified area of the output bitmap will be changed by executing the shader. This must be called
+            before prepare(..)
+            \param[in] The output clipping area in pixels
+        */
+        void setOutputClipping(const IntRectangle& rectangle);
 
         /**
             \brief Conducts required preparations for blending. Compiles shaders and links the rendering program if not yet.
@@ -61,7 +70,13 @@ namespace Beatmup {
         */
         void prepare(GraphicPipeline& gpu, AbstractBitmap* output);
 
-        void bindSamplerArray(const char* uniformName, int startingUnit, int numUnits);
+        /**
+            \brief Binds a bunch of texture units to a uniform sampler array variable.
+            \param[in] uniformId       The uniform array variable name
+            \param[in] startingUnit    First texture unit to be bound to the first element of the array
+            \param[in] numUnits        Number of texture units to bind (likely matches the length of the array)
+        */
+        void bindSamplerArray(const char* uniformId, int startingUnit, int numUnits);
 
         /**
             \brief Apply the shader to produce an image.

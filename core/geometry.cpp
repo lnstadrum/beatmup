@@ -14,6 +14,11 @@ AffineMapping::AffineMapping(const Matrix2& aMatrix, const Point& aPosition) :
     matrix(aMatrix), position(aPosition)
 {}
 
+AffineMapping::AffineMapping(const Rectangle& rectangle):
+    matrix(rectangle.width(), rectangle.height()), position(rectangle.getX1(), rectangle.getY1())
+{}
+
+
 AffineMapping AffineMapping::operator*(const AffineMapping& mapping) const {
     return AffineMapping(matrix * mapping.matrix, position + matrix * mapping.position);
 }

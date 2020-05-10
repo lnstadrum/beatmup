@@ -47,9 +47,17 @@ namespace Beatmup {
         void swapBuffers();
 
         /**
-            Binds a texture handler to the pipeline output
+            Binds a bitmap to the pipeline output.
+            \param[in] bitmap      A bitmap to be filled with pixels on the next render pass.
         */
-        void bindOutput(AbstractBitmap&);
+        void bindOutput(AbstractBitmap& bitmap);
+
+        /**
+            Binds a bitmap to the pipeline output.
+            \param[in] bitmap      A bitmap to be filled with pixels on the next render pass.
+            \param[in] viewport    Output viewport in pixels: only this area of the bitmap will be affected
+        */
+        void bindOutput(AbstractBitmap& bitmap, const IntRectangle& viewport);
 
         /**
             Unbinds a bitmap from output and switches to screen

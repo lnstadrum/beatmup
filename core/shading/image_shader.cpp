@@ -24,6 +24,17 @@ bool str_replace(std::string& str, const std::string& from, const std::string& t
 }
 
 
+static AffineMapping getOutputCropMapping(const GraphicPipeline& gpu, const IntRectangle& outputClipRect) {
+    const ImageResolution out = gpu.getOutputResolution();
+    return AffineMapping(Rectangle(
+        (float)outputClipRect.getX1() / out.getWidth(),
+        (float)outputClipRect.getY1() / out.getHeight(),
+        (float)outputClipRect.getX2() / out.getWidth(),
+        (float)outputClipRect.getY2() / out.getHeight()
+    )).getInverse();
+}
+
+
 ImageShader::ImageShader(GL::RecycleBin& recycleBin) :
     recycleBin(recycleBin),
     program(nullptr),
@@ -65,6 +76,11 @@ void ImageShader::setSourceCode(const char* sourceCode) {
     this->sourceCode = sourceCode;
     fragmentShaderReady = false;
     unlock();
+}
+
+
+void ImageShader::setOutputClipping(const IntRectangle& rectangle) {
+    this->outputClipRect = rectangle;
 }
 
 
@@ -130,15 +146,20 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, const
 
     // bind output
     if (output)
-        gpu.bindOutput(*output);
+        if (!outputClipRect.empty())
+            gpu.bindOutput(*output, outputClipRect);
+        else
+            gpu.bindOutput(*output);
 
     // bind input
     if (input)
         gpu.bind(*input, 0, texParam);
         // Binding order matters: texture unit 0 is used for input now.
 
-    // set up mapping
-    program->setMatrix3(RenderingPrograms::MODELVIEW_MATRIX_ID, mapping);
+    program->setMatrix3(
+        RenderingPrograms::MODELVIEW_MATRIX_ID,
+        output && outputClipRect.empty() ? mapping : (getOutputCropMapping(gpu, outputClipRect) * mapping)
+    );
 
     // apply bundle
     apply(*program);
@@ -184,18 +205,24 @@ void ImageShader::prepare(GraphicPipeline& gpu, AbstractBitmap* output) {
 
     // bind output
     if (output)
-        gpu.bindOutput(*output);
+        if (!outputClipRect.empty())
+            gpu.bindOutput(*output, outputClipRect);
+        else
+            gpu.bindOutput(*output);
 
     // set up mapping
-    program->setMatrix3(RenderingPrograms::MODELVIEW_MATRIX_ID, AffineMapping::IDENTITY);
+    program->setMatrix3(
+        RenderingPrograms::MODELVIEW_MATRIX_ID,
+        output && outputClipRect.empty() ? AffineMapping::IDENTITY : getOutputCropMapping(gpu, outputClipRect)
+    );
 
     // apply bundle
     apply(*program);
 }
 
 
-void ImageShader::bindSamplerArray(const char* uniformName, int startingUnit, int numUnits) {
-    program->setIntegerArray(uniformName, startingUnit, numUnits);
+void ImageShader::bindSamplerArray(const char* uniformId, int startingUnit, int numUnits) {
+    program->setIntegerArray(uniformId, startingUnit, numUnits);
 }
 
 

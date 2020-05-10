@@ -425,7 +425,7 @@ public:
     }
 
 
-    void bindOutput(AbstractBitmap& bitmap) {
+    void bindOutput(AbstractBitmap& bitmap, const IntRectangle& viewport) {
         output = &bitmap;
         if (bitmap.isMask())
             throw GL::GLException("Mask bitmaps can not be used as output");
@@ -442,7 +442,7 @@ public:
 #endif
 
         // setting up main controls
-        glViewport(0, 0, bitmap.getWidth(), bitmap.getHeight());
+        glViewport(viewport.getX1(), viewport.getY1(), viewport.width(), viewport.height());
         outputResolution = bitmap.getSize();
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -599,8 +599,13 @@ void GraphicPipeline::bind(GL::TextureHandler& texture, size_t imageUnit, bool r
 }
 
 
-void GraphicPipeline::bindOutput(AbstractBitmap& output) {
-    impl->bindOutput(output);
+void GraphicPipeline::bindOutput(AbstractBitmap& bitmap) {
+    impl->bindOutput(bitmap, bitmap.getSize().halfOpenedRectangle());
+}
+
+
+void GraphicPipeline::bindOutput(AbstractBitmap& bitmap, const IntRectangle& viewport) {
+    impl->bindOutput(bitmap, viewport);
 }
 
 
