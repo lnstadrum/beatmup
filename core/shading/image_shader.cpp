@@ -158,7 +158,7 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, const
 
     program->setMatrix3(
         GL::RenderingPrograms::MODELVIEW_MATRIX_ID,
-        output && outputClipRect.empty() ? mapping : (getOutputCropMapping(gpu, outputClipRect) * mapping)
+        !output || outputClipRect.empty() ? mapping : (getOutputCropMapping(gpu, outputClipRect) * mapping)
     );
 
     // apply bundle
@@ -213,7 +213,7 @@ void ImageShader::prepare(GraphicPipeline& gpu, AbstractBitmap* output) {
     // set up mapping
     program->setMatrix3(
         GL::RenderingPrograms::MODELVIEW_MATRIX_ID,
-        output && outputClipRect.empty() ? AffineMapping::IDENTITY : getOutputCropMapping(gpu, outputClipRect)
+        !output || outputClipRect.empty() ? AffineMapping::IDENTITY : getOutputCropMapping(gpu, outputClipRect)
     );
 
     // apply bundle
