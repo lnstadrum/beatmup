@@ -12,7 +12,7 @@ const std::string
     ImageShader::INPUT_IMAGE_ID        = "image",
     ImageShader::CODE_HEAD =
         INPUT_IMAGE_DECL_TYPE + " " + INPUT_IMAGE_ID +";\n" +
-        RenderingPrograms::DECLARE_TEXTURE_COORDINATES_IN_FRAG;
+        GL::RenderingPrograms::DECLARE_TEXTURE_COORDINATES_IN_FRAG;
 
 
 bool str_replace(std::string& str, const std::string& from, const std::string& to) {
@@ -133,7 +133,7 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, const
     // link program
     if (!program) {
         program = new GL::Program(gpu);
-        program->link(gpu.getRenderingPrograms().getDefaultVertexShader(&gpu), *fragmentShader);
+        program->link(gpu.getDefaultVertexShader(), *fragmentShader);
         fragmentShaderReady = true;
     }
     else if (!fragmentShaderReady) {
@@ -157,7 +157,7 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, const
         // Binding order matters: texture unit 0 is used for input now.
 
     program->setMatrix3(
-        RenderingPrograms::MODELVIEW_MATRIX_ID,
+        GL::RenderingPrograms::MODELVIEW_MATRIX_ID,
         output && outputClipRect.empty() ? mapping : (getOutputCropMapping(gpu, outputClipRect) * mapping)
     );
 
@@ -192,7 +192,7 @@ void ImageShader::prepare(GraphicPipeline& gpu, AbstractBitmap* output) {
     // link program
     if (!program) {
         program = new GL::Program(gpu);
-        program->link(gpu.getRenderingPrograms().getDefaultVertexShader(&gpu), *fragmentShader);
+        program->link(gpu.getDefaultVertexShader(), *fragmentShader);
         fragmentShaderReady = true;
     }
     else if (!fragmentShaderReady) {
@@ -212,7 +212,7 @@ void ImageShader::prepare(GraphicPipeline& gpu, AbstractBitmap* output) {
 
     // set up mapping
     program->setMatrix3(
-        RenderingPrograms::MODELVIEW_MATRIX_ID,
+        GL::RenderingPrograms::MODELVIEW_MATRIX_ID,
         output && outputClipRect.empty() ? AffineMapping::IDENTITY : getOutputCropMapping(gpu, outputClipRect)
     );
 

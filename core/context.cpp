@@ -586,37 +586,12 @@ bool Context::isGpuReady() const {
     return impl->isGpuReady();
 }
 
-bool Context::isManagingThread() const {
-    return impl->isManagingThread();
-}
-
-
-GL::RecycleBin* Context::getGpuRecycleBin() const {
-    return recycleBin;
-}
-
-
-msize Context::getTotalRam() {
-#if BEATMUP_PLATFORM_WINDOWS
-    MEMORYSTATUSEX status;
-    status.dwLength = sizeof(status);
-    GlobalMemoryStatusEx(&status);
-    return status.ullTotalPhys;
-#else
-    struct sysinfo info;
-    sysinfo(&info);
-    return info.totalram * info.mem_unit;
-#endif
-}
-
-
 void Context::warmUpGpu() {
     if (!isGpuReady()) {
         GpuTask task;
         performTask(task);
     }
 }
-
 
 void Context::queryGpuInfo(std::string& vendor, std::string& renderer) {
     class GpuQueryingTask : public GpuTask {
@@ -632,4 +607,25 @@ void Context::queryGpuInfo(std::string& vendor, std::string& renderer) {
     } task(vendor, renderer);
 
     performTask(task);
+}
+
+bool Context::isManagingThread() const {
+    return impl->isManagingThread();
+}
+
+GL::RecycleBin* Context::getGpuRecycleBin() const {
+    return recycleBin;
+}
+
+msize Context::getTotalRam() {
+#if BEATMUP_PLATFORM_WINDOWS
+    MEMORYSTATUSEX status;
+    status.dwLength = sizeof(status);
+    GlobalMemoryStatusEx(&status);
+    return status.ullTotalPhys;
+#else
+    struct sysinfo info;
+    sysinfo(&info);
+    return info.totalram * info.mem_unit;
+#endif
 }

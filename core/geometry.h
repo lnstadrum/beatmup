@@ -251,6 +251,8 @@ namespace Beatmup {
             CustomRectangle<float> r((CustomPoint<float>)a, (CustomPoint<float>)b);
             return r;
         }
+
+        static const CustomRectangle UNIT_SQUARE;
     };
 
     /**

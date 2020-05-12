@@ -9,7 +9,7 @@
 #include "../bitmap/abstract_bitmap.h"
 #include "../bitmap/pixel_arithmetic.h"
 #include "program.h"
-#include "../scene/rendering_programs.h"
+#include "../gpu/rendering_programs.h"
 
 #include <mutex>
 
@@ -22,11 +22,12 @@ namespace Beatmup {
         Impl* impl;
         std::mutex access;
 
-        RenderingPrograms renderingPrograms;
+        GL::RenderingPrograms renderingPrograms;
 
         GraphicPipeline(const GraphicPipeline&) = delete;				//!< disabling copy constructor
 
     public:
+
         enum class Limit {
             LOCAL_GROUPS_X,
             LOCAL_GROUPS_Y,
@@ -85,7 +86,8 @@ namespace Beatmup {
         */
         void switchAlphaBlending(bool enable);
 
-        inline RenderingPrograms & getRenderingPrograms() { return renderingPrograms; }
+        inline GL::RenderingPrograms & getRenderingPrograms() { return renderingPrograms; }
+        inline GL::VertexShader& getDefaultVertexShader() { return renderingPrograms.getDefaultVertexShader(this); }
 
         const char* getGpuVendorString() const;
         const char* getGpuRendererString() const;

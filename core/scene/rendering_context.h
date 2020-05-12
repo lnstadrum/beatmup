@@ -41,7 +41,7 @@ namespace Beatmup {
         */
         void blend();
 
-        void enableProgram(RenderingPrograms::Program type);
+        void enableProgram(GL::RenderingPrograms::Operation operation);
         void enableProgram(GL::Program& program);
         GL::Program& getProgram();
 

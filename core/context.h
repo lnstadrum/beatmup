@@ -10,11 +10,11 @@
 
 
 namespace Beatmup {
+    typedef unsigned int memchunk;
+
     namespace GL {
         class RecycleBin;
     }
-
-    typedef unsigned int memchunk;
 
     class AbstractBitmap;
 
@@ -26,7 +26,8 @@ namespace Beatmup {
     private:
         class Impl;
         Impl* impl;
-        GL::RecycleBin* recycleBin;					//!< stores GPU garbage: resources managed by GPU and might be freed in the managing thread only
+        GL::RecycleBin* recycleBin;                  //!< stores GPU garbage: resources managed by GPU and might be freed in the managing thread only
+
     public:
         static const PoolIndex DEFAULT_POOL = 0;
 
@@ -218,6 +219,20 @@ namespace Beatmup {
         bool isGpuReady() const;
 
         /**
+            \brief Initializes GPU within a given Context if not yet (takes no effect if it already is).
+            GPU initialization may take some time and is done when a first task using GPU is being run. Warming up
+            the GPU is useful to avoid the app get stucked for some time when it launches its first task on GPU.
+        */
+        void warmUpGpu();
+
+        /**
+            \brief Initializes the GPU if not yet and queries information about it.
+            \param[out] vendor      GPU vendor string.
+            \param[out] renderer    renderer string.
+        */
+        void queryGpuInfo(std::string& vendor, std::string& renderer);
+
+        /**
             \internal
             \return `true` if invoked from the context managing thread
         */
@@ -232,19 +247,5 @@ namespace Beatmup {
             \return total RAM size in bytes
         */
         static msize getTotalRam();
-
-        /**
-            \brief Initializes GPU within a given Context if not yet (takes no effect if it already is).
-            GPU initialization may take some time and is done when a first task using GPU is being run. Warming up
-            the GPU is useful to avoid the app get stucked for some time when it launches its first task on GPU.
-        */
-        void warmUpGpu();
-
-        /**
-            \brief Initializes the GPU if not yet and queries information about it.
-            \param[out] vendor      GPU vendor string.
-            \param[out] renderer    renderer string.
-        */
-        void queryGpuInfo(std::string& vendor, std::string& renderer);
     };
 };

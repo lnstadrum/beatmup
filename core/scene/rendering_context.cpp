@@ -29,7 +29,7 @@ void RenderingContext::enableProgram(GL::Program& program) {
 }
 
 
-void RenderingContext::enableProgram(RenderingPrograms::Program program) {
+void RenderingContext::enableProgram(GL::RenderingPrograms::Operation program) {
     gpu.getRenderingPrograms().enableProgram(&gpu, program);
 }
 
