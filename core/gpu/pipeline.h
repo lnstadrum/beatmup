@@ -27,7 +27,6 @@ namespace Beatmup {
         GraphicPipeline(const GraphicPipeline&) = delete;				//!< disabling copy constructor
 
     public:
-
         enum class Limit {
             LOCAL_GROUPS_X,
             LOCAL_GROUPS_Y,
@@ -60,12 +59,14 @@ namespace Beatmup {
         */
         void bindOutput(AbstractBitmap& bitmap, const IntRectangle& viewport);
 
+        void bindOutput(GL::glhandle texture);
+
         /**
             Unbinds a bitmap from output and switches to screen
         */
         void unbindOutput();
 
-        ImageResolution getOutputResolution() const;
+        const ImageResolution& getDisplayResolution() const;
 
         void bind(GL::TextureHandler& texture, size_t texUnit, const TextureParam param);
         void bind(GL::TextureHandler& texture, size_t imageUnit, bool read, bool write);

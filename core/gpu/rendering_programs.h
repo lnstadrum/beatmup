@@ -86,9 +86,9 @@ namespace Beatmup {
                 Fills background with a repeated texture taking 1 pixel of this texture per 1 pixel of the output
                 \param[in,out] gpu    A graphic pipeline instance
                 \param[in] content    The texture
-                \param[in] onScreen   If `true`, the rendering is performed on a screen, not in a bitmap
+                \param[in] output     Target texture handler or null if onscreen rendering
             */
-            void paveBackground(GraphicPipeline* gpu, TextureHandler& content, bool onScreen);
+            void paveBackground(GraphicPipeline* gpu, TextureHandler& content, GL::TextureHandler* output);
 
 
             /**

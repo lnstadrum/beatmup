@@ -452,7 +452,7 @@ void RenderingPrograms::blend(bool onScreen) {
 }
 
 
-void RenderingPrograms::paveBackground(GraphicPipeline* gpu, TextureHandler& content, bool onScreen) {
+void RenderingPrograms::paveBackground(GraphicPipeline* gpu, TextureHandler& content, GL::TextureHandler* output) {
     // choose program
     switch (content.getTextureFormat()) {
     case TextureHandler::TextureFormat::OES_Ext:
@@ -466,8 +466,8 @@ void RenderingPrograms::paveBackground(GraphicPipeline* gpu, TextureHandler& con
     // setting texture coords, bitmap size and updating buffer data in GPU
     backend->setVertexAttributes(*currentGlProgram, true,
         Rectangle(0, 0,
-            (float)gpu->getOutputResolution().getWidth() / content.getWidth(),
-            (float)gpu->getOutputResolution().getHeight() / content.getHeight()
+            (float)(output ? output->getWidth()  : gpu->getDisplayResolution().getWidth() ) / content.getWidth(),
+            (float)(output ? output->getHeight() : gpu->getDisplayResolution().getHeight()) / content.getHeight()
         )
     );
 
@@ -475,7 +475,7 @@ void RenderingPrograms::paveBackground(GraphicPipeline* gpu, TextureHandler& con
     currentGlProgram->setVector4("modulationColor", 1.0f, 1.0f, 1.0f, 1.0f);
     gpu->bind(content, 0, TextureParam::REPEAT);
     gpu->switchAlphaBlending(false);
-    blend(onScreen);
+    blend(output == nullptr);
 }
 
 

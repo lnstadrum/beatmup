@@ -26,17 +26,14 @@ private:
 
     GLuint hFrameBuffer;
 
-    AbstractBitmap* output;
 
-    ImageResolution
-        displayResolution,					//!< width and height of a display obtained when switching
-        outputResolution;					//!< actual output resolution (display or bitmap)
+    ImageResolution displayResolution;    //!< width and height of a display obtained when switching
 
 #ifdef BEATMUP_OPENGLVERSION_GLES
     EGLDisplay eglDisplay;
     EGLSurface
-        eglSurface,				//!< currently used surface
-        eglDefaultSurface;		//!< default internally managed surface
+        eglSurface,           //!< currently used surface
+        eglDefaultSurface;    //!< default internally managed surface
     EGLContext eglContext;
     EGLConfig eglConfig;
 #elif BEATMUP_PLATFORM_WINDOWS
@@ -58,7 +55,7 @@ private:
 
 
 public:
-    Impl(GraphicPipeline& front) : front(front), output(nullptr)
+    Impl(GraphicPipeline& front) : front(front)
     {
 #ifdef BEATMUP_OPENGLVERSION_GLES
         // Step 1 - Get the default display.
@@ -426,44 +423,37 @@ public:
 
 
     void bindOutput(AbstractBitmap& bitmap, const IntRectangle& viewport) {
-        output = &bitmap;
         if (bitmap.isMask())
             throw GL::GLException("Mask bitmaps can not be used as output");
+        bitmap.prepare(front, false);
+        bindOutput(bitmap.textureHandle);
+        glViewport(viewport.getX1(), viewport.getY1(), viewport.width(), viewport.height());
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
 
+
+    void bindOutput(GL::glhandle texture) {
         // setting up a texture
         glBindFramebuffer(GL_FRAMEBUFFER, hFrameBuffer);
-        bitmap.prepare(front, false);
-
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, bitmap.textureHandle, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 #ifdef BEATMUP_DEBUG
         GLuint err = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (err != GL_FRAMEBUFFER_COMPLETE)
             throw GL::GLException("framebuffer incomplete", err);
 #endif
-
-        // setting up main controls
-        glViewport(viewport.getX1(), viewport.getY1(), viewport.width(), viewport.height());
-        outputResolution = bitmap.getSize();
-        glClear(GL_COLOR_BUFFER_BIT);
-
-#ifdef BEATMUP_DEBUG
-        GL::GLException::check("setting output: enabling/disabling");
-#endif
     }
 
 
     void unbindOutput() {
-        output = nullptr;
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, displayResolution.getWidth(), displayResolution.getHeight());
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        outputResolution = displayResolution;
     }
 
 
-    ImageResolution getOutputResolution() const {
-        return outputResolution;
+    const ImageResolution& getDisplayResolution() const {
+        return displayResolution;
     }
 
 
@@ -609,13 +599,18 @@ void GraphicPipeline::bindOutput(AbstractBitmap& bitmap, const IntRectangle& vie
 }
 
 
+void GraphicPipeline::bindOutput(GL::glhandle texture) {
+    impl->bindOutput(texture);
+}
+
+
 void GraphicPipeline::unbindOutput() {
     impl->unbindOutput();
 }
 
 
-ImageResolution GraphicPipeline::getOutputResolution() const {
-    return impl->getOutputResolution();
+const ImageResolution& GraphicPipeline::getDisplayResolution() const {
+    return impl->getDisplayResolution();
 }
 
 

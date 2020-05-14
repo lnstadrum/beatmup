@@ -400,7 +400,7 @@ void Scene::ShapedBitmapLayer::render(RenderingContext& context) {
         arMaskMapping.matrix.scale(1.0f, invAr);
 
         Matrix2 mat = context.getMapping().matrix * arMaskMapping.matrix;
-        mat.prescale(1.0f, context.getGpu().getOutputResolution().getInvAspectRatio());
+        mat.prescale(1.0f, context.getOutputResolution().getInvAspectRatio());
 
         const float scale = inPixels ? context.getOutputWidth() : 1;
         const Point borderProfile(scale * mat.getScalingX(), scale * mat.getScalingY());

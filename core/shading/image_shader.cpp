@@ -24,8 +24,7 @@ bool str_replace(std::string& str, const std::string& from, const std::string& t
 }
 
 
-static AffineMapping getOutputCropMapping(const GraphicPipeline& gpu, const IntRectangle& outputClipRect) {
-    const ImageResolution out = gpu.getOutputResolution();
+static AffineMapping getOutputCropMapping(const ImageResolution& out, const IntRectangle& outputClipRect) {
     return AffineMapping(Rectangle(
         (float)outputClipRect.getX1() / out.getWidth(),
         (float)outputClipRect.getY1() / out.getHeight(),
@@ -158,7 +157,8 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, const
 
     program->setMatrix3(
         GL::RenderingPrograms::MODELVIEW_MATRIX_ID,
-        !output || outputClipRect.empty() ? mapping : (getOutputCropMapping(gpu, outputClipRect) * mapping)
+        !output || outputClipRect.empty() ? mapping :
+          (getOutputCropMapping(output ? output->getSize() : gpu.getDisplayResolution(), outputClipRect) * mapping)
     );
 
     // apply bundle
@@ -213,7 +213,8 @@ void ImageShader::prepare(GraphicPipeline& gpu, AbstractBitmap* output) {
     // set up mapping
     program->setMatrix3(
         GL::RenderingPrograms::MODELVIEW_MATRIX_ID,
-        !output || outputClipRect.empty() ? AffineMapping::IDENTITY : getOutputCropMapping(gpu, outputClipRect)
+        !output || outputClipRect.empty() ? AffineMapping::IDENTITY :
+          getOutputCropMapping(output ? output->getSize() : gpu.getDisplayResolution(), outputClipRect)
     );
 
     // apply bundle
