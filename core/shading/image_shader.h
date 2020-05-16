@@ -12,8 +12,6 @@
 namespace Beatmup {
     namespace GL {
         class Program;
-        class VertexShader;
-        class FragmentShader;
     }
     /**
         A GLSL program to process images
@@ -23,10 +21,9 @@ namespace Beatmup {
     private:
         GL::RecycleBin& recycleBin;
         GL::Program* program;
-        GL::FragmentShader* fragmentShader;
         std::string sourceCode;                             //!< last passed fragment shader source code
+        bool upToDate;                                      //!< if `true`, the program is up-to-date with respect to the source code
         GL::TextureHandler::TextureFormat inputFormat;      //!< last used input texture format; when changed, the shader is recompiled
-        bool fragmentShaderReady;                           //!< if `true`, shader is ready to go
         IntRectangle outputClipRect;                        //!< output clip rectangle: only this specified area of the output image will be changed
     public:
         ImageShader(GL::RecycleBin& recycleBin);
@@ -37,11 +34,7 @@ namespace Beatmup {
             Passes new source code to the fragment shader.
             The new source code will be compiled and linked when next rendering occurs.
         */
-        void setSourceCode(const char* sourceCode);
-
-        void setSourceCode(const std::string& sourceCode) {
-            setSourceCode(sourceCode.c_str());
-        }
+        void setSourceCode(const std::string& sourceCode);
 
         /**
             \brief Specifies output clipping area.

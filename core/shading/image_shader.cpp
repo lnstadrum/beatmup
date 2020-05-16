@@ -37,10 +37,8 @@ static AffineMapping getOutputCropMapping(const ImageResolution& out, const IntR
 ImageShader::ImageShader(GL::RecycleBin& recycleBin) :
     recycleBin(recycleBin),
     program(nullptr),
-    fragmentShader(nullptr),
-    sourceCode(),
-    inputFormat(GL::TextureHandler::TextureFormat::RGBx8),
-    fragmentShaderReady(false)
+    upToDate(false),
+    inputFormat(GL::TextureHandler::TextureFormat::RGBx8)
 {}
 
 
@@ -52,28 +50,22 @@ ImageShader::ImageShader(Context& ctx) :
 ImageShader::~ImageShader() {
     class Deleter : public GL::RecycleBin::Item {
         GL::Program* program;
-        GL::FragmentShader* fragmentShader;
     public:
-        Deleter(GL::Program* program, GL::FragmentShader* fragmentShader):
-            program(program), fragmentShader(fragmentShader)
-        {};
-
+        Deleter(GL::Program* program): program(program) {};
         ~Deleter() {
-            if (program)
-                delete program;
-            if (fragmentShader)
-                delete fragmentShader;
+             delete program;
         }
     };
 
-    recycleBin.put(new Deleter(program, fragmentShader));
+    if (program)
+        recycleBin.put(new Deleter(program));
 }
 
 
-void ImageShader::setSourceCode(const char* sourceCode) {
+void ImageShader::setSourceCode(const std::string& sourceCode) {
     lock();
     this->sourceCode = sourceCode;
-    fragmentShaderReady = false;
+    upToDate = false;
     unlock();
 }
 
@@ -88,20 +80,12 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, const
     if (sourceCode.empty())
         throw NoSource();
 
-    // check input format input
+    // check if the input format changes
     if (input && input->getTextureFormat() != inputFormat)
-        fragmentShaderReady = false;
+        upToDate = false;
 
-    // destroy fragment shader if not up to date
-    if (!fragmentShaderReady && fragmentShader) {
-        if (program)
-            program->detachFragmentShader();
-        delete fragmentShader;
-        fragmentShader = nullptr;
-    }
-
-    // compile fragment shader if not up to date
-    if (!fragmentShader) {
+    // make program ready if not yet or if not up to date
+    if (!program || !upToDate) {
         std::string code;
         if (input) {
             switch (inputFormat = input->getTextureFormat()) {
@@ -126,18 +110,17 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, const
         else {
             code = BEATMUP_SHADER_HEADER_VERSION + sourceCode;
         }
-        fragmentShader = new GL::FragmentShader(gpu, code);
-    }
 
-    // link program
-    if (!program) {
-        program = new GL::Program(gpu);
-        program->link(gpu.getDefaultVertexShader(), *fragmentShader);
-        fragmentShaderReady = true;
-    }
-    else if (!fragmentShaderReady) {
-        program->relink(*fragmentShader);
-        fragmentShaderReady = true;
+        // link program
+        GL::FragmentShader fragmentShader(gpu, code);
+        if (!program) {
+            program = new GL::Program(gpu);
+            program->link(gpu.getDefaultVertexShader(), fragmentShader);
+        }
+        else
+            program->relink(fragmentShader);
+
+        upToDate = true;
     }
 
     // enable program
@@ -176,28 +159,18 @@ void ImageShader::prepare(GraphicPipeline& gpu, AbstractBitmap* output) {
     if (sourceCode.empty())
         throw NoSource();
 
-    // destroy fragment shader if not up to date
-    if (!fragmentShaderReady && fragmentShader) {
-        if (program)
-            program->detachFragmentShader();
-        delete fragmentShader;
-        fragmentShader = nullptr;
-    }
+    // link program if not yet
+    if (!program || !upToDate) {
+        // link program
+        GL::FragmentShader fragmentShader(gpu, BEATMUP_SHADER_HEADER_VERSION + sourceCode);
+        if (!program) {
+            program = new GL::Program(gpu);
+            program->link(gpu.getDefaultVertexShader(), fragmentShader);
+        }
+        else
+            program->relink(fragmentShader);
 
-    // compile fragment shader if not up to date
-    if (!fragmentShader) {
-        fragmentShader = new GL::FragmentShader(gpu, BEATMUP_SHADER_HEADER_VERSION + sourceCode);
-    }
-
-    // link program
-    if (!program) {
-        program = new GL::Program(gpu);
-        program->link(gpu.getDefaultVertexShader(), *fragmentShader);
-        fragmentShaderReady = true;
-    }
-    else if (!fragmentShaderReady) {
-        program->relink(*fragmentShader);
-        fragmentShaderReady = true;
+        upToDate = true;
     }
 
     // enable program
