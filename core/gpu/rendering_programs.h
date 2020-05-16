@@ -106,12 +106,9 @@ namespace Beatmup {
             Operation currentProgram;
             bool maskSetUp;
 
-            std::map<Operation, VertexShader> vertexShaders;
-            std::map<Operation, FragmentShader> fragmentShaders;
+            VertexShader defaultVertexShader;
             std::map<Operation, Program> programs;
 
-            VertexShader& getVertexShader(const GraphicPipeline* gpu, Operation program);
-            FragmentShader& getFragmentShader(const GraphicPipeline* gpu, Operation program);
             Program& getProgram(const GraphicPipeline* gpu, Operation program);
         };
     }

@@ -548,13 +548,15 @@ public:
 
 
 
-GraphicPipeline::GraphicPipeline(): renderingPrograms(this) {
+GraphicPipeline::GraphicPipeline() {
     BEATMUP_DEBUG_I("GRAPHIC PIPELINE INITIALIZATION");
     impl = new Impl(*this);
+    renderingPrograms = new GL::RenderingPrograms(this);
 }
 
 
 GraphicPipeline::~GraphicPipeline() {
+    delete renderingPrograms;
     delete impl;
 }
 

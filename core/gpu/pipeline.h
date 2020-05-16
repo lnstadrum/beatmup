@@ -22,7 +22,7 @@ namespace Beatmup {
         Impl* impl;
         std::mutex access;
 
-        GL::RenderingPrograms renderingPrograms;
+        GL::RenderingPrograms* renderingPrograms;
 
         GraphicPipeline(const GraphicPipeline&) = delete;				//!< disabling copy constructor
 
@@ -87,8 +87,8 @@ namespace Beatmup {
         */
         void switchAlphaBlending(bool enable);
 
-        inline GL::RenderingPrograms & getRenderingPrograms() { return renderingPrograms; }
-        inline GL::VertexShader& getDefaultVertexShader() { return renderingPrograms.getDefaultVertexShader(this); }
+        inline GL::RenderingPrograms & getRenderingPrograms() { return *renderingPrograms; }
+        inline GL::VertexShader& getDefaultVertexShader() { return renderingPrograms->getDefaultVertexShader(this); }
 
         const char* getGpuVendorString() const;
         const char* getGpuRendererString() const;

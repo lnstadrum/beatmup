@@ -287,91 +287,12 @@ public:
 
 
 RenderingPrograms::RenderingPrograms(GraphicPipeline* gpu):
-    backend(new Backend()), currentGlProgram(nullptr)
+    backend(new Backend()), currentGlProgram(nullptr), defaultVertexShader(*gpu, VERTEX_SHADER_BLEND)
 {}
 
 
 RenderingPrograms::~RenderingPrograms() {
     delete backend;
-}
-
-
-template<typename type> type& emplace(std::map<GL::RenderingPrograms::Operation, type>& map,
-    GL::RenderingPrograms::Operation operation, const GraphicPipeline* gpu, const std::string sourceCode)
-{
-    return map.emplace(std::piecewise_construct,
-        std::forward_as_tuple(operation),
-        std::forward_as_tuple(*gpu, sourceCode)
-    ).first->second;
-}
-
-
-VertexShader& RenderingPrograms::getVertexShader(const GraphicPipeline* gpu, Operation operation) {
-    auto& map = vertexShaders;
-    auto it = map.find(operation);
-    if (it != map.end())
-        return it->second;
-
-    // maps shader types to internally handled shaders
-    switch (operation) {
-    case Operation::BLEND:
-    case Operation::BLEND_EXT:
-        return emplace(map, Operation::BLEND, gpu, VERTEX_SHADER_BLEND);
-
-    case Operation::MASKED_BLEND:
-    case Operation::MASKED_8BIT_BLEND:
-    case Operation::SHAPED_BLEND:
-    case Operation::MASKED_BLEND_EXT:
-    case Operation::MASKED_8BIT_BLEND_EXT:
-    case Operation::SHAPED_BLEND_EXT:
-        return emplace(map, Operation::MASKED_BLEND, gpu, VERTEX_SHADER_BLENDMASK);
-    default:
-        Insanity::insanity("Invalid vertex shader type encountered");
-    }
-
-    // never happens
-    return emplace(map, Operation::BLEND, gpu, "");
-}
-
-
-FragmentShader& RenderingPrograms::getFragmentShader(const GraphicPipeline* gpu, Operation operation) {
-    auto& map = fragmentShaders;
-    auto it = map.find(operation);
-    if (it != map.end())
-        return it->second;
-
-    // maps shader types to internally handled shaders
-    switch (operation) {
-    case Operation::BLEND:
-        return emplace(map, Operation::BLEND, gpu, std::string(FRAGMENT_SHADER_HEADER_NORMAL) + std::string(FRAGMENT_SHADER_BLEND));
-
-    case Operation::BLEND_EXT:
-        return emplace(map, Operation::BLEND_EXT, gpu, std::string(FRAGMENT_SHADER_HEADER_EXT) + std::string(FRAGMENT_SHADER_BLEND));
-
-    case Operation::MASKED_BLEND:
-        return emplace(map, Operation::MASKED_BLEND, gpu, std::string(FRAGMENT_SHADER_HEADER_NORMAL) + std::string(FRAGMENT_SHADER_BLENDMASK));
-
-    case Operation::MASKED_BLEND_EXT:
-        return emplace(map, Operation::MASKED_BLEND_EXT, gpu, std::string(FRAGMENT_SHADER_HEADER_EXT) + std::string(FRAGMENT_SHADER_BLENDMASK));
-
-    case Operation::MASKED_8BIT_BLEND:
-        return emplace(map, Operation::MASKED_8BIT_BLEND, gpu, std::string(FRAGMENT_SHADER_HEADER_NORMAL) + std::string(FRAGMENT_SHADER_BLENDMASK_8BIT));
-
-    case Operation::MASKED_8BIT_BLEND_EXT:
-        return emplace(map, Operation::MASKED_8BIT_BLEND_EXT, gpu, std::string(FRAGMENT_SHADER_HEADER_EXT) + std::string(FRAGMENT_SHADER_BLENDMASK_8BIT));
-
-    case Operation::SHAPED_BLEND:
-        return emplace(map, Operation::SHAPED_BLEND, gpu, std::string(FRAGMENT_SHADER_HEADER_NORMAL) + std::string(FRAGMENT_SHADER_BLENDSHAPE));
-
-    case Operation::SHAPED_BLEND_EXT:
-        return emplace(map, Operation::SHAPED_BLEND_EXT, gpu, std::string(FRAGMENT_SHADER_HEADER_EXT) + std::string(FRAGMENT_SHADER_BLENDSHAPE));
-
-    default:
-        Insanity::insanity("Invalid vertex shader type encountered");
-    }
-
-    // never happens
-    return emplace(map, Operation::BLEND, gpu, "");
 }
 
 
@@ -381,8 +302,55 @@ Program& RenderingPrograms::getProgram(const GraphicPipeline* gpu, Operation ope
     if (it != map.end())
         return it->second;
 
+    // maps shader types to internally handled shaders
+    std::string fragmentCode;
+    switch (operation) {
+    case Operation::BLEND:
+        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_NORMAL) + std::string(FRAGMENT_SHADER_BLEND);
+        break;
+
+    case Operation::BLEND_EXT:
+        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_EXT) + std::string(FRAGMENT_SHADER_BLEND);
+        break;
+
+    case Operation::MASKED_BLEND:
+        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_NORMAL) + std::string(FRAGMENT_SHADER_BLENDMASK);
+        break;
+
+    case Operation::MASKED_BLEND_EXT:
+        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_EXT) + std::string(FRAGMENT_SHADER_BLENDMASK);
+        break;
+
+    case Operation::MASKED_8BIT_BLEND:
+        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_NORMAL) + std::string(FRAGMENT_SHADER_BLENDMASK_8BIT);
+        break;
+
+    case Operation::MASKED_8BIT_BLEND_EXT:
+        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_EXT) + std::string(FRAGMENT_SHADER_BLENDMASK_8BIT);
+        break;
+
+    case Operation::SHAPED_BLEND:
+        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_NORMAL) + std::string(FRAGMENT_SHADER_BLENDSHAPE);
+        break;
+
+    case Operation::SHAPED_BLEND_EXT:
+        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_EXT) + std::string(FRAGMENT_SHADER_BLENDSHAPE);
+        break;
+
+    default:
+        Insanity::insanity("Invalid rendering operation");
+    }
+
+    // instantiate shaders
+    const bool useDefaultVertexShader = operation ==  Operation::BLEND || operation ==  Operation::BLEND_EXT;
+    VertexShader* vertexShader = useDefaultVertexShader ? &defaultVertexShader : new VertexShader(*gpu, VERTEX_SHADER_BLENDMASK);
+    FragmentShader fragmentShader(*gpu, fragmentCode);
+
+    // link program
     Program& glProgram = programs.emplace(operation, *gpu).first->second;
-    glProgram.link(getVertexShader(gpu, operation), getFragmentShader(gpu, operation));
+    glProgram.link(*vertexShader, fragmentShader);
+    if (!useDefaultVertexShader)
+        delete vertexShader;
     return glProgram;
 }
 
@@ -480,5 +448,5 @@ void RenderingPrograms::paveBackground(GraphicPipeline* gpu, TextureHandler& con
 
 
 VertexShader& RenderingPrograms::getDefaultVertexShader(const GraphicPipeline* gpu) {
-    return getVertexShader(gpu, Operation::BLEND);
+    return defaultVertexShader;
 }
