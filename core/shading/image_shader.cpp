@@ -124,7 +124,7 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, const
     }
 
     // enable program
-    gpu.getRenderingPrograms().enableProgram(&gpu, *program, true);
+    gpu.getRenderingPrograms().enableProgram(&gpu, *program, input != nullptr);
 
     // bind output
     if (output)
