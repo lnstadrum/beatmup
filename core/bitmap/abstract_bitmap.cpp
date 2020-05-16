@@ -40,6 +40,10 @@ public:
 
 
 void AbstractBitmap::prepare(GraphicPipeline& gpu, bool queryData) {
+#ifdef BEATMUP_DEBUG
+    if (queryData)
+        DebugAssertion::check(getData(0, 0) != nullptr, "Cannot transfer pixels to GPU: the bitmap is not locked");
+#endif
     TextureHandler::prepare(gpu, queryData);
     glBindTexture(GL_TEXTURE_2D, textureHandle);
 

@@ -461,6 +461,10 @@ public:
         Transfers texture data from GPU to CPU. The bitmap is assumed to be locked.
     */
     void fetchPixels(AbstractBitmap& bitmap) {
+#ifdef BEATMUP_DEBUG
+        DebugAssertion::check(bitmap.getData(0, 0) != nullptr, "Cannot transfer pixels to RAM: the bitmap is not locked");
+#endif
+
         if (!bitmap.upToDate[ProcessingTarget::GPU])
             return;
 
