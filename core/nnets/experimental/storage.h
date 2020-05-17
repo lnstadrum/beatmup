@@ -4,9 +4,9 @@
 */
 
 #pragma once
-#include "../gpu/tensor.h"
-#include "../gpu/storage_buffer.h"
-#include "../gpu/compute_program.h"
+#include "../../gpu/tensor.h"
+#include "../../gpu/storage_buffer.h"
+#include "../../gpu/compute_program.h"
 
 
 namespace Beatmup {

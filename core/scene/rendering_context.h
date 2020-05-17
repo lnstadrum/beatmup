@@ -25,23 +25,26 @@ namespace Beatmup {
         EventListener* eventListener;
         AffineMapping mapping;
 
+        ImageResolution outputResolution;
         const float outputWidth;
         const bool renderingOnScreen;
 
         GraphicPipeline& gpu;
-        RenderingContext(GraphicPipeline& gpu, EventListener* eventListener, const float outputWidth, const bool renderingOnScreen);
+        RenderingContext(GraphicPipeline& gpu, EventListener* eventListener, const ImageResolution& outputResolution, const float refWidth, const bool renderingOnScreen);
 
     public:
         void lockBitmap(AbstractBitmap* bitmap);
         void unlockBitmap(AbstractBitmap* bitmap);
         GraphicPipeline& getGpu() { return gpu; }
 
+        const ImageResolution& getOutputResolution() const { return outputResolution; }
+
         /**
             Initiates the rendering operation.
         */
         void blend();
 
-        void enableProgram(RenderingPrograms::Program type);
+        void enableProgram(GL::RenderingPrograms::Operation operation);
         void enableProgram(GL::Program& program);
         GL::Program& getProgram();
 

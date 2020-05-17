@@ -3,9 +3,9 @@
 #include "../gpu/bgl.h"
 
 const std::string
-    Beatmup::RenderingPrograms::MODELVIEW_MATRIX_ID    = "modelview",
-    Beatmup::RenderingPrograms::TEXTURE_COORDINATES_ID = "texCoord",
-    Beatmup::RenderingPrograms::DECLARE_TEXTURE_COORDINATES_IN_FRAG = "varying highp vec2 texCoord;\n";
+    Beatmup::GL::RenderingPrograms::MODELVIEW_MATRIX_ID    = "modelview",
+    Beatmup::GL::RenderingPrograms::TEXTURE_COORDINATES_ID = "texCoord",
+    Beatmup::GL::RenderingPrograms::DECLARE_TEXTURE_COORDINATES_IN_FRAG = "varying highp vec2 texCoord;\n";
 
 
 enum TextureUnits {
@@ -175,6 +175,7 @@ static const char
 
 
 using namespace Beatmup;
+using namespace GL;
 
 
 class RenderingPrograms::Backend {
@@ -191,32 +192,39 @@ private:
     VertexAttribBufferElement vertexAttribBuffer[4];
     GLuint hVertexAttribBuffer;				//!< buffer used when rendering
 
-    bool vertexAttrBufSet, maskLookupsSet;
+    bool maskLookupsSet;
 
 public:
-    Backend() : vertexAttrBufSet(false), maskLookupsSet(false) {}
+    Backend() : hVertexAttribBuffer(0), maskLookupsSet(false) {}
     ~Backend() {}
 
 
-    void setupVertexAttributes(GL::Program& program, bool textured, float texScaleX = 1.0f, float texScaleY = 1.0f) {
-        if (!vertexAttrBufSet) {
-            // attribute buffer initialization
+    void setVertexAttributes(Program& program, bool textured, const Rectangle& textureArea = Rectangle::UNIT_SQUARE) {
+        bool update = false;
+
+        // attribute buffer initialization
+        if (!hVertexAttribBuffer) {
             glGenBuffers(1, &hVertexAttribBuffer);
             glBindBuffer(GL_ARRAY_BUFFER, hVertexAttribBuffer);
-            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
             vertexAttribBuffer[0] = { 0.0f, 0.0f, 0.0f, 0.0f };
-            vertexAttribBuffer[1] = { 1.0f, 0.0f, texScaleX, 0.0f };
-            vertexAttribBuffer[2] = { 0.0f, 1.0f, 0.0f,      texScaleY };
-            vertexAttribBuffer[3] = { 1.0f, 1.0f, texScaleX, texScaleY };
+            vertexAttribBuffer[1] = { 1.0f, 0.0f, 1.0f, 0.0f };
+            vertexAttribBuffer[2] = { 0.0f, 1.0f, 0.0f, 1.0f };
+            vertexAttribBuffer[3] = { 1.0f, 1.0f, 1.0f, 1.0f };
+            update = true;
         }
 
-        if (vertexAttribBuffer[1].s != texScaleX || vertexAttribBuffer[3].s != texScaleX ||
-            vertexAttribBuffer[2].t != texScaleY || vertexAttribBuffer[3].t != texScaleY || !vertexAttrBufSet)
+        if (update ||
+            vertexAttribBuffer[0].s != textureArea.getX1() ||
+            vertexAttribBuffer[1].s != textureArea.getX2() ||
+            vertexAttribBuffer[0].t != textureArea.getY1() ||
+            vertexAttribBuffer[2].t != textureArea.getY2())
         {
-            vertexAttribBuffer[1].s = vertexAttribBuffer[3].s = texScaleX;
-            vertexAttribBuffer[2].t = vertexAttribBuffer[3].t = texScaleY;
-            glBufferData(GL_ARRAY_BUFFER, sizeof(vertexAttribBuffer), vertexAttribBuffer, GL_DYNAMIC_DRAW);
-            vertexAttrBufSet = true;
+            vertexAttribBuffer[0].s = vertexAttribBuffer[2].s = textureArea.getX1();
+            vertexAttribBuffer[1].s = vertexAttribBuffer[3].s = textureArea.getX2();
+            vertexAttribBuffer[0].t = vertexAttribBuffer[1].t = textureArea.getY1();
+            vertexAttribBuffer[2].t = vertexAttribBuffer[3].t = textureArea.getY2();
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(vertexAttribBuffer), vertexAttribBuffer, GL_STATIC_DRAW);
         }
 
         glEnableVertexAttribArray(0);
@@ -227,7 +235,7 @@ public:
             glVertexAttribPointer(program.getAttribLocation("inTexCoord"), 2, GL_FLOAT, GL_FALSE, sizeof(VertexAttribBufferElement), (void*)(2 * sizeof(GLfloat)));
         }
 #ifdef BEATMUP_DEBUG
-        GL::GLException::check("vertex attributes buffer setup");
+        GLException::check("vertex attributes buffer setup");
 #endif
     }
 
@@ -268,7 +276,7 @@ public:
             glBindTexture(GL_TEXTURE_2D, hMaskLookups[2]);
             break;
         default:
-            throw GL::GLException("Mask bitmap pixel format is not supported");
+            throw GLException("Mask bitmap pixel format is not supported");
         }
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -279,7 +287,7 @@ public:
 
 
 RenderingPrograms::RenderingPrograms(GraphicPipeline* gpu):
-    backend(new Backend()), currentGlProgram(nullptr)
+    backend(new Backend()), currentGlProgram(nullptr), defaultVertexShader(*gpu, VERTEX_SHADER_BLEND)
 {}
 
 
@@ -288,110 +296,78 @@ RenderingPrograms::~RenderingPrograms() {
 }
 
 
-template<typename type> type& emplace(std::map<RenderingPrograms::Program, type>& map,
-    RenderingPrograms::Program program, const GraphicPipeline* gpu, const std::string sourceCode)
-{
-    return map.emplace(std::piecewise_construct,
-        std::forward_as_tuple(program),
-        std::forward_as_tuple(*gpu, sourceCode)
-    ).first->second;
-}
-
-
-GL::VertexShader& RenderingPrograms::getVertexShader(const GraphicPipeline* gpu, Program program) {
-    auto& map = vertexShaders;
-    auto it = map.find(program);
-    if (it != map.end())
-        return it->second;
-
-    // maps shader types to internally handled shaders
-    switch (program) {
-    case Program::BLEND:
-    case Program::BLEND_EXT:
-        return emplace(map, Program::BLEND, gpu, VERTEX_SHADER_BLEND);
-
-    case Program::MASKED_BLEND:
-    case Program::MASKED_8BIT_BLEND:
-    case Program::SHAPED_BLEND:
-    case Program::MASKED_BLEND_EXT:
-    case Program::MASKED_8BIT_BLEND_EXT:
-    case Program::SHAPED_BLEND_EXT:
-        return emplace(map, Program::MASKED_BLEND, gpu, VERTEX_SHADER_BLENDMASK);
-    default:
-        Insanity::insanity("Invalid vertex shader type encountered");
-    }
-
-    // never happens
-    return emplace(map, Program::BLEND, gpu, "");
-}
-
-
-GL::FragmentShader& RenderingPrograms::getFragmentShader(const GraphicPipeline* gpu, Program program) {
-    auto& map = fragmentShaders;
-    auto it = map.find(program);
-    if (it != map.end())
-        return it->second;
-
-    // maps shader types to internally handled shaders
-    switch (program) {
-    case Program::BLEND:
-        return emplace(map, Program::BLEND, gpu, std::string(FRAGMENT_SHADER_HEADER_NORMAL) + std::string(FRAGMENT_SHADER_BLEND));
-
-    case Program::BLEND_EXT:
-        return emplace(map, Program::BLEND_EXT, gpu, std::string(FRAGMENT_SHADER_HEADER_EXT) + std::string(FRAGMENT_SHADER_BLEND));
-
-    case Program::MASKED_BLEND:
-        return emplace(map, Program::MASKED_BLEND, gpu, std::string(FRAGMENT_SHADER_HEADER_NORMAL) + std::string(FRAGMENT_SHADER_BLENDMASK));
-
-    case Program::MASKED_BLEND_EXT:
-        return emplace(map, Program::MASKED_BLEND_EXT, gpu, std::string(FRAGMENT_SHADER_HEADER_EXT) + std::string(FRAGMENT_SHADER_BLENDMASK));
-
-    case Program::MASKED_8BIT_BLEND:
-        return emplace(map, Program::MASKED_8BIT_BLEND, gpu, std::string(FRAGMENT_SHADER_HEADER_NORMAL) + std::string(FRAGMENT_SHADER_BLENDMASK_8BIT));
-
-    case Program::MASKED_8BIT_BLEND_EXT:
-        return emplace(map, Program::MASKED_8BIT_BLEND_EXT, gpu, std::string(FRAGMENT_SHADER_HEADER_EXT) + std::string(FRAGMENT_SHADER_BLENDMASK_8BIT));
-
-    case Program::SHAPED_BLEND:
-        return emplace(map, Program::SHAPED_BLEND, gpu, std::string(FRAGMENT_SHADER_HEADER_NORMAL) + std::string(FRAGMENT_SHADER_BLENDSHAPE));
-
-    case Program::SHAPED_BLEND_EXT:
-        return emplace(map, Program::SHAPED_BLEND_EXT, gpu, std::string(FRAGMENT_SHADER_HEADER_EXT) + std::string(FRAGMENT_SHADER_BLENDSHAPE));
-
-    default:
-        Insanity::insanity("Invalid vertex shader type encountered");
-    }
-
-    // never happens
-    return emplace(map, Program::BLEND, gpu, "");
-}
-
-
-GL::Program& RenderingPrograms::getProgram(const GraphicPipeline* gpu, Program program) {
+Program& RenderingPrograms::getProgram(const GraphicPipeline* gpu, Operation operation) {
     auto& map = programs;
-    auto it = map.find(program);
+    auto it = map.find(operation);
     if (it != map.end())
         return it->second;
 
-    GL::Program& glProgram = programs.emplace(program, *gpu).first->second;
-    glProgram.link(getVertexShader(gpu, program), getFragmentShader(gpu, program));
+    // maps shader types to internally handled shaders
+    std::string fragmentCode;
+    switch (operation) {
+    case Operation::BLEND:
+        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_NORMAL) + std::string(FRAGMENT_SHADER_BLEND);
+        break;
+
+    case Operation::BLEND_EXT:
+        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_EXT) + std::string(FRAGMENT_SHADER_BLEND);
+        break;
+
+    case Operation::MASKED_BLEND:
+        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_NORMAL) + std::string(FRAGMENT_SHADER_BLENDMASK);
+        break;
+
+    case Operation::MASKED_BLEND_EXT:
+        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_EXT) + std::string(FRAGMENT_SHADER_BLENDMASK);
+        break;
+
+    case Operation::MASKED_8BIT_BLEND:
+        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_NORMAL) + std::string(FRAGMENT_SHADER_BLENDMASK_8BIT);
+        break;
+
+    case Operation::MASKED_8BIT_BLEND_EXT:
+        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_EXT) + std::string(FRAGMENT_SHADER_BLENDMASK_8BIT);
+        break;
+
+    case Operation::SHAPED_BLEND:
+        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_NORMAL) + std::string(FRAGMENT_SHADER_BLENDSHAPE);
+        break;
+
+    case Operation::SHAPED_BLEND_EXT:
+        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_EXT) + std::string(FRAGMENT_SHADER_BLENDSHAPE);
+        break;
+
+    default:
+        Insanity::insanity("Invalid rendering operation");
+    }
+
+    // instantiate shaders
+    const bool useDefaultVertexShader = operation ==  Operation::BLEND || operation ==  Operation::BLEND_EXT;
+    VertexShader* vertexShader = useDefaultVertexShader ? &defaultVertexShader : new VertexShader(*gpu, VERTEX_SHADER_BLENDMASK);
+    FragmentShader fragmentShader(*gpu, fragmentCode);
+
+    // link program
+    Program& glProgram = programs.emplace(operation, *gpu).first->second;
+    glProgram.link(*vertexShader, fragmentShader);
+    if (!useDefaultVertexShader)
+        delete vertexShader;
     return glProgram;
 }
 
 
-void RenderingPrograms::enableProgram(GraphicPipeline* gpu, Program program) {
-    GL::Program& glProgram = getProgram(gpu, program);
-    currentProgram = program;
+void RenderingPrograms::enableProgram(GraphicPipeline* gpu, Operation operation) {
+    Program& glProgram = getProgram(gpu, operation);
+    currentProgram = operation;
     currentGlProgram = &glProgram;
     glProgram.enable(*gpu);
-    backend->setupVertexAttributes(glProgram, true);
+    backend->setVertexAttributes(glProgram, true);
     glProgram.setInteger("image", TextureUnits::IMAGE);
-    switch (program) {
-    case Program::MASKED_BLEND:
-    case Program::MASKED_BLEND_EXT:
+    switch (operation) {
+    case Operation::MASKED_BLEND:
+    case Operation::MASKED_BLEND_EXT:
         glProgram.setInteger("maskLookup", TextureUnits::MASK_LOOKUP);
-    case Program::MASKED_8BIT_BLEND:
-    case Program::MASKED_8BIT_BLEND_EXT:
+    case Operation::MASKED_8BIT_BLEND:
+    case Operation::MASKED_8BIT_BLEND_EXT:
         glProgram.setInteger("mask", TextureUnits::MASK);
     default: break;
     }
@@ -399,18 +375,18 @@ void RenderingPrograms::enableProgram(GraphicPipeline* gpu, Program program) {
 }
 
 
-void RenderingPrograms::enableProgram(GraphicPipeline* gpu, GL::Program& program, bool textured) {
-    currentProgram = Program::CUSTOM;
+void RenderingPrograms::enableProgram(GraphicPipeline* gpu, Program& program, bool textured, const Rectangle& textureArea) {
+    currentProgram = Operation::CUSTOM;
     currentGlProgram = &program;
     program.enable(*gpu);
-    backend->setupVertexAttributes(program, textured);
+    backend->setVertexAttributes(program, textured, textureArea);
     if (textured)
         program.setInteger("image", TextureUnits::IMAGE);
     maskSetUp = false;
 }
 
 
-GL::Program& RenderingPrograms::getCurrentProgram() {
+Program& RenderingPrograms::getCurrentProgram() {
     if (!currentGlProgram)
         RuntimeError("No current program");
     return *currentGlProgram;
@@ -418,7 +394,7 @@ GL::Program& RenderingPrograms::getCurrentProgram() {
 
 
 void RenderingPrograms::bindMask(GraphicPipeline* gpu, AbstractBitmap& mask) {
-    GL::Program& program = getCurrentProgram();
+    Program& program = getCurrentProgram();
     gpu->bind(mask, TextureUnits::MASK, TextureParam::INTERP_NEAREST);
     if (mask.getBitsPerPixel() < 8) {
         backend->bindMaskLookup(mask.getPixelFormat());
@@ -431,7 +407,7 @@ void RenderingPrograms::bindMask(GraphicPipeline* gpu, AbstractBitmap& mask) {
 
 void RenderingPrograms::blend(bool onScreen) {
 #ifdef BEATMUP_DEBUG
-    if (currentProgram == Program::MASKED_BLEND || currentProgram == Program::MASKED_BLEND_EXT)
+    if (currentProgram == Operation::MASKED_BLEND || currentProgram == Operation::MASKED_BLEND_EXT)
         DebugAssertion::check(maskSetUp, "Mask was not set up in masked blending");
 #endif
 
@@ -439,33 +415,38 @@ void RenderingPrograms::blend(bool onScreen) {
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 #ifdef BEATMUP_DEBUG
-    GL::GLException::check("blending");
+    GLException::check("blending");
 #endif
 }
 
 
-void RenderingPrograms::paveBackground(GraphicPipeline* gpu, GL::TextureHandler& content, bool onScreen) {
+void RenderingPrograms::paveBackground(GraphicPipeline* gpu, TextureHandler& content, GL::TextureHandler* output) {
     // choose program
     switch (content.getTextureFormat()) {
-    case GL::TextureHandler::TextureFormat::OES_Ext:
-        enableProgram(gpu, RenderingPrograms::Program::BLEND_EXT);
+    case TextureHandler::TextureFormat::OES_Ext:
+        enableProgram(gpu, GL::RenderingPrograms::Operation::BLEND_EXT);
         break;
     default:
-        enableProgram(gpu, RenderingPrograms::Program::BLEND);
+        enableProgram(gpu, GL::RenderingPrograms::Operation::BLEND);
         break;
     }
 
     // setting texture coords, bitmap size and updating buffer data in GPU
-    backend->setupVertexAttributes(*currentGlProgram, true, (float)gpu->getOutputResolution().getWidth() / content.getWidth(), (float)gpu->getOutputResolution().getHeight() / content.getHeight());
+    backend->setVertexAttributes(*currentGlProgram, true,
+        Rectangle(0, 0,
+            (float)(output ? output->getWidth()  : gpu->getDisplayResolution().getWidth() ) / content.getWidth(),
+            (float)(output ? output->getHeight() : gpu->getDisplayResolution().getHeight()) / content.getHeight()
+        )
+    );
 
     currentGlProgram->setMatrix3(MODELVIEW_MATRIX_ID, AffineMapping::IDENTITY);
     currentGlProgram->setVector4("modulationColor", 1.0f, 1.0f, 1.0f, 1.0f);
     gpu->bind(content, 0, TextureParam::REPEAT);
     gpu->switchAlphaBlending(false);
-    blend(onScreen);
+    blend(output == nullptr);
 }
 
 
-GL::VertexShader& RenderingPrograms::getDefaultVertexShader(const GraphicPipeline* gpu) {
-    return getVertexShader(gpu, Program::BLEND);
+VertexShader& RenderingPrograms::getDefaultVertexShader(const GraphicPipeline* gpu) {
+    return defaultVertexShader;
 }

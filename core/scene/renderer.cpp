@@ -140,21 +140,22 @@ bool SceneRenderer::doRender(GraphicPipeline& gpu, TaskThread& thread) {
         gpu.unbindOutput();
     }
 
+    resolution = output ? output->getSize() : gpu.getDisplayResolution();
     RenderingContext context(gpu, eventListener,
-        referenceWidth > 0 ? referenceWidth : gpu.getOutputResolution().getWidth(),
+        resolution,
+        referenceWidth > 0 ? referenceWidth : resolution.getWidth(),
         output == nullptr);
 
     // background
     if (background) {
         context.lockBitmap(background);
-        gpu.getRenderingPrograms().paveBackground(&gpu, *background, output == nullptr);
+        gpu.getRenderingPrograms().paveBackground(&gpu, *background, output);
     }
 
     // enable blending
     gpu.switchAlphaBlending(true);
 
     // compute initial mapping
-    resolution = gpu.getOutputResolution();
     outputCoords.setIdentity();
     switch (outputMapping) {
     case FIT_WIDTH_TO_TOP:

@@ -9,7 +9,7 @@
 #include "../bitmap/abstract_bitmap.h"
 #include "../bitmap/pixel_arithmetic.h"
 #include "program.h"
-#include "../scene/rendering_programs.h"
+#include "../gpu/rendering_programs.h"
 
 #include <mutex>
 
@@ -22,7 +22,7 @@ namespace Beatmup {
         Impl* impl;
         std::mutex access;
 
-        RenderingPrograms renderingPrograms;
+        GL::RenderingPrograms* renderingPrograms;
 
         GraphicPipeline(const GraphicPipeline&) = delete;				//!< disabling copy constructor
 
@@ -47,16 +47,26 @@ namespace Beatmup {
         void swapBuffers();
 
         /**
-            Binds a texture handler to the pipeline output
+            Binds a bitmap to the pipeline output.
+            \param[in] bitmap      A bitmap to be filled with pixels on the next render pass.
         */
-        void bindOutput(AbstractBitmap&);
+        void bindOutput(AbstractBitmap& bitmap);
+
+        /**
+            Binds a bitmap to the pipeline output.
+            \param[in] bitmap      A bitmap to be filled with pixels on the next render pass.
+            \param[in] viewport    Output viewport in pixels: only this area of the bitmap will be affected
+        */
+        void bindOutput(AbstractBitmap& bitmap, const IntRectangle& viewport);
+
+        void bindOutput(GL::glhandle texture);
 
         /**
             Unbinds a bitmap from output and switches to screen
         */
         void unbindOutput();
 
-        ImageResolution getOutputResolution() const;
+        const ImageResolution& getDisplayResolution() const;
 
         void bind(GL::TextureHandler& texture, size_t texUnit, const TextureParam param);
         void bind(GL::TextureHandler& texture, size_t imageUnit, bool read, bool write);
@@ -77,7 +87,8 @@ namespace Beatmup {
         */
         void switchAlphaBlending(bool enable);
 
-        inline RenderingPrograms & getRenderingPrograms() { return renderingPrograms; }
+        inline GL::RenderingPrograms & getRenderingPrograms() { return *renderingPrograms; }
+        inline GL::VertexShader& getDefaultVertexShader() { return renderingPrograms->getDefaultVertexShader(this); }
 
         const char* getGpuVendorString() const;
         const char* getGpuRendererString() const;

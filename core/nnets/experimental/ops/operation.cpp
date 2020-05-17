@@ -1,7 +1,7 @@
 #include "operation.h"
-#include "../../gpu/tensor.h"
-#include "../../bitmap/internal_bitmap.h"
-#include "../../utils/string_builder.h"
+#include "../../../gpu/tensor.h"
+#include "../../../bitmap/internal_bitmap.h"
+#include "../../../utils/string_builder.h"
 
 using namespace Beatmup;
 using namespace NNets;

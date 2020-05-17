@@ -2,6 +2,7 @@
 #include "bgl.h"
 #include "recycle_bin.h"
 #include "../exception.h"
+#include <cstring>
 
 #ifndef BEATMUP_OPENGLVERSION_GLES20
 

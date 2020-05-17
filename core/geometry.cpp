@@ -3,16 +3,24 @@
 
 using namespace Beatmup;
 
-template<> const Point Point::ZERO = Point(0, 0);
+template<> const Point    Point::ZERO    = Point(0, 0);
 template<> const IntPoint IntPoint::ZERO = IntPoint(0, 0);
 template<> const Matrix2 Matrix2::IDENTITY(1,1);
+template<> const Rectangle    Rectangle::UNIT_SQUARE    = Rectangle(0, 0, 1, 1);
+template<> const IntRectangle IntRectangle::UNIT_SQUARE = IntRectangle(0, 0, 1, 1);
 const AffineMapping AffineMapping::IDENTITY(Matrix2::IDENTITY, Point::ZERO);
+
 
 AffineMapping::AffineMapping() {}
 
 AffineMapping::AffineMapping(const Matrix2& aMatrix, const Point& aPosition) :
     matrix(aMatrix), position(aPosition)
 {}
+
+AffineMapping::AffineMapping(const Rectangle& rectangle):
+    matrix(rectangle.width(), rectangle.height()), position(rectangle.getX1(), rectangle.getY1())
+{}
+
 
 AffineMapping AffineMapping::operator*(const AffineMapping& mapping) const {
     return AffineMapping(matrix * mapping.matrix, position + matrix * mapping.position);
