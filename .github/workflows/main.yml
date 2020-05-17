@@ -2,7 +2,7 @@ name: Make apps
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ develop, master ]
   schedule:
     - cron: '5 9 * * SAT'
 
