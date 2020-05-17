@@ -112,6 +112,10 @@ namespace Beatmup {
         CustomRectangle(numeric x1, numeric y1, numeric x2, numeric y2) : a(CustomPoint<numeric>(x1, y1)), b(CustomPoint<numeric>(x2, y2))
         {}
 
+        inline bool empty() const {
+            return b.x <= a.x || b.y <= a.y;
+        }
+
         inline CustomRectangle operator*(numeric _) const {
             return CustomRectangle(_ * a, _ * b);
         }
@@ -247,6 +251,8 @@ namespace Beatmup {
             CustomRectangle<float> r((CustomPoint<float>)a, (CustomPoint<float>)b);
             return r;
         }
+
+        static const CustomRectangle UNIT_SQUARE;
     };
 
     /**
@@ -566,6 +572,12 @@ namespace Beatmup {
 
         AffineMapping();
         AffineMapping(const Matrix2& aMatrix, const Point& aPosition);
+
+        /**
+            Creates a mapping of unit square to a given rectangle.
+            \param[in] rectangle    The rectangle
+        */
+        AffineMapping(const Rectangle& rectangle);
 
         inline Point getPosition() const {
             return position;

@@ -4,10 +4,10 @@
 
 #pragma once
 #include "model.h"
-#include "../gpu/gpu_task.h"
-#include "../utils/progress_tracking.h"
+#include "../../gpu/gpu_task.h"
+#include "../../utils/progress_tracking.h"
 #ifdef BEATMUP_DEBUG
-#include "../utils/profiler.h"
+#include "../../utils/profiler.h"
 #endif
 
 namespace Beatmup {

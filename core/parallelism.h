@@ -77,6 +77,9 @@ namespace Beatmup {
     };
 
 
+    /**
+        Thread executing tasks
+    */
     class TaskThread {
         TaskThread(const TaskThread&) = delete;
     protected:

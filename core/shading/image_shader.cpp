@@ -12,7 +12,7 @@ const std::string
     ImageShader::INPUT_IMAGE_ID        = "image",
     ImageShader::CODE_HEAD =
         INPUT_IMAGE_DECL_TYPE + " " + INPUT_IMAGE_ID +";\n" +
-        RenderingPrograms::DECLARE_TEXTURE_COORDINATES_IN_FRAG;
+        GL::RenderingPrograms::DECLARE_TEXTURE_COORDINATES_IN_FRAG;
 
 
 bool str_replace(std::string& str, const std::string& from, const std::string& to) {
@@ -24,13 +24,21 @@ bool str_replace(std::string& str, const std::string& from, const std::string& t
 }
 
 
+static AffineMapping getOutputCropMapping(const ImageResolution& out, const IntRectangle& outputClipRect) {
+    return AffineMapping(Rectangle(
+        (float)outputClipRect.getX1() / out.getWidth(),
+        (float)outputClipRect.getY1() / out.getHeight(),
+        (float)outputClipRect.getX2() / out.getWidth(),
+        (float)outputClipRect.getY2() / out.getHeight()
+    )).getInverse();
+}
+
+
 ImageShader::ImageShader(GL::RecycleBin& recycleBin) :
     recycleBin(recycleBin),
     program(nullptr),
-    fragmentShader(nullptr),
-    sourceCode(),
-    inputFormat(GL::TextureHandler::TextureFormat::RGBx8),
-    fragmentShaderReady(false)
+    upToDate(false),
+    inputFormat(GL::TextureHandler::TextureFormat::RGBx8)
 {}
 
 
@@ -42,29 +50,28 @@ ImageShader::ImageShader(Context& ctx) :
 ImageShader::~ImageShader() {
     class Deleter : public GL::RecycleBin::Item {
         GL::Program* program;
-        GL::FragmentShader* fragmentShader;
     public:
-        Deleter(GL::Program* program, GL::FragmentShader* fragmentShader):
-            program(program), fragmentShader(fragmentShader)
-        {};
-
+        Deleter(GL::Program* program): program(program) {};
         ~Deleter() {
-            if (program)
-                delete program;
-            if (fragmentShader)
-                delete fragmentShader;
+             delete program;
         }
     };
 
-    recycleBin.put(new Deleter(program, fragmentShader));
+    if (program)
+        recycleBin.put(new Deleter(program));
 }
 
 
-void ImageShader::setSourceCode(const char* sourceCode) {
+void ImageShader::setSourceCode(const std::string& sourceCode) {
     lock();
     this->sourceCode = sourceCode;
-    fragmentShaderReady = false;
+    upToDate = false;
     unlock();
+}
+
+
+void ImageShader::setOutputClipping(const IntRectangle& rectangle) {
+    this->outputClipRect = rectangle;
 }
 
 
@@ -73,20 +80,12 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, const
     if (sourceCode.empty())
         throw NoSource();
 
-    // check input format input
+    // check if the input format changes
     if (input && input->getTextureFormat() != inputFormat)
-        fragmentShaderReady = false;
+        upToDate = false;
 
-    // destroy fragment shader if not up to date
-    if (!fragmentShaderReady && fragmentShader) {
-        if (program)
-            program->detachFragmentShader();
-        delete fragmentShader;
-        fragmentShader = nullptr;
-    }
-
-    // compile fragment shader if not up to date
-    if (!fragmentShader) {
+    // make program ready if not yet or if not up to date
+    if (!program || !upToDate) {
         std::string code;
         if (input) {
             switch (inputFormat = input->getTextureFormat()) {
@@ -111,34 +110,39 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, const
         else {
             code = BEATMUP_SHADER_HEADER_VERSION + sourceCode;
         }
-        fragmentShader = new GL::FragmentShader(gpu, code);
-    }
 
-    // link program
-    if (!program) {
-        program = new GL::Program(gpu);
-        program->link(gpu.getRenderingPrograms().getDefaultVertexShader(&gpu), *fragmentShader);
-        fragmentShaderReady = true;
-    }
-    else if (!fragmentShaderReady) {
-        program->relink(*fragmentShader);
-        fragmentShaderReady = true;
+        // link program
+        GL::FragmentShader fragmentShader(gpu, code);
+        if (!program) {
+            program = new GL::Program(gpu);
+            program->link(gpu.getDefaultVertexShader(), fragmentShader);
+        }
+        else
+            program->relink(fragmentShader);
+
+        upToDate = true;
     }
 
     // enable program
-    gpu.getRenderingPrograms().enableProgram(&gpu, *program, true);
+    gpu.getRenderingPrograms().enableProgram(&gpu, *program, input != nullptr);
 
     // bind output
     if (output)
-        gpu.bindOutput(*output);
+        if (!outputClipRect.empty())
+            gpu.bindOutput(*output, outputClipRect);
+        else
+            gpu.bindOutput(*output);
 
     // bind input
     if (input)
         gpu.bind(*input, 0, texParam);
         // Binding order matters: texture unit 0 is used for input now.
 
-    // set up mapping
-    program->setMatrix3(RenderingPrograms::MODELVIEW_MATRIX_ID, mapping);
+    program->setMatrix3(
+        GL::RenderingPrograms::MODELVIEW_MATRIX_ID,
+        !output || outputClipRect.empty() ? mapping :
+          (getOutputCropMapping(output ? output->getSize() : gpu.getDisplayResolution(), outputClipRect) * mapping)
+    );
 
     // apply bundle
     apply(*program);
@@ -155,28 +159,18 @@ void ImageShader::prepare(GraphicPipeline& gpu, AbstractBitmap* output) {
     if (sourceCode.empty())
         throw NoSource();
 
-    // destroy fragment shader if not up to date
-    if (!fragmentShaderReady && fragmentShader) {
-        if (program)
-            program->detachFragmentShader();
-        delete fragmentShader;
-        fragmentShader = nullptr;
-    }
+    // link program if not yet
+    if (!program || !upToDate) {
+        // link program
+        GL::FragmentShader fragmentShader(gpu, BEATMUP_SHADER_HEADER_VERSION + sourceCode);
+        if (!program) {
+            program = new GL::Program(gpu);
+            program->link(gpu.getDefaultVertexShader(), fragmentShader);
+        }
+        else
+            program->relink(fragmentShader);
 
-    // compile fragment shader if not up to date
-    if (!fragmentShader) {
-        fragmentShader = new GL::FragmentShader(gpu, BEATMUP_SHADER_HEADER_VERSION + sourceCode);
-    }
-
-    // link program
-    if (!program) {
-        program = new GL::Program(gpu);
-        program->link(gpu.getRenderingPrograms().getDefaultVertexShader(&gpu), *fragmentShader);
-        fragmentShaderReady = true;
-    }
-    else if (!fragmentShaderReady) {
-        program->relink(*fragmentShader);
-        fragmentShaderReady = true;
+        upToDate = true;
     }
 
     // enable program
@@ -184,18 +178,25 @@ void ImageShader::prepare(GraphicPipeline& gpu, AbstractBitmap* output) {
 
     // bind output
     if (output)
-        gpu.bindOutput(*output);
+        if (!outputClipRect.empty())
+            gpu.bindOutput(*output, outputClipRect);
+        else
+            gpu.bindOutput(*output);
 
     // set up mapping
-    program->setMatrix3(RenderingPrograms::MODELVIEW_MATRIX_ID, AffineMapping::IDENTITY);
+    program->setMatrix3(
+        GL::RenderingPrograms::MODELVIEW_MATRIX_ID,
+        !output || outputClipRect.empty() ? AffineMapping::IDENTITY :
+          getOutputCropMapping(output ? output->getSize() : gpu.getDisplayResolution(), outputClipRect)
+    );
 
     // apply bundle
     apply(*program);
 }
 
 
-void ImageShader::bindSamplerArray(const char* uniformName, int startingUnit, int numUnits) {
-    program->setIntegerArray(uniformName, startingUnit, numUnits);
+void ImageShader::bindSamplerArray(const char* uniformId, int startingUnit, int numUnits) {
+    program->setIntegerArray(uniformId, startingUnit, numUnits);
 }
 
 

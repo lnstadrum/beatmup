@@ -1,7 +1,7 @@
 #include "convs_2d.h"
-#include "../../gpu/tensor.h"
-#include "../../utils/bitset.h"
-#include "../../debug.h"
+#include "../../../gpu/tensor.h"
+#include "../../../utils/bitset.h"
+#include "../../../debug.h"
 
 
 #define STRINGIFY(A) #A

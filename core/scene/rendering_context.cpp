@@ -2,8 +2,8 @@
 
 using namespace Beatmup;
 
-RenderingContext::RenderingContext(GraphicPipeline& gpu, EventListener* eventListener, const float outputWidth, const bool renderingOnScreen) :
-    eventListener(eventListener), outputWidth(outputWidth), renderingOnScreen(renderingOnScreen), gpu(gpu)
+RenderingContext::RenderingContext(GraphicPipeline& gpu, EventListener* eventListener, const ImageResolution& outputResolution, const float outputWidth, const bool renderingOnScreen) :
+    eventListener(eventListener), outputResolution(outputResolution), outputWidth(outputWidth), renderingOnScreen(renderingOnScreen), gpu(gpu)
 {
     mapping.setIdentity();
 }
@@ -29,7 +29,7 @@ void RenderingContext::enableProgram(GL::Program& program) {
 }
 
 
-void RenderingContext::enableProgram(RenderingPrograms::Program program) {
+void RenderingContext::enableProgram(GL::RenderingPrograms::Operation program) {
     gpu.getRenderingPrograms().enableProgram(&gpu, program);
 }
 

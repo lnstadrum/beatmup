@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.2.1)
 
+option(USE_OPENGL "Use standard OpenGL backend" OFF)
+option(USE_GLX    "Use GLX backend"             OFF)
+option(USE_OPENGL "Use EGL backend"             OFF)
+
 # main stuff
 set(BEATMUP_ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}/..")
 set(BEATMUP_SRC_DIR "${CMAKE_CURRENT_LIST_DIR}")
@@ -51,6 +55,7 @@ set(BEATMUP_SOURCES
     ${BEATMUP_SRC_DIR}/gpu/pipeline.cpp
     ${BEATMUP_SRC_DIR}/gpu/program.cpp
     ${BEATMUP_SRC_DIR}/gpu/recycle_bin.cpp
+    ${BEATMUP_SRC_DIR}/gpu/rendering_programs.cpp
     ${BEATMUP_SRC_DIR}/gpu/storage_buffer.cpp
     ${BEATMUP_SRC_DIR}/gpu/swapper.cpp
     ${BEATMUP_SRC_DIR}/gpu/tensor.cpp
@@ -62,7 +67,6 @@ set(BEATMUP_SOURCES
     ${BEATMUP_SRC_DIR}/pipelining/multitask.cpp
     ${BEATMUP_SRC_DIR}/scene/renderer.cpp
     ${BEATMUP_SRC_DIR}/scene/rendering_context.cpp
-    ${BEATMUP_SRC_DIR}/scene/rendering_programs.cpp
     ${BEATMUP_SRC_DIR}/scene/scene.cpp
     ${BEATMUP_SRC_DIR}/shading/image_shader.cpp
     ${BEATMUP_SRC_DIR}/shading/shader_applicator.cpp
@@ -83,12 +87,12 @@ endif()
 if (PROFILE_NNETS)
     set(BEATMUP_SOURCES ${BEATMUP_SOURCES}
         ${BEATMUP_SRC_DIR}/nnets/gpu_bench.cpp
-        ${BEATMUP_SRC_DIR}/nnets/inference.cpp
-        ${BEATMUP_SRC_DIR}/nnets/model.cpp
-        ${BEATMUP_SRC_DIR}/nnets/storage.cpp
-        ${BEATMUP_SRC_DIR}/nnets/ops/operation.cpp
-        ${BEATMUP_SRC_DIR}/nnets/ops/convs_2d.cpp
-        ${BEATMUP_SRC_DIR}/nnets/ops/pooling.cpp
+        ${BEATMUP_SRC_DIR}/nnets/experimental/inference.cpp
+        ${BEATMUP_SRC_DIR}/nnets/experimental/model.cpp
+        ${BEATMUP_SRC_DIR}/nnets/experimental/storage.cpp
+        ${BEATMUP_SRC_DIR}/nnets/experimental/ops/operation.cpp
+        ${BEATMUP_SRC_DIR}/nnets/experimental/ops/convs_2d.cpp
+        ${BEATMUP_SRC_DIR}/nnets/experimental/ops/pooling.cpp
     )
 endif()
 
@@ -113,13 +117,6 @@ endif()
 
 
 include_directories(${BEATMUP_SRC_DIR})
-
-# trying to guess OpenGL backend
-if (NOT (USE_OPENGL OR USE_GLX OR USE_EGL))
-    if (WIN32)
-        set(USE_OPENGL YES)
-    endif()
-endif()
 
 
 # selecting OpenGL backend

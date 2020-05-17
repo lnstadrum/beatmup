@@ -84,6 +84,10 @@ android {
             path 'src/main/cpp/CMakeLists.txt'
         }
     }
+
+    packagingOptions {
+        pickFirst '**/*.so'
+    }
 }
 
 dependencies {

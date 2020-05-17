@@ -7,6 +7,7 @@
 #include <mutex>
 #include <vector>
 #include <map>
+#include <string>
 
 
 /**

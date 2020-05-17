@@ -147,19 +147,16 @@ namespace Beatmup {
 #endif
         };
 
+        /**
+            Regular OpenGL program
+        */
         class Program : public AbstractProgram {
-        private:
-            const VertexShader* vertexShader;
-            const FragmentShader* fragmentShader;
         public:
             Program(const GraphicPipeline& gpu);
             Program(const GraphicPipeline& gpu, const VertexShader&, const FragmentShader&);
             void link(const VertexShader&, const FragmentShader&);
             void relink(const VertexShader&);
             void relink(const FragmentShader&);
-            void detachFragmentShader();
-            const VertexShader* getVertexShader() const;
-            const FragmentShader* getFragmentShader() const;
         };
     }
 }

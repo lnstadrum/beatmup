@@ -4,10 +4,10 @@
 
 #pragma once
 #include "operation.h"
-#include "../../gpu/storage_buffer.h"
-#include "../../geometry.h"
-#include "../../utils/string_builder.h"
-#include "../../utils/array.h"
+#include "../../../gpu/storage_buffer.h"
+#include "../../../geometry.h"
+#include "../../../utils/string_builder.h"
+#include "../../../utils/array.h"
 
 namespace Beatmup {
     namespace NNets {

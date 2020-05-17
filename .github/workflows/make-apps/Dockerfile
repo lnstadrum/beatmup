@@ -22,8 +22,8 @@ ENV ANDROID_BUILD_TOOLS_VERSION 27.0.3
 RUN yes | sdkmanager --licenses
 
 # install tools and NDK
-RUN $ANDROID_HOME/tools/bin/sdkmanager --update
-RUN $ANDROID_HOME/tools/bin/sdkmanager "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" \
+RUN ${ANDROID_HOME}/tools/bin/sdkmanager --update
+RUN ${ANDROID_HOME}/tools/bin/sdkmanager "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" \
     "platforms;android-${ANDROID_VERSION}" \
     "platform-tools" "ndk-bundle"
 

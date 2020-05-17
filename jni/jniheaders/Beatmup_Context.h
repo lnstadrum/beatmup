@@ -25,10 +25,10 @@ JNIEXPORT void JNICALL Java_Beatmup_Context_detachEventListener
 
 /*
  * Class:     Beatmup_Context
- * Method:    getTotalRAM
+ * Method:    getTotalRam
  * Signature: ()J
  */
-JNIEXPORT jlong JNICALL Java_Beatmup_Context_getTotalRAM
+JNIEXPORT jlong JNICALL Java_Beatmup_Context_getTotalRam
   (JNIEnv *, jclass);
 
 /*

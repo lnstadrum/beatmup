@@ -6,8 +6,8 @@
 #pragma once
 
 #include "ops/operation.h"
-#include "../exception.h"
-#include "../utils/chunkfile.h"
+#include "../../exception.h"
+#include "../../utils/chunkfile.h"
 #include <vector>
 
 namespace Beatmup {

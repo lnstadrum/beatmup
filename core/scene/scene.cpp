@@ -277,10 +277,10 @@ void Scene::BitmapLayer::render(RenderingContext& context) {
         // program selection
         switch (content->getTextureFormat()) {
         case GL::TextureHandler::TextureFormat::OES_Ext:
-            context.enableProgram(RenderingPrograms::Program::BLEND_EXT);
+            context.enableProgram(GL::RenderingPrograms::Operation::BLEND_EXT);
             break;
         default:
-            context.enableProgram(RenderingPrograms::Program::BLEND);
+            context.enableProgram(GL::RenderingPrograms::Operation::BLEND);
             break;
         }
 
@@ -288,7 +288,7 @@ void Scene::BitmapLayer::render(RenderingContext& context) {
 
         AffineMapping arMapping(context.getMapping() * bitmapMapping);
         arMapping.matrix.scale(1.0f, invAr);
-        context.getProgram().setMatrix3(RenderingPrograms::MODELVIEW_MATRIX_ID, arMapping);
+        context.getProgram().setMatrix3(GL::RenderingPrograms::MODELVIEW_MATRIX_ID, arMapping);
         context.blend();
     }
 }
@@ -312,7 +312,7 @@ void Scene::CustomMaskedBitmapLayer::configure(RenderingContext& context, GL::Te
     arImgMapping.matrix.scale(1.0f, invAr);
     arMaskMapping.matrix.scale(1.0f, invAr);
     context.getProgram().setVector4("bgColor", bgColor);
-    context.getProgram().setMatrix3(RenderingPrograms::MODELVIEW_MATRIX_ID, context.getMapping());
+    context.getProgram().setMatrix3(GL::RenderingPrograms::MODELVIEW_MATRIX_ID, context.getMapping());
     context.getProgram().setMatrix3("invImgMapping", arImgMapping.getInverse() * arMaskMapping);
     context.getProgram().setMatrix3("maskMapping", arMaskMapping);
 }
@@ -332,14 +332,14 @@ void Scene::MaskedBitmapLayer::render(RenderingContext& context) {
         switch (content->getTextureFormat()) {
         case GL::TextureHandler::TextureFormat::OES_Ext:
             context.enableProgram(mask8bit ?
-                RenderingPrograms::Program::MASKED_8BIT_BLEND_EXT :
-                RenderingPrograms::Program::MASKED_BLEND_EXT
+                GL::RenderingPrograms::Operation::MASKED_8BIT_BLEND_EXT :
+                GL::RenderingPrograms::Operation::MASKED_BLEND_EXT
             );
             break;
         default:
             context.enableProgram(mask8bit ?
-                RenderingPrograms::Program::MASKED_8BIT_BLEND :
-                RenderingPrograms::Program::MASKED_BLEND);
+                GL::RenderingPrograms::Operation::MASKED_8BIT_BLEND :
+                GL::RenderingPrograms::Operation::MASKED_BLEND);
             break;
         }
 
@@ -382,14 +382,14 @@ Scene::ShapedBitmapLayer::ShapedBitmapLayer() :
 void Scene::ShapedBitmapLayer::render(RenderingContext& context) {
     GL::TextureHandler* content = CustomMaskedBitmapLayer::resolveContent(context);
 
-    // program selection
     if (content) {
+        // program selection
         switch (content->getTextureFormat()) {
         case GL::TextureHandler::TextureFormat::OES_Ext:
-            context.enableProgram(RenderingPrograms::Program::SHAPED_BLEND_EXT);
+            context.enableProgram(GL::RenderingPrograms::Operation::SHAPED_BLEND_EXT);
             break;
         default:
-            context.enableProgram(RenderingPrograms::Program::SHAPED_BLEND);
+            context.enableProgram(GL::RenderingPrograms::Operation::SHAPED_BLEND);
             break;
         }
 
@@ -400,12 +400,14 @@ void Scene::ShapedBitmapLayer::render(RenderingContext& context) {
         arMaskMapping.matrix.scale(1.0f, invAr);
 
         Matrix2 mat = context.getMapping().matrix * arMaskMapping.matrix;
-        mat.prescale(1.0f, context.getGpu().getOutputResolution().getInvAspectRatio());
+        mat.prescale(1.0f, context.getOutputResolution().getInvAspectRatio());
 
         const float scale = inPixels ? context.getOutputWidth() : 1;
         const Point borderProfile(scale * mat.getScalingX(), scale * mat.getScalingY());
         context.getProgram().setVector2("borderProfile", borderProfile.x, borderProfile.y);
         context.getProgram().setFloat("cornerRadius", cornerRadius + borderWidth);
+        context.getProgram().setFloat("slope", slopeWidth);
+        context.getProgram().setFloat("border", borderWidth);
 
         context.blend();
     }

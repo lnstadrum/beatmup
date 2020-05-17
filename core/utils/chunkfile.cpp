@@ -25,9 +25,9 @@ ChunkFile::~ChunkFile() {
 }
 
 
-void ChunkFile::open(bool forceUpdateMap) {
+void ChunkFile::open() {
     stream.open(filename, std::fstream::in | std::fstream::binary);
-    if (!map.empty() && !forceUpdateMap)
+    if (!map.empty())
         return;
 
     if (!stream.good())

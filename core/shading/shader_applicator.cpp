@@ -59,8 +59,9 @@ bool ShaderApplicator::removeSampler(const std::string uniformName) {
             mainInput = nullptr;
             return true;
         }
-        else
+        else {
             return false;
+        }
 
     auto sampler = samplers.find(uniformName);
     if (sampler == samplers.end()) {
