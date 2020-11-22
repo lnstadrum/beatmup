@@ -37,6 +37,7 @@ There is a bunch of test apps showcasing the use of Beatmup. To get things runni
 To build **X2** app upscaling an image using a neural net inferred with OpenGL you may proceed as follows:
 
     git clone https://github.com/lnstadrum/beatmup.git
+    git submodule init
     git submodule update
     cd beatmup
     mkdir build
@@ -55,6 +56,7 @@ You can then feed the app with an image of your choice and get the upscaled resu
 To build the **X2** app in Windows you may install *Visual Studio* (tested on 2013 Express and 2019 Community free editions) and generate the VS solution as follows:
 
     git clone https://github.com/lnstadrum/beatmup.git
+    git submodule init
     git submodule update
     cd beatmup
     mkdir build
@@ -70,6 +72,7 @@ There is Android project containing a library and a test app modules (*lib* and 
 If for some reason you do not want to bother you with Android studio but you still want to try out the test app, you can build an apk in a docker container. If you have docker installed, the following script will build *beatmupApp.apk* installation package which you may then copy to your Android phone and open to install the app:
 
     git clone https://github.com/lnstadrum/beatmup.git
+    git submodule init
     git submodule update
     cd beatmup
     cp .github/workflows/make-apps/* .
