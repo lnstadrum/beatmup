@@ -2,7 +2,7 @@ name: Generate docs
 
 on:
   push:
-    branches: [ master, bugfix/docs ]
+    branches: [ master ]
 
 jobs:
   build:
@@ -50,15 +50,15 @@ jobs:
             git config --local user.name "GitHub Action"
             git add docs/cpp docs/java docs/python docs/.nojekyll
 
-#      - name: Commit and push
-#        if: github.ref != 'refs/heads/master'
-#        run: |
-#            git checkout -b docs/${{ github.sha }}
-#            git commit -m "Updating documentation: $(git log -1 --pretty=%B)"
-#            git push --set-upstream origin docs/${{ github.sha }}
+      - name: Commit and push
+        if: github.ref != 'refs/heads/master'
+        run: |
+            git checkout -b docs/${{ github.sha }}
+            git commit -m "Updating documentation: $(git log -1 --pretty=%B)"
+            git push --set-upstream origin docs/${{ github.sha }}
 
       - name: Commit and push (master)
-        if: github.ref == 'refs/heads/bugfix/docs'
+        if: github.ref == 'refs/heads/master'
         run: |
             git commit -m "Updating documentation: $(git log -1 --pretty=%B)"
             git push --force origin HEAD:docs/master
