@@ -32,8 +32,10 @@ jobs:
 
       - name: Build doxygen docs
         run: |
+            tail -n +2 README.md > README.md.tmp && mv README.md.tmp README.md    # removing status badges
             doxygen docs/cpp.Doxyfile
             doxygen docs/java.Doxyfile
+            git checkout README.md
 
       - name: Build sphinx docs
         env:
