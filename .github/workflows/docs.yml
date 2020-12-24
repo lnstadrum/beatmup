@@ -32,19 +32,19 @@ jobs:
 
       - name: Build doxygen docs
         run: |
-            doxygen doc/cpp.Doxyfile
-            doxygen doc/java.Doxyfile
+            doxygen docs/cpp.Doxyfile
+            doxygen docs/java.Doxyfile
 
       - name: Build sphinx docs
         env:
             PYTHONPATH: ${{ github.workspace }}/build:${{ github.workspace }}/python
-        run: python3 -m sphinx -b html doc/ doc/python
+        run: python3 -m sphinx -b html docs/ docs/python
 
       - name: Prepare commit
         run: |
             git config --local user.email "action@github.com"
             git config --local user.name "GitHub Action"
-            git add doc/cpp doc/java doc/python
+            git add docs/cpp docs/java docs/python
 
       - name: Commit and push
         if: github.ref != 'refs/heads/master'
