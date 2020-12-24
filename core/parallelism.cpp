@@ -1,9 +1,27 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "parallelism.h"
 #include "exception.h"
 
 using namespace Beatmup;
 
-void AbstractTask::beforeProcessing(ThreadIndex, GraphicPipeline*) {
+void AbstractTask::beforeProcessing(ThreadIndex, ProcessingTarget target, GraphicPipeline*) {
     // nothing to do by default
 }
 
@@ -19,20 +37,20 @@ bool AbstractTask::processOnGPU(GraphicPipeline&, TaskThread&) {
 }
 
 
-ThreadIndex AbstractTask::maxAllowedThreads() const {
+ThreadIndex AbstractTask::getMaxThreads() const {
     return 1;
 }
 
 
-ThreadIndex AbstractTask::validThreadCount(int N) {
-    if (N < 1)
+ThreadIndex AbstractTask::validThreadCount(int number) {
+    if (number < 1)
         return 1;
-    if (N > MAX_THREAD_INDEX)
+    if (number > MAX_THREAD_INDEX)
         return MAX_THREAD_INDEX;
-    return N;
+    return number;
 }
 
 
-AbstractTask::ExecutionTarget AbstractTask::getExecutionTarget() const {
-    return ExecutionTarget::doNotUseGPU;
+AbstractTask::TaskDeviceRequirement AbstractTask::getUsedDevices() const {
+    return TaskDeviceRequirement::CPU_ONLY;
 }

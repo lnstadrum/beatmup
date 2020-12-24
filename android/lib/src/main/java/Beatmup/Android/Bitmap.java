@@ -1,3 +1,21 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package Beatmup.Android;
 
 import android.graphics.BitmapFactory;
@@ -8,14 +26,14 @@ import java.io.InputStream;
 import Beatmup.Context;
 
 /**
- * Android bitmap wrapping with no risk of memory leak
+ * Android bitmap wrapping.
+ * Enables access to Android bitmaps from inside the Beatmup engine without memory copy.
  */
 public class Bitmap extends Beatmup.Bitmap {
-
     private android.graphics.Bitmap source;     //!< wrapped Android bitmap
 
     /**
-     * Creates new bitmap from Android bitmap object; NO PIXEL DATA IS COPIED
+     * Creates new bitmap from Android bitmap object without memory copy.
      * @param context   Beatmup context
      * @param bitmap    source bitmap
      */
@@ -25,7 +43,7 @@ public class Bitmap extends Beatmup.Bitmap {
     }
 
     /**
-     * Creates new bitmap from a source Android bitmap converting the data into appropriate pixel format if necessary
+     * Creates new bitmap from a source Android bitmap converting the data into appropriate pixel format if necessary.
      * @param context   the context handling the new bitmap
      * @param bitmap    the source; may be recycled
      * @return new bitmap
@@ -39,9 +57,8 @@ public class Bitmap extends Beatmup.Bitmap {
             return new Bitmap(context, bitmap);
     }
 
-
     /**
-     * Decodes a bitmap from stream
+     * Decodes a bitmap from stream.
      * @param context       a Beatmup context
      * @param inputStream   the stream to decode
      * @return bitmap containing the decoded stream content
@@ -54,7 +71,7 @@ public class Bitmap extends Beatmup.Bitmap {
     }
 
     /**
-     * Loads a bitmap from file. If the pixel format is not supported, this function tries to convert the source data to a 32-bit color bitmap
+     * Loads a bitmap from file. If the pixel format is not supported, this function tries to convert the source data to a 32-bit color bitmap.
      * @param context       a Beatmup context
      * @param path          path to the file to decode
      * @param options       bitmap loader options
@@ -67,12 +84,12 @@ public class Bitmap extends Beatmup.Bitmap {
         return createEnsuringPixelFormat(context, bitmap);
     }
 
-
     /**
-     * Loads a bitmap from file
+     * Loads a bitmap from file.
      * @param context       a Beatmup context
      * @param file          a file descriptor of the content to decode
      * @param outPadding    outPadding returned by BitmapFactory.decodeFileDescriptor
+     * @param options       decoding options
      * @return bitmap from the file
      */
     public static Bitmap decodeFileDescriptor(
@@ -87,7 +104,6 @@ public class Bitmap extends Beatmup.Bitmap {
             return null;
         return createEnsuringPixelFormat(context, bitmap);
     }
-
 
     /**
      * Creates empty ARGB bitmap of specified size
@@ -111,10 +127,12 @@ public class Bitmap extends Beatmup.Bitmap {
         return new Bitmap(context, android.graphics.Bitmap.createBitmap(width, height, android.graphics.Bitmap.Config.ALPHA_8));
     }
 
+    /**
+     * @return the wrapped Android bitmap instance.
+     */
     public android.graphics.Bitmap getBitmap() {
         return source;
     }
-
 
     @Override
     public synchronized void dispose() {
@@ -124,7 +142,6 @@ public class Bitmap extends Beatmup.Bitmap {
         }
         super.dispose();
     }
-
 
     /**
      * @return copy of this bitmap

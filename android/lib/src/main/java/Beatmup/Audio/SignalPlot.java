@@ -1,3 +1,21 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2020, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package Beatmup.Audio;
 
 import Beatmup.Bitmap;
@@ -8,7 +26,7 @@ import Beatmup.Task;
 
 
 /**
- * Efficient audio signal magnitude graph plotting
+ * Task drawing amplitude graph of a given Signal in a bitmap.
  */
 public class SignalPlot extends Task {
     private static native long newSignalPlot(Context context);
@@ -23,6 +41,10 @@ public class SignalPlot extends Task {
     private Signal signal;
     private Bitmap bitmap;
 
+    /**
+     * Creates a new instance of SignalPlot.
+     * @param context   A Beatmup.Context instance
+     */
     public SignalPlot(Context context) {
         super(context, newSignalPlot(context));
     }
@@ -36,6 +58,9 @@ public class SignalPlot extends Task {
         setSignal(this.handle, signal.getHandle());
     }
 
+    /**
+     * @return the signal to plot or null if not set.
+     */
     public Signal getSignal() {
         return signal;
     }
@@ -49,10 +74,12 @@ public class SignalPlot extends Task {
         setBitmap(this.handle, bitmap);
     }
 
+    /**
+     * @return the currently used output bitmap or null if not set.
+     */
     public Bitmap getBitmap() {
         return bitmap;
     }
-
 
     /**
      * Specifies a rectangular area in pixels on the output bitmap the plot is drawn to.
@@ -62,11 +89,9 @@ public class SignalPlot extends Task {
         setPlotArea(handle, area.x1, area.y1, area.x2, area.y2);
     }
 
-
     /**
      * Specifies a time/magnitude window of the signal to be plotted.
-     * X coordinates are time boundaries in samples. Y coordinates are integer-valued signal
-     * magnitude, e.g. -128 and + 127 for an 8-bit signal.
+     * X coordinates are time boundaries in samples. Y coordinates are integer-valued signal magnitude, e.g. -128 and + 127 for an 8-bit signal.
      * @param window    the signal window (time and magnitude)
      * @param scale     magnitude scaling factor
      */
@@ -74,28 +99,23 @@ public class SignalPlot extends Task {
         setWindow(handle, window.x1, window.x2, window.y1, window.y2, scale);
     }
 
-
     /**
-     * Specifies plot colors
+     * Specifies plot colors.
      * @param background    background color
      * @param color1        main plotting color
-     * @param color2        second plotting color used when plotting all the channels together (see
-     *                      setChannels())
+     * @param color2        second plotting color used when plotting all the channels together (see setChannels())
      */
     public void setPalette(Color background, Color color1, Color color2) {
         setPalette(handle, background.getRgbaCode(), color1.getRgbaCode(), color2.getRgbaCode());
     }
 
-
     /**
      * Specifies which channels to plot.
-     * @param channels  a channel number starting from zero to plot a specific channel; any other
-     *                  value out of the range to plot all the channels together
+     * @param channels  a channel number starting from zero to plot a specific channel; any other value out of the range to plot all the channels together
      */
     public void setChannels(int channels) {
         setChannels(handle, channels);
     }
-
 
     /**
      * Recomputes signal dynamics lookup table allowing for an accelerated plotting.

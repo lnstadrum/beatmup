@@ -1,3 +1,21 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "storage_buffer.h"
 #include "bgl.h"
 #include "recycle_bin.h"
@@ -17,9 +35,9 @@ StorageBuffer::StorageBuffer(GL::RecycleBin& recycleBin):
 StorageBuffer::~StorageBuffer() {
     class Deleter : public GL::RecycleBin::Item {
     private:
-        const glhandle handle;
+        const handle_t handle;
     public:
-        Deleter(glhandle handle) : handle(handle) {}
+        Deleter(handle_t handle) : handle(handle) {}
         ~Deleter() {
             glDeleteBuffers(1, &handle);
         }
@@ -85,7 +103,7 @@ void Beatmup::GL::StorageBuffer::fetchToBitmap(GraphicPipeline& gpu, size_t offs
 
     const size_t limit = offset + stride * (bitmap.getSize().numPixels() - 1) + bitmap.getBitsPerPixel() / 8;
     Beatmup::RuntimeError::check(getCurrentCapacity() >= limit, "Bitmap does not fit the buffer content");
-    bitmap.lockContent(PixelFlow::CpuWrite);
+    AbstractBitmap::WriteLock<ProcessingTarget::CPU> lock(bitmap);
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, handle);
     const pixbyte* buffer = (const pixbyte*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, offset, limit - offset, GL_MAP_READ_BIT);
@@ -100,8 +118,6 @@ void Beatmup::GL::StorageBuffer::fetchToBitmap(GraphicPipeline& gpu, size_t offs
     }
     glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-
-    bitmap.unlockContent(PixelFlow::CpuWrite);
 }
 
 

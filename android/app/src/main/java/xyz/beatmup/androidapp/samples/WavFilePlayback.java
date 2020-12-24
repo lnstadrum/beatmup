@@ -1,3 +1,21 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2020, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package xyz.beatmup.androidapp.samples;
 
 import android.app.Activity;
@@ -14,6 +32,7 @@ import Beatmup.Audio.SampleFormat;
 import Beatmup.Audio.Signal;
 import Beatmup.Audio.SignalPlot;
 import Beatmup.Context;
+import Beatmup.Exceptions.CoreException;
 import Beatmup.Exceptions.PlaybackException;
 import Beatmup.Geometry.IntRectangle;
 import Beatmup.Imaging.Color;
@@ -38,7 +57,7 @@ public class WavFilePlayback extends TestSample {
     }
 
     @Override
-    public Scene designScene(Task drawingTask, Activity app, Camera camera, String extFile) throws IOException {
+    public Scene designScene(Task drawingTask, Activity app, Camera camera, String extFile) throws IOException, CoreException {
         context = drawingTask.getContext();
 
         Signal wav = new Signal(context, extFile);
@@ -47,7 +66,7 @@ public class WavFilePlayback extends TestSample {
         plot.setSignal(wav);
         plot.setBitmap(Bitmap.createColorBitmap(context, 2048, 400));
         plot.setPlotArea(plot.getBitmap().clientRectangle());
-        plot.setWindow(new IntRectangle(0, -0x8000, (int)wav.getLength(), 0x7fff), 1);
+        plot.setWindow(new IntRectangle(0, -0x8000, (int)wav.getDuration(), 0x7fff), 1);
         plot.setPalette(Color.WHITE, Color.byHue(123), Color.byHue(133));
 
         long start = System.currentTimeMillis();
@@ -59,7 +78,7 @@ public class WavFilePlayback extends TestSample {
         Playback playback = new Playback(context);
         playback.setSource(source);
         try {
-            playback.configure(SampleFormat.Int16, 44100, 2, 2, 1024);
+            playback.initialize(44100, SampleFormat.Int16, 2, 1024, 2);
             playback.start();
             playbackJob = context.submitPersistentTask(playback, 1);
         } catch (PlaybackException e) {

@@ -1,5 +1,19 @@
 /*
-    Beatmup context
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #pragma once
@@ -10,7 +24,28 @@
 
 
 namespace Beatmup {
-    typedef unsigned int memchunk;
+
+    /** \page ProgrammingModel Programming model
+        %Beatmup is thought as a toolset for building efficient signal and image processing pipelines.
+
+        This page covers briefly few main concepts of a fairly simple programming model used in %Beatmup: *contexts*, *thread pools*, *tasks*, *jobs*
+        and *bitmaps*.
+
+        \section secContext Context and thread pools
+        A Context instance mainly contains one or more thread pools that can execute processing actions (tasks). At least one Context instance (and
+        quite often just one) is required to do anything in %Beatmup.
+
+        A thread pool is a bunch of threads and a queue of tasks. Tasks are submitted by the application in a pool and are executed in order.
+        A given thread pool can run only one task at a time, but it does so in multiple threads in parallel for speed.
+
+        Thread pools work asynchronously with respect to the caller code: the tasks can be submitted by the application in a non-blocking call,
+        straight from a user interface managing thread for example. Context exposes necessary API entries to check whether a specific task is
+        completed or still waiting in the queue, to cancel a submitted task, to check exceptions thrown during task execution, etc.
+
+        By default, when a thread pool is created, the number of threads it hosts is inferred from the hardware concurrency: typically, it is equal
+        to the number of logical CPU cores. This setting is likely to provide the best performance for computationally intensive tasks.
+        The number of threads in a pool can be further adjusted by calling Context::limitWorkerCount().
+    */
 
     namespace GL {
         class RecycleBin;
@@ -50,49 +85,31 @@ namespace Beatmup {
 
             /**
                 Called when a task is successfully finished.
-                \param task		the task
-                \param aborted	if `true`, the task was aborted from outside
+                \param[in] pool     The thread pool the task was run in
+                \param[in] task     The task
+                \param[in] aborted  If `true`, the task was aborted from outside
                 \returns `true` if the task is asked to be executed again. Note that even if `false` is returned, a repetition might be asked from outside.
             */
             virtual bool taskDone(PoolIndex pool, AbstractTask& task, bool aborted) = 0;
 
             /**
                 Called when a task fails.
-                \param task		the task
-                \param ex		exception caught when the task is failed
+                \param[in] pool     The thread pool the task was run in
+                \param[in] task     The task
+                \param[in] ex       Exception caught when the task is failed
             */
             virtual void taskFail(PoolIndex pool, AbstractTask& task, const std::exception& ex) = 0;
 
             /**
-                Called when GPU intialization failed
-                \param ex		exception caught
+                Called when GPU initialization failed.
+                \param[in] pool     The thread pool the failure occurred in
+                \param[in] ex       Exception caught
             */
             virtual void gpuInitFail(PoolIndex pool, const std::exception& ex) = 0;
         };
 
-        /**
-            Tiny memory guard
-        */
-        class Mem {
-        private:
-            Context& ctx;
-            const memchunk mem;
-            const bool garbage;
-            void* data;
-        public:
-            Mem(Context& ctx, memchunk mem, bool garbageAfterRelease = false):
-                ctx(ctx), mem(mem), garbage(garbageAfterRelease)
-            {
-                data = ctx.acquireMemory(mem);
-            }
-            ~Mem() {
-                ctx.releaseMemory(mem, garbage);
-            }
-            void* operator()() { return data; }
-        };
-
         Context();
-        Context(const PoolIndex numThreadPools, const char* swapFilePrefix, const char* swapFileSuffix);
+        Context(const PoolIndex numThreadPools);
         ~Context();
 
         /**
@@ -127,7 +144,7 @@ namespace Beatmup {
         Job submitPersistentTask(AbstractTask& task, const PoolIndex pool = DEFAULT_POOL);
 
         /**
-            Wait until a given job finishes.
+            Waits until a given job finishes.
             \param job          The job
             \param pool         Pool index
         */
@@ -155,6 +172,12 @@ namespace Beatmup {
         bool busy(const PoolIndex pool = DEFAULT_POOL);
 
         /**
+            Checks if a specific thread pool is doing great: rethrows exceptions occurred during tasks execution, if any.
+            \param pool     The thread pool to query
+        */
+        void check(const PoolIndex pool = DEFAULT_POOL);
+
+        /**
             \returns maximum number of working threads per task in a given pool.
         */
         const ThreadIndex maxAllowedWorkerCount(const PoolIndex pool = DEFAULT_POOL) const;
@@ -166,37 +189,6 @@ namespace Beatmup {
             \returns new maximum limit.
         */
         void limitWorkerCount(ThreadIndex maxValue, const PoolIndex pool = DEFAULT_POOL);
-
-        /**
-            Allocates some memory
-        */
-        const memchunk allocateMemory(msize size);
-
-        /**
-            Acquires an allocated memory chunk, putting it in RAM.
-            \param chunk	the chunk id
-            \returns a pointer containing the chunk data, NULL if an invalid chunk id is passed
-        */
-        void* acquireMemory(memchunk chunk);
-
-        /**
-            Releases an allocated memory chunk, allowing to swap it; does not necessarily free the allocated memory.
-            \param chunk      the chunk id
-            \param garbage    the data in this chunk are not important and can be lost
-        */
-        void releaseMemory(memchunk chunk, bool garbage);
-
-        /**
-            Frees previously allocated memory.
-        */
-        void freeMemory(memchunk chunk);
-
-        /**
-            Performs swapping of allocated but not currently used memory on disk.
-            \param howMush	required memory size in bytes to free; the context attempts to free at least the required size
-            \return actual swapped memory size
-        */
-        msize swapOnDisk(msize howMuch);
 
         /**
             Installs new event listener
@@ -229,8 +221,9 @@ namespace Beatmup {
             \brief Initializes the GPU if not yet and queries information about it.
             \param[out] vendor      GPU vendor string.
             \param[out] renderer    renderer string.
+            \return `true` if a GPU is found.
         */
-        void queryGpuInfo(std::string& vendor, std::string& renderer);
+        bool queryGpuInfo(std::string& vendor, std::string& renderer);
 
         /**
             \internal
@@ -244,8 +237,12 @@ namespace Beatmup {
         GL::RecycleBin* getGpuRecycleBin() const;
 
         /**
-            \return total RAM size in bytes
+            Context comparaison operator
+            Two different instances of contexts are basically never identical; returning `true` only if the two point
+            to the same instance.
         */
-        static msize getTotalRam();
+        inline bool operator==(const Context& context) const {
+            return this == &context;
+        }
     };
 };

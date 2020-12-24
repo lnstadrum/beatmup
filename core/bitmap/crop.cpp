@@ -1,3 +1,21 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "abstract_bitmap.h"
 #include "internal_bitmap.h"
 #include "bitmap_access.h"
@@ -9,39 +27,41 @@
 using namespace Beatmup;
 
 
-template<class in_t, class out_t> class Cropping {
-public:
-    static inline void process(AbstractBitmap& input, AbstractBitmap& output, const IntRectangle& rect, const IntPoint& outOrigin) {
-        const unsigned char
-            bpp = AbstractBitmap::BITS_PER_PIXEL[input.getPixelFormat()],
-            ppb = 8 / bpp;		// pixels per byte
+namespace Kernels {
+    template<class in_t, class out_t> class Cropping {
+    public:
+        static inline void process(AbstractBitmap& input, AbstractBitmap& output, const IntRectangle& rect, const IntPoint& outOrigin) {
+            const unsigned char
+                bpp = AbstractBitmap::BITS_PER_PIXEL[input.getPixelFormat()],
+                ppb = 8 / bpp;		// pixels per byte
 
-        // test if output origin and clip rect horizontal borders are byte-aligned and the pixel formats are identical
-        const bool mayCopy = (input.getPixelFormat() == output.getPixelFormat()) &&
-            (bpp >= 8 || (outOrigin.x % ppb == 0 && rect.a.x % ppb == 0 && rect.b.x % ppb == 0));
+            // test if output origin and clip rect horizontal borders are byte-aligned and the pixel formats are identical
+            const bool mayCopy = (input.getPixelFormat() == output.getPixelFormat()) &&
+                (bpp >= 8 || (outOrigin.x % ppb == 0 && rect.a.x % ppb == 0 && rect.b.x % ppb == 0));
 
-        in_t in(input);
-        out_t out(output);
+            in_t in(input);
+            out_t out(output);
 
-        if (mayCopy) {
-            // direct copying
-            const msize lineSizeBytes = bpp >= 8 ? rect.width() * bpp / 8 : rect.width() / ppb;
-            for (int y = rect.a.y; y < rect.b.y; ++y) {
-                out.goTo(outOrigin.x, outOrigin.y + y - rect.a.y);
-                in.goTo(rect.a.x, y);
-                memcpy(*out, *in, lineSizeBytes);
+            if (mayCopy) {
+                // direct copying
+                const msize lineSizeBytes = bpp >= 8 ? rect.width() * bpp / 8 : rect.width() / ppb;
+                for (int y = rect.a.y; y < rect.b.y; ++y) {
+                    out.goTo(outOrigin.x, outOrigin.y + y - rect.a.y);
+                    in.goTo(rect.a.x, y);
+                    memcpy(*out, *in, lineSizeBytes);
+                }
             }
+            else
+                // projecting
+                for (int y = rect.a.y; y < rect.b.y; ++y) {
+                    out.goTo(outOrigin.x, outOrigin.y + y - rect.a.y);
+                    in.goTo(rect.a.x, y);
+                    for (int x = rect.a.x; x < rect.b.x; ++x, in++, out++)
+                        out = in();
+                }
         }
-        else
-            // projecting
-            for (int y = rect.a.y; y < rect.b.y; ++y) {
-                out.goTo(outOrigin.x, outOrigin.y + y - rect.a.y);
-                in.goTo(rect.a.x, y);
-                for (int x = rect.a.x; x < rect.b.x; ++x, in++, out++)
-                    out = in();
-            }
-    }
-};
+    };
+}
 
 
 Crop::Crop() : outOrigin(0, 0), cropRect(0, 0, 0, 0)
@@ -49,12 +69,12 @@ Crop::Crop() : outOrigin(0, 0), cropRect(0, 0, 0, 0)
 
 
 bool Crop::process(TaskThread& thread) {
-    BitmapProcessing::pipeline<Cropping>(*input, *output, cropRect, outOrigin);
+    BitmapProcessing::pipeline<Kernels::Cropping>(*input, *output, cropRect, outOrigin);
     return true;
 }
 
 
-void Crop::beforeProcessing(ThreadIndex threadCount, GraphicPipeline* gpu) {
+void Crop::beforeProcessing(ThreadIndex threadCount, ProcessingTarget target, GraphicPipeline* gpu) {
     NullTaskInput::check(input, "input bitmap");
     NullTaskInput::check(output, "output bitmap");
     cropRect.normalize();
@@ -66,14 +86,12 @@ void Crop::beforeProcessing(ThreadIndex threadCount, GraphicPipeline* gpu) {
                 output->getWidth(), output->getHeight());
         throw RuntimeError("Crop rectangle does not fit to bitmaps");
     }
-    input->lockContent(PixelFlow::CpuRead);
-    output->lockContent(PixelFlow::CpuWrite);
+    lock<ProcessingTarget::CPU>(gpu, input, output);
 }
 
 
 void Crop::afterProcessing(ThreadIndex threadCount, GraphicPipeline* gpu, bool aborted) {
-    input->unlockContent(PixelFlow::CpuRead);
-    output->unlockContent(PixelFlow::CpuWrite);
+    unlock(input, output);
 }
 
 

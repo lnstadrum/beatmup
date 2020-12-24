@@ -1,7 +1,26 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "flood_fill.h"
 #include "region_filling.h"
 #include "../bitmap/processing.h"
 #include "../bitmap/internal_bitmap.h"
+#include <cstring>
 
 using namespace Beatmup;
 
@@ -19,13 +38,13 @@ FloodFill::~FloodFill() {
 }
 
 
-void FloodFill::setInput(AbstractBitmap& inputBitmap) {
-    this->input = &inputBitmap;
+void FloodFill::setInput(AbstractBitmap* inputBitmap) {
+    this->input = inputBitmap;
 }
 
 
-void FloodFill::setOutput(AbstractBitmap& mask) {
-    this->output = &mask;
+void FloodFill::setOutput(AbstractBitmap* mask) {
+    this->output = mask;
 }
 
 
@@ -48,12 +67,12 @@ void FloodFill::setSeeds(const int seedsXY[], int seedCount) {
 }
 
 
-void FloodFill::setComputeContours(bool computeOrNotCompute) {
-    computeContours = computeOrNotCompute;
+void FloodFill::setComputeContours(bool compute) {
+    this->computeContours = compute;
 }
 
 
-ThreadIndex FloodFill::maxAllowedThreads() const {
+ThreadIndex FloodFill::getMaxThreads() const {
     return validThreadCount((int)seeds.size());
 }
 
@@ -66,11 +85,11 @@ bool FloodFill::process(TaskThread& thread) {
     IntRectangle bounds;
     bounds.a = bounds.b = seeds[thread.currentThread()];
 
-    for (int n = thread.currentThread(); n < seeds.size(); n += thread.totalThreads())
+    for (int n = thread.currentThread(); n < seeds.size(); n += thread.numThreads())
         if (!thread.isTaskAborted()) {
             IntPoint seed = seeds[n];
             if (seed.x >= maskPos.x && seed.y >= maskPos.y && seed.x < maskPos.x + output->getWidth() && seed.y < maskPos.x + output->getHeight()) {
-                BitmapProcessing::pipelineWithMaskOutput<FillRegion>(*input, *output, maskPos, seed, tolerance, border, bounds);
+                BitmapProcessing::pipelineWithMaskOutput<Kernels::FillRegion>(*input, *output, maskPos, seed, tolerance, border, bounds);
             }
         }
 
@@ -84,12 +103,12 @@ bool FloodFill::process(TaskThread& thread) {
     if (!thread.isTaskAborted())
         switch (borderMorphology) {
         case DILATE:
-            BitmapProcessing::writeToMask<CircularDilatation>(*output, border, 255, borderHold, borderRelease);
+            BitmapProcessing::writeToMask<Kernels::CircularDilatation>(*output, border, 255, borderHold, borderRelease);
             bounds.grow((int) ceilf(borderHold + borderRelease));
             bounds.limit(output->getSize().closedRectangle());
             break;
         case ERODE:
-            BitmapProcessing::writeToMask<CircularErosion>(*output, border, 255, borderHold, borderRelease);
+            BitmapProcessing::writeToMask<Kernels::CircularErosion>(*output, border, 255, borderHold, borderRelease);
             bounds.grow(-(int) floorf(borderHold));
             break;
         default: break;
@@ -114,28 +133,26 @@ bool FloodFill::process(TaskThread& thread) {
 }
 
 
-void FloodFill::beforeProcessing(ThreadIndex threadCount, GraphicPipeline* gpu) {
+void FloodFill::beforeProcessing(ThreadIndex threadCount, ProcessingTarget target, GraphicPipeline* gpu) {
     NullTaskInput::check(input, "input bitmap");
     NullTaskInput::check(output, "output bitmap");
-    input->lockContent(PixelFlow::CpuRead);
-    output->lockContent(PixelFlow::CpuWrite);
+    lock<ProcessingTarget::CPU>(gpu, input, output);
     for (IntegerContour2D* contour : contours)
         delete contour;
     contours.clear();
     if (computeContours) {
         ignoredSeeds = new InternalBitmap(input->getContext(), PixelFormat::BinaryMask, output->getWidth(), output->getHeight());
-        ignoredSeeds->zero();
-        ignoredSeeds->lockContent(PixelFlow::CpuWrite);
+        writeLock(gpu, ignoredSeeds,  ProcessingTarget::CPU);
+        std::memset(ignoredSeeds->getData(0, 0), 0, ignoredSeeds->getMemorySize());
     }
     bounds.a = bounds.b = seeds[0];
 }
 
 
 void FloodFill::afterProcessing(ThreadIndex threadCount, GraphicPipeline* gpu, bool aborted) {
-    input->unlockContent(PixelFlow::CpuRead);
-    output->unlockContent(PixelFlow::CpuWrite);
+    unlock(input, output);
     if (computeContours) {
-        ignoredSeeds->unlockContent(PixelFlow::CpuWrite);
+        unlock(ignoredSeeds);
         delete ignoredSeeds;
     }
 }

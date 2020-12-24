@@ -1,3 +1,21 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "source.h"
 #include "../exception.h"
 #include "../debug.h"
@@ -29,7 +47,7 @@ template <typename sample> inline void fillSin(
     float f = 2 * pi * frequency / sampleRate;
     sample v;
     for (dtime t = time; t < stop; ++t) {
-        v.x = scale * clamp(-1.0f, volume * std::sin(t * f + phase), 1.0f);
+        v.x = scale * std::min(std::max(-1.0f, volume * std::sin(t * f + phase)), 1.0f);
         for (unsigned char c = 0; c < numChannels; c++)
             (s++)->x = v.x;
     }

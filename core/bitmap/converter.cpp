@@ -1,3 +1,21 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "../context.h"
 #include "../bitmap/converter.h"
 #include "../bitmap/bitmap_access.h"
@@ -17,45 +35,43 @@ template<class in_t, class out_t> inline void convertBlock(AbstractBitmap& input
 }
 
 
-BitmapConverter::BitmapConverter() :
+FormatConverter::FormatConverter() :
     input(nullptr), output(nullptr)
 {}
 
 
-void BitmapConverter::setBitmaps(AbstractBitmap* input, AbstractBitmap* output) {
+void FormatConverter::setBitmaps(AbstractBitmap* input, AbstractBitmap* output) {
     this->input = input;
     this->output = output;
 }
 
 
-ThreadIndex BitmapConverter::maxAllowedThreads() const {
+ThreadIndex FormatConverter::getMaxThreads() const {
     return AbstractTask::validThreadCount((int)(output->getSize().numPixels() / MIN_PIXEL_COUNT_PER_THREAD));
 }
 
 
-AbstractTask::ExecutionTarget BitmapConverter::getExecutionTarget() const {
+AbstractTask::TaskDeviceRequirement FormatConverter::getUsedDevices() const {
     // it does not make sense to convert bitmaps on GPU
-    return ExecutionTarget::doNotUseGPU;
+    return TaskDeviceRequirement::CPU_ONLY;
 }
 
 
-void BitmapConverter::beforeProcessing(ThreadIndex threadCount, GraphicPipeline* gpu) {
+void FormatConverter::beforeProcessing(ThreadIndex threadCount, ProcessingTarget target, GraphicPipeline* gpu) {
     NullTaskInput::check(input, "input bitmap");
     NullTaskInput::check(output, "output bitmap");
     RuntimeError::check(input->getSize() == output->getSize(),
         "Input and output bitmap must be of the same size.");
-    input->lockContent(PixelFlow::CpuRead);
-    output->lockContent(PixelFlow::CpuWrite);
+    lock<ProcessingTarget::CPU>(gpu, input, output);
 }
 
 
-void BitmapConverter::afterProcessing(ThreadIndex threadCount, GraphicPipeline* gpu, bool aborted) {
-    input->unlockContent(PixelFlow::CpuRead);
-    output->unlockContent(PixelFlow::CpuWrite);
+void FormatConverter::afterProcessing(ThreadIndex threadCount, GraphicPipeline* gpu, bool aborted) {
+    unlock(input, output);
 }
 
 
-bool BitmapConverter::process(TaskThread& thread) {
+bool FormatConverter::process(TaskThread& thread) {
     // if the bitmaps are equal, say done
     if (input == output)
         return true;
@@ -75,8 +91,8 @@ bool BitmapConverter::process(TaskThread& thread) {
     int w = output->getWidth();
     msize
         npix = w * output->getHeight(),
-        start = npix * thread.currentThread() / thread.totalThreads(),
-        stop = npix * (1 + thread.currentThread()) / thread.totalThreads();
+        start = npix * thread.currentThread() / thread.numThreads(),
+        stop = npix * (1 + thread.currentThread()) / thread.numThreads();
 
     // computing initial position
     int outx = (int)(start % w), outy = (int)(start / w);
@@ -91,7 +107,7 @@ bool BitmapConverter::process(TaskThread& thread) {
 }
 
 
-void BitmapConverter::doConvert(int outX, int outY, msize nPix) {
+void FormatConverter::doConvert(int outX, int outY, msize nPix) {
 #define CALL_CONVERT_AND_RETURN(IN_T, OUT_T) \
     convertBlock < IN_T, OUT_T >(*input, *output, outX, outY, nPix); return;
 
@@ -190,8 +206,8 @@ void BitmapConverter::doConvert(int outX, int outY, msize nPix) {
 }
 
 
-void BitmapConverter::convert(AbstractBitmap& input, AbstractBitmap& output) {
-    BitmapConverter me;
+void FormatConverter::convert(AbstractBitmap& input, AbstractBitmap& output) {
+    FormatConverter me;
     me.setBitmaps(&input, &output);
 
     if (input.getContext().isManagingThread()) {

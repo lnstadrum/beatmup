@@ -1,12 +1,30 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package Beatmup.Rendering;
 
 import Beatmup.Bitmap;
 import Beatmup.Imaging.Color;
 import Beatmup.Geometry.AffineMapping;
-import Beatmup.Shading.Shader;
+import Beatmup.Shading.ImageShader;
 
 /**
- * Scene representation
+ * An ordered set of layers representing a renderable content.
  */
 public class Scene extends Beatmup.Object {
     private static native long newScene();
@@ -42,8 +60,6 @@ public class Scene extends Beatmup.Object {
     private native void setLayerY(long handle, float y);
     private native float getLayerY(long handle);
 
-    private native float getLayerScaleX(long handle);
-    private native float getLayerScaleY(long handle);
     private native float getLayerOrientation(long handle);
 
     private native void setLayerCenterPos(long handle, float x, float y);
@@ -83,17 +99,17 @@ public class Scene extends Beatmup.Object {
     private native void setShapedBitmapLayerSlopeWidth(long handle, float thickness);
     private native float getShapedBitmapLayerSlopeWidth(long handle);
 
-    private native void setShadedBitmapLayerShader(long handle, Shader shader);
+    private native void setShadedBitmapLayerShader(long handle, ImageShader shader);
 
     /**
-     * Creates new scene instance
+     * Creates a new scene.
      */
     public Scene() {
         super(newScene());
     }
 
     /**
-     * Creates a new layer containing a whole scene
+     * Creates a new layer containing an entire scene.
      * @param subscene      the scene to bind to the layer
      * @return the new layer
      */
@@ -102,7 +118,7 @@ public class Scene extends Beatmup.Object {
     }
 
     /**
-     * Creates new scene layer that will contain a bitmap
+     * Creates a new scene layer containing a bitmap
      * @return the new layer
      */
     public BitmapLayer newBitmapLayer() {
@@ -110,7 +126,7 @@ public class Scene extends Beatmup.Object {
     }
 
     /**
-     * Creates new scene layer that will contain a bitmap and apply a mask to it
+     * Creates a new scene layer containing a bitmap and applying a bitmap mask to it when rendering.
      * @return the new layer
      */
     public MaskedBitmapLayer newMaskedBitmapLayer() {
@@ -118,35 +134,39 @@ public class Scene extends Beatmup.Object {
     }
 
     /**
-     * Creates new scene layer that will contain a bitmap and apply a parametric mask (shape)
+     * Creates a new scene layer containing a bitmap and applying a parametric mask (shape) when rendering.
      * @return the new layer
      */
     public ShapedBitmapLayer newShapedBitmapLayer() {
         return new ShapedBitmapLayer(this);
     }
 
+    /**
+     * Creates a new scene layer containing a bitmap and a GLSL fragment shader used in rendering.
+     * @return the new layer
+     */
     public ShadedBitmapLayer newShadedBitmapLayer() { return new ShadedBitmapLayer(this); }
 
     /**
-     * @return the nubmer of layers in the scene
+     * @return the total number of layers in the scene.
      */
     public int getLayerCount() {
         return getLayerCount(handle);
     }
 
     /**
-     * Returns layer by its index
-     * @param index     index (number) of a layer in the scene
-     * @return the layer or `null` in case of incorrect index value
+     * Returns layer by its index.
+     * @param index     zero-based index of a layer in the scene
+     * @return the layer or `null` if the index value is out of range.
      */
     public Layer getLayer(int index) {
         return getLayerByIndex(handle, index);
     }
 
     /**
-     * Retrieves a layer by its name
+     * Retrieves a layer by its name.
      * @param name      target layer name
-     * @return a layer having given name or `null` if not found
+     * @return a layer with the specific name or `null` if not found
      */
     public Layer getLayer(String name) {
         return getLayerByName(handle, name);
@@ -162,8 +182,10 @@ public class Scene extends Beatmup.Object {
         return getLayerAtPoint(handle, x, y);
     }
 
+
     /**
-     * Basic scene layer
+     * Abstract scene layer having name, type, geometry and some content to display.
+     * The layer geometry is defined by an AffineMapping describing the position and the orientation of the layer content in the rendered image.
      */
     public static class Layer {
         protected Scene scene;
@@ -185,22 +207,23 @@ public class Scene extends Beatmup.Object {
             return scene.getLayerName(handle);
         }
 
+        /**
+         * @return horizontal coordinate of the layer with respect to the scene.
+         */
         public float getX() {
             return scene.getLayerX(handle);
         }
 
+        /**
+         * @return vertical coordinate of the layer with respect to the scene.
+         */
         public float getY() {
             return scene.getLayerY(handle);
         }
 
-        public float getScaleX() {
-            return scene.getLayerScaleX(handle);
-        }
-
-        public float getScaleY() {
-            return scene.getLayerScaleY(handle);
-        }
-
+        /**
+         * @return layer orientation in degrees.
+         */
         public float getOrientation() {
             return scene.getLayerOrientation(handle);
         }
@@ -214,9 +237,9 @@ public class Scene extends Beatmup.Object {
         }
 
         /**
-         * Changes layer position in the scene
-         * @param x     new horizontal position (0 for leftmost, 1 for rightmost scene points)
-         * @param y     new vertical position (0 for topmost scene points)
+         * Changes layer position in the scene.
+         * @param x     new normalized horizontal position
+         * @param y     new normalized vertical position
          */
         public void setPosition(float x, float y) {
             scene.setLayerX(handle, x);
@@ -224,9 +247,9 @@ public class Scene extends Beatmup.Object {
         }
 
         /**
-         * Changes layer position in the scene
-         * @param x     new horizontal position of the layer center (0 for leftmost, 1 for rightmost scene points)
-         * @param y     new vertical position of the layer center (0 for topmost scene points)
+         * Changes layer position in the scene by setting its center coordinates.
+         * @param x     new normalized horizontal position of the layer center
+         * @param y     new normalized vertical position of the layer center
          */
         public void setCenterPosition(float x, float y) {
             scene.setLayerCenterPos(handle, x, y);
@@ -234,7 +257,7 @@ public class Scene extends Beatmup.Object {
 
         /**
          * Changes horizontal position of the layer
-         * @param x     new horizontal position (0 for leftmost, 1 for rightmost scene points)
+         * @param x     new normalized horizontal position
          */
         public void setX(float x) {
             scene.setLayerX(handle, x);
@@ -242,7 +265,7 @@ public class Scene extends Beatmup.Object {
 
         /**
          * Changes vertical position of the layer
-         * @param y     new vertical position (0 for topmost scene points)
+         * @param y     new normalized vertical position
          */
         public void setY(float y) {
             scene.setLayerY(handle, y);
@@ -258,14 +281,14 @@ public class Scene extends Beatmup.Object {
 
         /**
          * Rotates the layer
-         * @param angle     rotation angle relatively to the current layer orientation in degrees
+         * @param angle     rotation angle in degrees
          */
         public void rotate(float angle) {
             scene.rotateLayer(handle, angle, 0, 0);
         }
 
         /**
-         * Assigns an affine mapping to the layer
+         * Assigns a given affine mapping to the layer mapping.
          * @param mapping       the mapping
          */
         public void setTransform(AffineMapping mapping) {
@@ -273,7 +296,7 @@ public class Scene extends Beatmup.Object {
         }
 
         /**
-         * @return layer mapping w.r.t. scene
+         * @return the layer mapping with respect to the scene
          */
         public AffineMapping getTransform() {
             AffineMapping mapping = new AffineMapping();
@@ -281,35 +304,50 @@ public class Scene extends Beatmup.Object {
             return mapping;
         }
 
+        /**
+         * Assigns the layer mapping with respect to the scene to a given mapping object.
+         * @param mapping   The mapping
+         */
         public void getTransform(AffineMapping mapping) {
             scene.getLayerTransform(handle, mapping);
         }
 
         /**
-         * Manages layer visibility when rendering
-         * @param visible   if `true`, the layer is rendered, otherwise ignored
+         * Manages the layer visibility in the rendered scene.
+         * @param visible   if `true`, the layer is rendered, otherwise it is ignored
          */
         public void setVisibility(boolean visible) {
             scene.setLayerVisibility(handle, visible);
         }
 
+        /**
+         * @return `true` if the layer is visible.
+         */
         public boolean getVisibility() {
             return scene.getLayerVisibility(handle);
         }
 
+        /**
+         * Hides the layer.
+         */
         public void hide() { setVisibility(false); }
+
+        /**
+         * Makes the layer visible.
+         */
         public void show() { setVisibility(true); }
 
         /**
-         * Enables/disables phantom layer mode
-         * @param phantom       if `true`, layer is invisible on layer selection by point
+         * Makes/unmakes the layer "phantom".
+         * Phantom layers are rendered as usual but not picked when searching a layer by point.
+         * @param phantom       if `true`, the layer goes "phantom"
          */
         public void setPhantom(boolean phantom) {
             scene.setLayerPhantomFlag(handle, phantom);
         }
 
         /**
-         * @return `true` if the phantom mode is enabled
+         * @return `true` if the layer is "phantom".
          */
         public boolean getPhantom() {
             return scene.getLayerPhantomFlag(handle);
@@ -318,10 +356,10 @@ public class Scene extends Beatmup.Object {
 
 
     /**
-     * Simple bitmap scene layer with no mask
+     * Layer having an image to render.
+     * The image has a position and orientation with respect to the layer. This is expressed with an affine mapping applied on top of the layer mapping.
      */
     public static class BitmapLayer extends Layer {
-
         private Bitmap bitmap;
 
         private BitmapLayer(Scene scene) {
@@ -373,20 +411,36 @@ public class Scene extends Beatmup.Object {
             return mapping;
         }
 
+        /**
+         * Retrieves the image transform in layer coordinates.
+         * @param mapping       The mapping object to update with the image transform
+         */
         public void getImageTransform(AffineMapping mapping) {
             scene.getBitmapLayerImageTransform(handle, mapping);
         }
 
+        /**
+         * Sets the image modulation color.
+         * The color multiplies in component-wise fashion the image colors when rendering.
+         * @param color     The new modulation color
+         */
         public void setModulationColor(Color color) {
             scene.setBitmapLayerModulationColor(handle, color.r / 255.f, color.g / 255.f, color.b / 255.f, color.a / 255.f);
         }
 
+        /**
+         * @return the modulation color.
+         */
         public Color getModulationColor() {
             Color color = new Color();
             scene.getBitmapLayerModulationColor(handle, color);
             return color;
         }
 
+        /**
+         * Sets the image modulation color to enable transparency effect.
+         * @param transparency      The transparency value; 0 for fully transparent picture, 1 for the full opacity.
+         */
         public void setTransparency(float transparency) {
             scene.setBitmapLayerModulationColor(handle, 1.0f, 1.0f, 1.0f, transparency);
         }
@@ -394,7 +448,8 @@ public class Scene extends Beatmup.Object {
 
 
     /**
-     * Custom masked bitmap layer
+     * Layer containing a bitmap and a mask applied to the bitmap when rendering.
+     * Both bitmap and mask have their own positions and orientations relative to the layer's position and orientation.
      */
     public static class CustomMaskedBitmapLayer extends BitmapLayer {
         private CustomMaskedBitmapLayer(Scene scene) {
@@ -451,7 +506,7 @@ public class Scene extends Beatmup.Object {
 
 
     /**
-     * Bitmap scene layer that uses another bitmap as a mask
+     * Bitmap layer using another bitmap as a mask
      */
     public static class MaskedBitmapLayer extends CustomMaskedBitmapLayer {
         private Bitmap mask;
@@ -473,7 +528,7 @@ public class Scene extends Beatmup.Object {
 
 
     /**
-     * Bitmap scene layer having parametric mask (a shape)
+     * Layer containing a bitmap and a parametric mask (shape)
      */
     public static class ShapedBitmapLayer extends CustomMaskedBitmapLayer {
         private ShapedBitmapLayer(Scene scene) {
@@ -514,29 +569,31 @@ public class Scene extends Beatmup.Object {
         }
     }
 
+
     /**
      * Bitmap layer using a custom shader
      */
     public static class ShadedBitmapLayer extends BitmapLayer {
-        private Shader shader;
+        private ImageShader shader;
 
         private ShadedBitmapLayer(Scene scene) {
             super(scene);
             handle = scene.newShadedBitmapLayer(scene.handle, this);
         }
 
-        public void setShader(Shader shader) {
+        public void setShader(ImageShader shader) {
             this.shader = shader;
             scene.setShadedBitmapLayerShader(handle, shader);
         }
 
-        public Shader getShader() {
+        public ImageShader getShader() {
             return shader;
         }
     }
 
+
     /**
-     * Layer containing a scene
+     * Layer containing an entire scene
      */
     public static class SceneLayer extends Layer {
         private Scene subscene;

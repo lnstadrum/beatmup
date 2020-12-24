@@ -1,33 +1,49 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "wrapper.h"
 
-#include "jniheaders/Beatmup_Bitmap.h"
-#include "jniheaders/Beatmup_Android_ExternalBitmap.h"
-#include "jniheaders/Beatmup_Rendering_Scene.h"
-#include "jniheaders/Beatmup_Rendering_SceneRenderer.h"
-#include "jniheaders/Beatmup_Shading_Shader.h"
-#include "jniheaders/Beatmup_Shading_ShaderApplicator.h"
-#include "jniheaders/Beatmup_Imaging_BinaryOperation.h"
-#include "jniheaders/Beatmup_Imaging_FloodFill.h"
-#include "jniheaders/Beatmup_Imaging_Filters_Local_PixelwiseFilter.h"
-#include "jniheaders/Beatmup_Imaging_Filters_Local_ColorMatrixTransform.h"
-#include "jniheaders/Beatmup_Imaging_Filters_ImageTuning.h"
-#include "jniheaders/Beatmup_Imaging_Filters_Resampler.h"
-#include "jniheaders/Beatmup_Imaging_Filters_Local_Sepia.h"
-#include "jniheaders/Beatmup_Imaging_ColorMatrix.h"
+#include "include/Beatmup_Bitmap.h"
+#include "include/Beatmup_Android_ExternalBitmap.h"
+#include "include/Beatmup_Rendering_Scene.h"
+#include "include/Beatmup_Rendering_SceneRenderer.h"
+#include "include/Beatmup_Shading_ImageShader.h"
+#include "include/Beatmup_Shading_ShaderApplicator.h"
+#include "include/Beatmup_Imaging_BinaryOperation.h"
+#include "include/Beatmup_Imaging_ColorMatrix.h"
+#include "include/Beatmup_Imaging_FloodFill.h"
+#include "include/Beatmup_Imaging_Filters_PixelwiseFilter.h"
+#include "include/Beatmup_Imaging_Filters_ColorMatrixTransform.h"
+#include "include/Beatmup_Imaging_Filters_Sepia.h"
+#include "include/Beatmup_Imaging_Resampler.h"
+#include "include/Beatmup_Imaging_ColorMatrix.h"
 
 #include "android/context.h"
 #include "android/bitmap.h"
 #include "android/external_bitmap.h"
-#include "../core/bitmap/resampler.h"
 
 #include <core/color/matrix.h>
 #include <core/context.h>
 #include <core/contours/contours.h>
 #include <core/exception.h>
-#include <core/filters/local/pixelwise_filter.h>
-#include <core/filters/local/color_matrix.h>
-#include <core/filters/local/sepia.h>
-#include <core/filters/tuning.h>
+#include <core/filters/pixelwise_filter.h>
+#include <core/filters/color_matrix.h>
+#include <core/filters/sepia.h>
 #include <core/geometry.h>
 #include <core/gpu/swapper.h>
 #include <core/bitmap/internal_bitmap.h>
@@ -176,7 +192,7 @@ JNIMETHOD(void, setLayerName, Java_Beatmup_Rendering_Scene, setLayerName)(JNIEnv
 JNIMETHOD(jstring, getLayerName, Java_Beatmup_Rendering_Scene, getLayerName)(JNIEnv * jenv, jobject, jlong hLayer) {
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::Scene::Layer, layer, hLayer);
-    return jenv->NewStringUTF(layer->getName());
+    return jenv->NewStringUTF(layer->getName().c_str());
 }
 
 
@@ -260,24 +276,6 @@ JNIMETHOD(jfloat, getLayerY, Java_Beatmup_Rendering_Scene, getLayerY)(JNIEnv * j
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::Scene::Layer, layer, hLayer);
     return layer->getMapping().position.y;
-}
-
-/**
-    Returns layer X scaling
-*/
-JNIMETHOD(jfloat, getLayerScaleX, Java_Beatmup_Rendering_Scene, getLayerScaleX)(JNIEnv * jenv, jobject, jlong hLayer) {
-    BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Scene::Layer, layer, hLayer);
-    return layer->getMapping().matrix.getScalingX();
-}
-
-/**
-    Returns layer Y scaling
-*/
-JNIMETHOD(jfloat, getLayerScaleY, Java_Beatmup_Rendering_Scene, getLayerScaleY)(JNIEnv * jenv, jobject, jlong hLayer) {
-    BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Scene::Layer, layer, hLayer);
-    return layer->getMapping().matrix.getScalingY();
 }
 
 /**
@@ -492,7 +490,7 @@ JNIMETHOD(void, setShadedBitmapLayerShader, Java_Beatmup_Rendering_Scene, setSha
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::Scene::ShadedBitmapLayer, layer, hLayer);
     BEATMUP_OBJ_OR_NULL(Beatmup::ImageShader, shader, jShader);
-    layer->setLayerShader(shader);
+    layer->setShader(shader);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -511,7 +509,7 @@ JNIMETHOD(void, setOutput, Java_Beatmup_Rendering_SceneRenderer, setOutput)(JNIE
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::AbstractBitmap, bitmap, jBitmap);
     BEATMUP_OBJ(Beatmup::SceneRenderer, renderer, hRenderer);
-    renderer->setOutput(*bitmap);
+    renderer->setOutput(bitmap);
 }
 
 
@@ -527,7 +525,7 @@ JNIMETHOD(void, setScene, Java_Beatmup_Rendering_SceneRenderer, setScene)
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::Scene, scene, jScene);
     BEATMUP_OBJ(Beatmup::SceneRenderer, renderer, hRenderer);
-    renderer->setScene(*scene);
+    renderer->setScene(scene);
 }
 
 
@@ -648,9 +646,7 @@ JNIMETHOD(jint, getPixelFormat, Java_Beatmup_Bitmap, getPixelFormat)(JNIEnv * je
 JNIMETHOD(void, zero, Java_Beatmup_Bitmap, zero)(JNIEnv * jenv, jobject, jlong hBitmap) {
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::AbstractBitmap, bitmap, hBitmap);
-    BEATMUP_CATCH({
-        bitmap->zero();
-    });
+    bitmap->zero();
 }
 
 
@@ -796,7 +792,7 @@ JNIMETHOD(void, setInput, Java_Beatmup_Imaging_FloodFill, setInput)(JNIEnv * jen
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::FloodFill, floodFill, hInstance);
     BEATMUP_OBJ(Beatmup::AbstractBitmap, bitmap, jBitmap);
-    floodFill->setInput(*bitmap);
+    floodFill->setInput(bitmap);
 }
 
 
@@ -804,7 +800,7 @@ JNIMETHOD(void, setOutput, Java_Beatmup_Imaging_FloodFill, setOutput)(JNIEnv * j
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::FloodFill, floodFill, hInstance);
     BEATMUP_OBJ(Beatmup::AbstractBitmap, bitmap, jBitmap);
-    floodFill->setOutput(*bitmap);
+    floodFill->setOutput(bitmap);
 }
 
 
@@ -860,19 +856,22 @@ JNIMETHOD(jint, getContourCount, Java_Beatmup_Imaging_FloodFill, getContourCount
 JNIMETHOD(jint, getContourPointCount, Java_Beatmup_Imaging_FloodFill, getContourPointCount)(JNIEnv * jenv, jobject, jlong hInstance, jint n) {
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::FloodFill, floodFill, hInstance);
-    return floodFill->getContour(n).getPointCount();
+    BEATMUP_CATCH({
+        return floodFill->getContour(n).getPointCount();
+    });
+    return 0;
 }
 
 
 /**
     Returns a layer border component (a contour)
 */
-JNIMETHOD(jintArray, getContour, Java_Beatmup_Imaging_FloodFill, getContour)(JNIEnv * jenv, jobject, jlong hInstance, jint seed, jfloat step) {
+JNIMETHOD(jintArray, getContour, Java_Beatmup_Imaging_FloodFill, getContour)(JNIEnv * jenv, jobject, jlong hInstance, jint index, jfloat step) {
     std::vector<int> xy;
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::FloodFill, floodFill, hInstance);
     BEATMUP_CATCH({
-        const Beatmup::IntegerContour2D& contour = floodFill->getContour(seed);
+        const Beatmup::IntegerContour2D& contour = floodFill->getContour(index);
         if (contour.getPointCount() > 0) {
             float stepLength2 = step*step;
             unsigned int fragmentLength2 = (unsigned int)(stepLength2 + 1);
@@ -918,25 +917,32 @@ JNIMETHOD(jobject, getBoundingBox, Java_Beatmup_Imaging_FloodFill, getBoundingBo
 //                                  PIXELWISE FILTER
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-JNIMETHOD(void, setBitmaps, Java_Beatmup_Imaging_Filters_Local_PixelwiseFilter, setBitmaps)(JNIEnv * jenv, jobject, jlong hInstance, jobject jInputBitmap, jobject jOutputBitmap) {
+JNIMETHOD(void, setBitmaps, Java_Beatmup_Imaging_Filters_PixelwiseFilter, setInput)(JNIEnv * jenv, jobject, jlong hInstance, jobject jInputBitmap) {
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::Filters::PixelwiseFilter, filter, hInstance);
     BEATMUP_OBJ_OR_NULL(Beatmup::AbstractBitmap, input, jInputBitmap);
+    return filter->setInput(input);
+}
+
+
+JNIMETHOD(void, setBitmaps, Java_Beatmup_Imaging_Filters_PixelwiseFilter, setOutput)(JNIEnv * jenv, jobject, jlong hInstance, jobject jOutputBitmap) {
+    BEATMUP_ENTER;
+    BEATMUP_OBJ(Beatmup::Filters::PixelwiseFilter, filter, hInstance);
     BEATMUP_OBJ_OR_NULL(Beatmup::AbstractBitmap, output, jOutputBitmap);
-    filter->setBitmaps(input, output);
+    return filter->setOutput(output);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 //                                  COLOR MATRIX TRANSFORM
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-JNIMETHOD(jlong, newColorMatrixTransform, Java_Beatmup_Imaging_Filters_Local_ColorMatrixTransform, newColorMatrixTransform)(JNIEnv * jenv, jclass) {
+JNIMETHOD(jlong, newColorMatrixTransform, Java_Beatmup_Imaging_Filters_ColorMatrixTransform, newColorMatrixTransform)(JNIEnv * jenv, jclass) {
     BEATMUP_ENTER;
     return (jlong) new Beatmup::Filters::ColorMatrix();
 }
 
 
-JNIMETHOD(void, setFromMatrix, Java_Beatmup_Imaging_Filters_Local_ColorMatrixTransform, setFromMatrix)(JNIEnv * jenv, jobject, jlong hInst, jobject jMat) {
+JNIMETHOD(void, setFromMatrix, Java_Beatmup_Imaging_Filters_ColorMatrixTransform, setFromMatrix)(JNIEnv * jenv, jobject, jlong hInst, jobject jMat) {
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::Filters::ColorMatrix, filter, hInst);
     BEATMUP_OBJ(Beatmup::Color::Matrix, mat, jMat);
@@ -944,7 +950,7 @@ JNIMETHOD(void, setFromMatrix, Java_Beatmup_Imaging_Filters_Local_ColorMatrixTra
 }
 
 
-JNIMETHOD(void, assignToMatrix, Java_Beatmup_Imaging_Filters_Local_ColorMatrixTransform, assignToMatrix)(JNIEnv * jenv, jobject, jlong hInst, jobject jMat) {
+JNIMETHOD(void, assignToMatrix, Java_Beatmup_Imaging_Filters_ColorMatrixTransform, assignToMatrix)(JNIEnv * jenv, jobject, jlong hInst, jobject jMat) {
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::Filters::ColorMatrix, filter, hInst);
     BEATMUP_OBJ(Beatmup::Color::Matrix, mat, jMat);
@@ -952,18 +958,18 @@ JNIMETHOD(void, assignToMatrix, Java_Beatmup_Imaging_Filters_Local_ColorMatrixTr
 }
 
 
-JNIMETHOD(void, setCoefficients, Java_Beatmup_Imaging_Filters_Local_ColorMatrixTransform, setCoefficients)
-    (JNIEnv * jenv, jobject, jlong hInstance, jint out, jfloat add, jfloat in0, jfloat in1, jfloat in2, jfloat in3)
+JNIMETHOD(void, setCoefficients, Java_Beatmup_Imaging_Filters_ColorMatrixTransform, setCoefficients)
+    (JNIEnv * jenv, jobject, jlong hInstance, jint out, jfloat bias, jfloat r, jfloat g, jfloat b, jfloat a)
 {
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::Filters::ColorMatrix, filter, hInstance);
     BEATMUP_CATCH({
-        filter->setCoefficients(out, add, in0, in1, in2, in3);
+        filter->setCoefficients(out, bias, r, g, b, a);
     });
 }
 
 
-JNIMETHOD(void, setHSVCorrection, Java_Beatmup_Imaging_Filters_Local_ColorMatrixTransform, setHSVCorrection)
+JNIMETHOD(void, setHSVCorrection, Java_Beatmup_Imaging_Filters_ColorMatrixTransform, setHSVCorrection)
     (JNIEnv * jenv, jobject, jlong hInstance, jfloat h, jfloat s, jfloat v)
 {
     BEATMUP_ENTER;
@@ -972,7 +978,7 @@ JNIMETHOD(void, setHSVCorrection, Java_Beatmup_Imaging_Filters_Local_ColorMatrix
 }
 
 
-JNIMETHOD(void, setColorInversion, Java_Beatmup_Imaging_Filters_Local_ColorMatrixTransform, setColorInversion)
+JNIMETHOD(void, setColorInversion, Java_Beatmup_Imaging_Filters_ColorMatrixTransform, setColorInversion)
     (JNIEnv * jenv, jobject, jlong hInstance, jfloat r, jfloat g, jfloat b, jfloat s, jfloat v)
 {
     BEATMUP_ENTER;
@@ -982,14 +988,14 @@ JNIMETHOD(void, setColorInversion, Java_Beatmup_Imaging_Filters_Local_ColorMatri
 }
 
 
-JNIMETHOD(void, setAllowIntegerApprox, Java_Beatmup_Imaging_Filters_Local_ColorMatrixTransform, setAllowIntegerApprox)(JNIEnv * jenv, jobject, jlong hInstance, jboolean allow) {
+JNIMETHOD(void, setAllowIntegerApprox, Java_Beatmup_Imaging_Filters_ColorMatrixTransform, setAllowIntegerApprox)(JNIEnv * jenv, jobject, jlong hInstance, jboolean allow) {
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::Filters::ColorMatrix, filter, hInstance);
     filter->allowIntegerApproximations(allow == JNI_TRUE);
 }
 
 
-JNIMETHOD(jboolean, allowIntegerApprox, Java_Beatmup_Imaging_Filters_Local_ColorMatrixTransform, allowIntegerApprox)(JNIEnv * jenv, jobject, jlong hInstance) {
+JNIMETHOD(jboolean, allowIntegerApprox, Java_Beatmup_Imaging_Filters_ColorMatrixTransform, allowIntegerApprox)(JNIEnv * jenv, jobject, jlong hInstance) {
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::Filters::ColorMatrix, filter, hInstance);
     return (jboolean) filter->isIntegerApproximationsAllowed();
@@ -999,121 +1005,43 @@ JNIMETHOD(jboolean, allowIntegerApprox, Java_Beatmup_Imaging_Filters_Local_Color
 //                                      SEPIA
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-JNIMETHOD(jlong, newSepia, Java_Beatmup_Imaging_Filters_Local_Sepia, newSepia)(JNIEnv * jenv, jclass) {
+JNIMETHOD(jlong, newSepia, Java_Beatmup_Imaging_Filters_Sepia, newSepia)(JNIEnv * jenv, jclass) {
     BEATMUP_ENTER;
     return (jlong) new Beatmup::Filters::Sepia();
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-//                                  IMAGE TUNING
-/////////////////////////////////////////////////////////////////////////////////////////////
-
-JNIMETHOD(jlong, newImageTuning, Java_Beatmup_Imaging_Filters_ImageTuning, newImageTuning)(JNIEnv * jenv, jclass) {
-    BEATMUP_ENTER;
-    return (jlong) new Beatmup::Filters::ImageTuning();
-}
-
-
-JNIMETHOD(void, setHueOffset, Java_Beatmup_Imaging_Filters_ImageTuning, setHueOffset)(JNIEnv * jenv, jobject, jlong hInstance, jfloat v) {
-    BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Filters::ImageTuning, filter, hInstance);
-    filter->setHueOffset((float)v);
-}
-
-
-JNIMETHOD(void, setSaturationFactor, Java_Beatmup_Imaging_Filters_ImageTuning, setSaturationFactor)(JNIEnv * jenv, jobject, jlong hInstance, jfloat v) {
-    BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Filters::ImageTuning, filter, hInstance);
-    filter->setSaturationFactor((float)v);
-}
-
-
-JNIMETHOD(void, setValueFactor, Java_Beatmup_Imaging_Filters_ImageTuning, setValueFactor)(JNIEnv * jenv, jobject, jlong hInstance, jfloat v) {
-    BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Filters::ImageTuning, filter, hInstance);
-    filter->setValueFactor((float)v);
-}
-
-
-JNIMETHOD(void, setBrightness, Java_Beatmup_Imaging_Filters_ImageTuning, setBrightness)(JNIEnv * jenv, jobject, jlong hInstance, jfloat v) {
-    BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Filters::ImageTuning, filter, hInstance);
-    filter->setBrightness((float)v);
-}
-
-
-JNIMETHOD(void, setContrast, Java_Beatmup_Imaging_Filters_ImageTuning, setContrast)(JNIEnv * jenv, jobject, jlong hInstance, jfloat v) {
-    BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Filters::ImageTuning, filter, hInstance);
-    filter->setContrast((float)v);
-}
-
-
-JNIMETHOD(jfloat, getHueOffset, Java_Beatmup_Imaging_Filters_ImageTuning, getHueOffset)(JNIEnv * jenv, jobject, jlong hInstance) {
-    BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Filters::ImageTuning, filter, hInstance);
-    return filter->getHueOffset();
-}
-
-
-JNIMETHOD(jfloat, getSaturationFactor, Java_Beatmup_Imaging_Filters_ImageTuning, getSaturationFactor)(JNIEnv * jenv, jobject, jlong hInstance) {
-    BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Filters::ImageTuning, filter, hInstance);
-    return filter->getSaturationFactor();
-}
-
-
-JNIMETHOD(jfloat, getValueFactor, Java_Beatmup_Imaging_Filters_ImageTuning, getValueFactor)(JNIEnv * jenv, jobject, jlong hInstance) {
-    BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Filters::ImageTuning, filter, hInstance);
-    return filter->getValueFactor();
-}
-
-
-JNIMETHOD(jfloat, getBrightness, Java_Beatmup_Imaging_Filters_ImageTuning, getBrightness)(JNIEnv * jenv, jobject, jlong hInstance) {
-    BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Filters::ImageTuning, filter, hInstance);
-    return filter->getBrightness();
-}
-
-
-JNIMETHOD(jfloat, getContrast, Java_Beatmup_Imaging_Filters_ImageTuning, getContrast)(JNIEnv * jenv, jobject, jlong hInstance) {
-    BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Filters::ImageTuning, filter, hInstance);
-    return filter->getContrast();
-}
-
-
-JNIMETHOD(void, setBitmaps, Java_Beatmup_Imaging_Filters_ImageTuning, setBitmaps)(JNIEnv * jenv, jobject, jlong hInstance, jobject jInputBitmap, jobject jOutputBitmap) {
-    BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Filters::ImageTuning, filter, hInstance);
-    BEATMUP_OBJ_OR_NULL(Beatmup::AbstractBitmap, input, jInputBitmap);
-    BEATMUP_OBJ_OR_NULL(Beatmup::AbstractBitmap, output, jOutputBitmap);
-    return filter->setBitmaps(input, output);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 //                                      RESAMPLER
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-JNIMETHOD(jlong, newResampler, Java_Beatmup_Imaging_Filters_Resampler, newResampler)(JNIEnv * jenv, jclass) {
+JNIMETHOD(jlong, newResampler, Java_Beatmup_Imaging_Resampler, newResampler)(JNIEnv * jenv, jclass, jobject jCtx) {
     BEATMUP_ENTER;
-    return (jlong) new Beatmup::BitmapResampler();
+    BEATMUP_OBJ(Beatmup::Context, ctx, jCtx);
+    return (jlong) new Beatmup::BitmapResampler(*ctx);
 }
 
 
-JNIMETHOD(void, setBitmaps, Java_Beatmup_Imaging_Filters_Resampler, setBitmaps)
-    (JNIEnv * jenv, jobject, jlong hInstance, jobject jInput, jobject jOutput)
+JNIMETHOD(void, setInput, Java_Beatmup_Imaging_Resampler, setInput)
+    (JNIEnv * jenv, jobject, jlong hInstance, jobject jInput)
 {
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::BitmapResampler, resampler, hInstance);
     BEATMUP_OBJ_OR_NULL(Beatmup::AbstractBitmap, input, jInput);
-    BEATMUP_OBJ_OR_NULL(Beatmup::AbstractBitmap, output, jOutput);
-    resampler->setBitmaps(input, output);
+    resampler->setInput(input);
 }
 
 
-JNIMETHOD(void, setMode, Java_Beatmup_Imaging_Filters_Resampler, setMode)
+JNIMETHOD(void, setOutput, Java_Beatmup_Imaging_Resampler, setOutput)
+    (JNIEnv * jenv, jobject, jlong hInstance, jobject jOutput)
+{
+    BEATMUP_ENTER;
+    BEATMUP_OBJ(Beatmup::BitmapResampler, resampler, hInstance);
+    BEATMUP_OBJ_OR_NULL(Beatmup::AbstractBitmap, output, jOutput);
+    resampler->setOutput(output);
+}
+
+
+JNIMETHOD(void, setMode, Java_Beatmup_Imaging_Resampler, setMode)
     (JNIEnv * jenv, jobject, jlong hInstance, jint mode)
 {
     BEATMUP_ENTER;
@@ -1122,7 +1050,7 @@ JNIMETHOD(void, setMode, Java_Beatmup_Imaging_Filters_Resampler, setMode)
 }
 
 
-JNIMETHOD(jint, getMode, Java_Beatmup_Imaging_Filters_Resampler, getMode)
+JNIMETHOD(jint, getMode, Java_Beatmup_Imaging_Resampler, getMode)
     (JNIEnv * jenv, jobject, jlong hInstance)
 {
     BEATMUP_ENTER;
@@ -1131,7 +1059,7 @@ JNIMETHOD(jint, getMode, Java_Beatmup_Imaging_Filters_Resampler, getMode)
 }
 
 
-JNIMETHOD(void, setCubicParameter, Java_Beatmup_Imaging_Filters_Resampler, setCubicParameter)
+JNIMETHOD(void, setCubicParameter, Java_Beatmup_Imaging_Resampler, setCubicParameter)
     (JNIEnv * jenv, jobject, jlong hInstance, jfloat val)
 {
     BEATMUP_ENTER;
@@ -1140,7 +1068,7 @@ JNIMETHOD(void, setCubicParameter, Java_Beatmup_Imaging_Filters_Resampler, setCu
 }
 
 
-JNIMETHOD(jfloat, getCubicParameter, Java_Beatmup_Imaging_Filters_Resampler, getCubicParameter)
+JNIMETHOD(jfloat, getCubicParameter, Java_Beatmup_Imaging_Resampler, getCubicParameter)
     (JNIEnv * jenv, jobject, jlong hInstance)
 {
     BEATMUP_ENTER;
@@ -1152,9 +1080,24 @@ JNIMETHOD(jfloat, getCubicParameter, Java_Beatmup_Imaging_Filters_Resampler, get
 //                                      COLOR MATRIX
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-JNIMETHOD(jlong, newColorMatrix, Java_Beatmup_Imaging_ColorMatrix, newColorMatrix)(JNIEnv *jenv, jclass) {
+JNIMETHOD(jlong, newColorMatrix__, Java_Beatmup_Imaging_ColorMatrix, newColorMatrix__)(JNIEnv *jenv, jclass) {
     BEATMUP_ENTER;
     return (jlong) new Beatmup::Color::Matrix();
+}
+
+
+JNIMETHOD(jlong, newColorMatrix__FFF, Java_Beatmup_Imaging_ColorMatrix, newColorMatrix__FFF)(JNIEnv *jenv, jclass, jfloat h, jfloat s, jfloat v) {
+    BEATMUP_ENTER;
+    return (jlong) new Beatmup::Color::Matrix(h, s, v);
+}
+
+
+JNIMETHOD(jlong, newColorMatrix__FFFFF, Java_Beatmup_Imaging_ColorMatrix, newColorMatrix__FFFFF)(JNIEnv *jenv, jclass, jfloat r, jfloat g, jfloat b, jfloat s, jfloat v) {
+    BEATMUP_ENTER;
+    return (jlong) new Beatmup::Color::Matrix(
+            Beatmup::color3f{ r, g, b },
+            s, v
+    );
 }
 
 
@@ -1172,23 +1115,6 @@ JNIMETHOD(void, multiply, Java_Beatmup_Imaging_ColorMatrix, multiply)(JNIEnv *je
     BEATMUP_OBJ(Beatmup::Color::Matrix, matRight, hRight);
     BEATMUP_OBJ(Beatmup::Color::Matrix, matResult, hResult);
     *matResult = (*matLeft) * (*matRight);
-}
-
-
-JNIMETHOD(void, setHSVCorrection, Java_Beatmup_Imaging_ColorMatrix, setHSVCorrection)(JNIEnv *jenv, jobject, jlong hInst, jfloat h, jfloat s, jfloat v) {
-    BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Color::Matrix, mat, hInst);
-    *mat = Beatmup::Color::Matrix::getHSVCorrection(h, s, v);
-}
-
-
-JNIMETHOD(void, setColorInversion, Java_Beatmup_Imaging_ColorMatrix, setColorInversion)(JNIEnv *jenv, jobject, jlong hInst, jfloat r, jfloat g, jfloat b, jfloat s, jfloat v) {
-    BEATMUP_ENTER;
-    BEATMUP_OBJ(Beatmup::Color::Matrix, mat, hInst);
-    *mat = Beatmup::Color::Matrix::getColorInversion(
-            Beatmup::color3f{ r, g, b },
-            s, v
-    );
 }
 
 
@@ -1216,14 +1142,14 @@ JNIMETHOD(void, setElement, Java_Beatmup_Imaging_ColorMatrix, setElement)(JNIEnv
 //                                          SHADER
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-JNIMETHOD(jlong, newShader, Java_Beatmup_Shading_Shader, newShader)(JNIEnv * jenv, jclass, jobject jCtx) {
+JNIMETHOD(jlong, newShader, Java_Beatmup_Shading_ImageShader, newImageShader)(JNIEnv * jenv, jclass, jobject jCtx) {
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::Context, ctx, jCtx);
     return (jlong) new Beatmup::ImageShader(*ctx);
 }
 
 
-JNIMETHOD(void, setSourceCode, Java_Beatmup_Shading_Shader, setSourceCode)(JNIEnv * jenv, jobject, jlong hInstance, jstring src) {
+JNIMETHOD(void, setSourceCode, Java_Beatmup_Shading_ImageShader, setSourceCode)(JNIEnv * jenv, jobject, jlong hInstance, jstring src) {
     BEATMUP_ENTER;
     BEATMUP_OBJ(Beatmup::ImageShader, shader, hInstance);
     const char* javaChar = jenv->GetStringUTFChars(src, 0);
@@ -1232,7 +1158,7 @@ JNIMETHOD(void, setSourceCode, Java_Beatmup_Shading_Shader, setSourceCode)(JNIEn
 }
 
 
-JNIMETHOD(jstring, getInputImageId, Java_Beatmup_Shading_Shader, getInputImageId)
+JNIMETHOD(jstring, getInputImageId, Java_Beatmup_Shading_ImageShader, getInputImageId)
     (JNIEnv * jenv, jclass)
 {
     BEATMUP_ENTER;
@@ -1240,7 +1166,7 @@ JNIMETHOD(jstring, getInputImageId, Java_Beatmup_Shading_Shader, getInputImageId
 }
 
 
-JNIMETHOD(jstring, getInputImageDeclType, Java_Beatmup_Shading_Shader, getInputImageDeclType)
+JNIMETHOD(jstring, getInputImageDeclType, Java_Beatmup_Shading_ImageShader, getInputImageDeclType)
     (JNIEnv * jenv, jclass)
 {
     BEATMUP_ENTER;

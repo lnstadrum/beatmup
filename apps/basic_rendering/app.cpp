@@ -1,3 +1,21 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 /**
     A basic rendering example featuring common bitmap operations,
     Scene, SceneRenderer and custom shading.
@@ -34,11 +52,11 @@ int main(int argc, char* argv[]) {
     Beatmup::InternalBitmap output(ctx, Beatmup::PixelFormat::QuadByte, 1024, 1024);
 
     // Converting input texture to a 1-channel (grayscale) and a 3-channel (RGB) internal bitmaps.
-    // No specific reason to do so; it is done here to showcase InternalBitmaps instantiation and BitmapConverter.
+    // No specific reason to do so; it is done here to showcase InternalBitmaps instantiation and FormatConverter.
     Beatmup::InternalBitmap bitmap1(ctx, Beatmup::PixelFormat::SingleByte,  fecamp.getWidth(), fecamp.getHeight());
     Beatmup::InternalBitmap bitmap3(ctx, Beatmup::PixelFormat::TripleByte,  fecamp.getWidth(), fecamp.getHeight());
-    Beatmup::BitmapConverter::convert(fecamp, bitmap3);
-    Beatmup::BitmapConverter::convert(fecamp, bitmap1);
+    Beatmup::FormatConverter::convert(fecamp, bitmap3);
+    Beatmup::FormatConverter::convert(fecamp, bitmap1);
 
     // Creating a chessboard-like pattern
     Beatmup::AbstractBitmap* chess = Beatmup::BitmapTools::chessboard(ctx, 512, 512, 32, Beatmup::PixelFormat::BinaryMask);
@@ -103,7 +121,7 @@ int main(int argc, char* argv[]) {
         l.getMapping().rotateDegrees(-1);
         l.getMapping().setCenterPosition(Beatmup::Point(0.75, 0.25));
         l.setBitmap(&bitmap3);
-        l.setLayerShader(&distortShader);
+        l.setShader(&distortShader);
     }
 
     // One more layer goes with the gray shift shader.
@@ -113,7 +131,7 @@ int main(int argc, char* argv[]) {
         l.getMapping().rotateDegrees(-2);
         l.getMapping().setCenterPosition(Beatmup::Point(0.75, 0.75));
         l.setBitmap(&bitmap3);
-        l.setLayerShader(&grayShiftShader);
+        l.setShader(&grayShiftShader);
     }
 
     // Last layer contains an entire scene which shows two bitmaps with masks on top.
@@ -132,7 +150,7 @@ int main(int argc, char* argv[]) {
     }
 
     // The scene is ready now. Passing it to the renderer.
-    renderer.setScene(scene);
+    renderer.setScene(&scene);
 
     // To make it even fancier, set up a background image.
     renderer.setBackgroundImage(&bg);
@@ -142,7 +160,7 @@ int main(int argc, char* argv[]) {
     renderer.setOutputMapping(Beatmup::SceneRenderer::OutputMapping::FIT_WIDTH);
 
     // Specify the output bitmap.
-    renderer.setOutput(output);
+    renderer.setOutput(&output);
 
     // Ready to render.
     float time;

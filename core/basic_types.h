@@ -1,25 +1,23 @@
 /*
-    Basic datatypes
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #pragma once
-#include <stdint.h>
-
-#define ceili(x,y) (((x)+(y)-1)/(y))				//!< integer division x/y with ceiling
-#define roundf_fast(X) (floorf_fast((X) + 0.5f))	//!< rounding (nearest integer)
-#define clamp(X0,X,X1) (std::min(std::max((X0),(X)), (X1)))
-
-// fast floorf (no range check)
-inline int floorf_fast(float x) {
-    int i = (int)x;
-    return i - (i > x);
-}
-
-// modulus
-inline float modf(float x, float y) {
-    return x - y * (int)(x / y);
-}
-
+#include <cstdint>
 
 namespace Beatmup {
 
@@ -36,12 +34,12 @@ namespace Beatmup {
     typedef uint8_t pixbyte;
     typedef float pixfloat;
 
-    typedef int dtime;
+    typedef int dtime;                  //!< discrete time
 
     typedef struct {
         uint8_t r, g, b;
     } color3i;
-  
+
     typedef struct {
         uint8_t r, g, b, a;
     } color4i;
@@ -54,17 +52,34 @@ namespace Beatmup {
         float r, g, b, a;
     } color4f;
 
-    enum ProcessingTarget {CPU = 0, GPU};		//!< where to process the stuff
+    enum ProcessingTarget {CPU = 0, GPU};		//!< Where to process the stuff
 
+    /**
+        Low-level API providing access to GPU. Used internally.
+    */
     namespace GL {
-        typedef unsigned int glhandle;
+        typedef unsigned int handle_t;      //!< A reference to a GPU resource
     }
 
     /**
-        Object base
+        Beatmup object base class
     */
     class Object {
     public:
         virtual ~Object() {}
     };
 }
+
+
+/**
+    Beatmup internal declarations.
+    None of its contents is to be included in the application code.
+*/
+namespace Internal {}
+
+
+/**
+    Operations kernels.
+    Used internally by Beatmup.
+*/
+namespace Kernels {}

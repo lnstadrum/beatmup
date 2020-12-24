@@ -1,5 +1,19 @@
 /*
-    Scene representation
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #pragma once
@@ -18,7 +32,7 @@ namespace Beatmup {
     class SceneRenderer;
 
     /**
-        A scene (ordered set of layers)
+        An ordered set of layers representing a renderable content.
     */
     class Scene : public LockableObject {
     public:
@@ -44,7 +58,8 @@ namespace Beatmup {
 
 
         /**
-            Abstract scene layer
+            Abstract scene layer having name, type, geometry and some content to display.
+            The layer geometry is defined by an AffineMapping describing the position and the orientation of the layer content in the rendered image.
         */
         class Layer : public Object {
             friend class SceneRenderer;
@@ -72,11 +87,11 @@ namespace Beatmup {
 
         public:
             /**
-                Returns layer type
+                \return type of the current layer.
             */
             inline Type getType() const { return type; }
 
-            inline const char* getName() const { return name.c_str(); }
+            inline const std::string& getName() const { return name; }
             inline void setName(const char* name) { this->name = name; }
 
             inline AffineMapping& getMapping() { return mapping; }
@@ -84,7 +99,7 @@ namespace Beatmup {
             inline void setMapping(const AffineMapping& mapping) { this->mapping = mapping; }
 
             /**
-                Tests if a point is on this layer
+                Tests if a given point falls in the layer
             */
             virtual bool testPoint(float x, float y) const;
 
@@ -109,7 +124,8 @@ namespace Beatmup {
             inline void setVisible(bool visible) { this->visible = visible; }
 
             /**
-                Makes/unmakes layer "phantom" (i.e. whether it should not be picked when selecting layer by point).
+                Makes/unmakes the layer "phantom".
+                Phantom layers are rendered as usual but not picked when searching a layer by point.
             */
             inline void setPhantom(bool phantom) {	this->phantom = phantom; }
 
@@ -135,15 +151,13 @@ namespace Beatmup {
 
 
         /**
-            Layer having a bitmap
+            Layer having an image to render.
+            The image has a position and orientation with respect to the layer. This is expressed with an affine mapping applied on top of the layer
+            mapping.
         */
         class BitmapLayer : public Layer {
             friend class Scene;
             friend class SceneRenderer;
-        public:
-            /**
-                Specifies for a given scene layer where the image it displays comes from
-            */
 
         protected:
             BitmapLayer();
@@ -156,10 +170,10 @@ namespace Beatmup {
             void configure(RenderingContext& context, GL::TextureHandler* content);
             void render(RenderingContext& context);
 
-            float invAr;					//!< inversed aspect ratio of what is rendered (set by SceneRenderer)
-            AbstractBitmap* bitmap;				//!< content to display, used if the image source is set to BITMAP
+            float invAr;					//!< inverse aspect ratio of what is rendered (set by SceneRenderer)
+            AbstractBitmap* bitmap;			//!< content to display, used if the image source is set to BITMAP
             AffineMapping bitmapMapping;	//!< bitmap mapping w.r.t. the layer mapping
-            color4i modulation;               //!< modulation color
+            color4i modulation;             //!< modulation color
 
         public:
             bool testPoint(float x, float y) const;
@@ -177,7 +191,8 @@ namespace Beatmup {
 
 
         /**
-            Layer containing a bitmap cropped by a mask
+            Layer containing a bitmap and a mask applied to the bitmap when rendering.
+            Both bitmap and mask have their own positions and orientations relative to the layer's position and orientation.
         */
         class CustomMaskedBitmapLayer : public BitmapLayer {
         protected:
@@ -197,7 +212,7 @@ namespace Beatmup {
 
 
         /**
-            Layer containing a bitmap cropped by a bitmap mask
+            Bitmap layer using another bitmap as a mask
         */
         class MaskedBitmapLayer : public CustomMaskedBitmapLayer {
             friend class Scene;
@@ -215,7 +230,7 @@ namespace Beatmup {
 
 
         /**
-            Layer containing a bitmap cropped by a shape mask
+            Layer containing a bitmap and a parametric mask (shape)
         */
         class ShapedBitmapLayer : public CustomMaskedBitmapLayer {
             friend class Scene;
@@ -248,7 +263,7 @@ namespace Beatmup {
 
 
         /**
-            Custom-shaded bitmap layer
+            Bitmap layer using a custom shader
         */
         class ShadedBitmapLayer : public BitmapLayer {
             friend class Scene;
@@ -259,16 +274,16 @@ namespace Beatmup {
             ShadedBitmapLayer();
             void render(RenderingContext& context);
         public:
-            inline ImageShader* getLayerShader() const { return shader; }
-            inline void setLayerShader(ImageShader* shader) { this->shader = shader; }
+            inline ImageShader* getShader() const { return shader; }
+            inline void setShader(ImageShader* shader) { this->shader = shader; }
         };
+
+    // Scene members
+    public:
 
         Scene();
         ~Scene();
 
-        /**
-            Create a new layer
-        */
         BitmapLayer& newBitmapLayer(const char* name);
         BitmapLayer& newBitmapLayer();
         MaskedBitmapLayer& newMaskedBitmapLayer(const char* name);
@@ -279,22 +294,22 @@ namespace Beatmup {
         ShadedBitmapLayer& newShadedBitmapLayer();
 
         /**
-            Adds a subscene
+            Adds a subscene to the current scene.
         */
         SceneLayer& addScene(const Scene& scene);
 
         /**
-            Retrieves layer by name
+            Retrieves a layer by its name or null if not found
         */
         Layer* getLayer(const char* name) const;
 
         /**
-            Retrieves layer by index
+            Retrieves a layer by its index
         */
         Layer& getLayer(int index) const;
 
         /**
-            Retrieves a layer by its position
+            Retrieves a layer present at a specific point of the scene or null if not found
         */
         Layer* getLayer(float x, float y, unsigned int recursionDepth = 0) const;
 
@@ -304,7 +319,7 @@ namespace Beatmup {
         int getLayerIndex(const Layer& layer) const;
 
         /**
-            Returns total number of layers
+            Returns total number of layers in the scene
         */
         int getLayerCount() const;
 
@@ -315,7 +330,7 @@ namespace Beatmup {
         bool resolveMapping(const Layer& layer, AffineMapping& mapping) const;
 
         /**
-            Adds an existing layer to the scene
+            Attaches an existing layer to the scene
         */
         void attachLayer(Layer& layer);
 

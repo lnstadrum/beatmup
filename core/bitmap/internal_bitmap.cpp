@@ -1,33 +1,48 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "internal_bitmap.h"
 #include "../exception.h"
 #include "../utils/bmp_file.h"
-#include "../gpu/swapper.h"
+#include "../utils/utils.hpp"
 
 using namespace Beatmup;
 
 
 InternalBitmap::InternalBitmap(Context& ctx, PixelFormat pixelFormat, int width, int height, bool allocate) :
     AbstractBitmap(ctx),
-    pixelFormat(pixelFormat), width(width), height(height),
-    memory(0),
-    data(nullptr)
+    pixelFormat(pixelFormat), width(width), height(height)
 {
     if (getBitsPerPixel() < 8) {
         int n = 8 / getBitsPerPixel();
         this->width = ceili(width, n) * n;
     }
     if (allocate)
-        memory = ctx.allocateMemory(getMemorySize());
+        memory = AlignedMemory(getMemorySize());
     upToDate[ProcessingTarget::CPU] = allocate;
 }
 
 
-InternalBitmap::InternalBitmap(Context& ctx, const char* filename) :
-    AbstractBitmap(ctx),
-    data(nullptr)
+InternalBitmap::InternalBitmap(Context& ctx, const char* bmpFilename) :
+    AbstractBitmap(ctx)
 {
     // read header
-    BmpFile bmp(filename);
+    BmpFile bmp(bmpFilename);
     switch (bmp.getBitsPerPixel()) {
         case 1:
             this->pixelFormat = PixelFormat::BinaryMask;
@@ -45,30 +60,22 @@ InternalBitmap::InternalBitmap(Context& ctx, const char* filename) :
             this->pixelFormat = PixelFormat::QuadByte;
             break;
         default:
-            throw IOError(filename, "Unsupported pixel format");
+            throw IOError(bmpFilename, "Unsupported pixel format");
     }
     this->width = bmp.getWidth();
     this->height = bmp.getHeight();
 
     // allocate & read
-    memory = ctx.allocateMemory(getMemorySize());
-    Context::Mem mem(ctx, memory);
-    bmp.load(mem(), getMemorySize());
-}
-
-
-InternalBitmap::~InternalBitmap() {
-    if (memory)
-        ctx.freeMemory(memory);
+    memory = AlignedMemory(getMemorySize());
+    bmp.load(memory(), getMemorySize());
 }
 
 
 void Beatmup::InternalBitmap::reshape(int width, int height) {
     if (this->width * this->height != width * height && memory) {
-        ctx.freeMemory(memory);
         this->width = width;
         this->height = height;
-        memory = ctx.allocateMemory(getMemorySize());
+        memory = AlignedMemory(getMemorySize());
     }
     else {
         this->width = width;
@@ -104,40 +111,16 @@ const msize InternalBitmap::getMemorySize() const {
 }
 
 
-pixbyte* InternalBitmap::getData(int x, int y) const {
-    return data + (y * width + x) * AbstractBitmap::BITS_PER_PIXEL[pixelFormat] / 8;
+const pixbyte* InternalBitmap::getData(int x, int y) const {
+    return memory.ptr<pixbyte>((y * width + x) * AbstractBitmap::BITS_PER_PIXEL[pixelFormat] / 8);
+}
+
+pixbyte* InternalBitmap::getData(int x, int y) {
+    return memory.ptr<pixbyte>((y * width + x) * AbstractBitmap::BITS_PER_PIXEL[pixelFormat] / 8);
 }
 
 
 void InternalBitmap::lockPixelData() {
     if (!memory)
-        memory = ctx.allocateMemory(getMemorySize());
-    if (!data)
-        data = (pixbyte*)ctx.acquireMemory(memory);
-}
-
-
-void InternalBitmap::unlockPixelData() {
-    if (data) {
-        data = nullptr;
-        ctx.releaseMemory(memory, !isUpToDate(ProcessingTarget::CPU));
-    }
-}
-
-
-void InternalBitmap::saveBmp(const char* filename) {
-    if (!isUpToDate(ProcessingTarget::CPU)) {
-        // Grab output bitmap from GPU memory to RAM
-        Beatmup::Swapper::pullPixels(*this);
-    }
-
-    if (!memory)
-        memory = ctx.allocateMemory(getMemorySize());
-    Context::Mem mem(ctx, memory);
-    BmpFile::save(
-        mem(),
-        width, height,
-        getBitsPerPixel(),
-        filename
-    );
+        memory = AlignedMemory(getMemorySize());
 }

@@ -1,3 +1,21 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "renderer.h"
 #include "../geometry.h"
 #include "../bitmap/bitmap_access.h"
@@ -50,13 +68,13 @@ AbstractBitmap* SceneRenderer::getOutput() const {
 }
 
 
-void SceneRenderer::setScene(Scene& scene) {
-    this->scene = &scene;
+void SceneRenderer::setScene(Scene* scene) {
+    this->scene = scene;
 }
 
 
-void SceneRenderer::setOutput(AbstractBitmap& output) {
-    this->output = &output;
+void SceneRenderer::setOutput(AbstractBitmap* output) {
+    this->output = output;
 }
 
 
@@ -117,7 +135,7 @@ void SceneRenderer::setRenderingEventListener(RenderingContext::EventListener* e
 }
 
 
-void SceneRenderer::beforeProcessing(ThreadIndex threadCount, GraphicPipeline* gpu) {
+void SceneRenderer::beforeProcessing(ThreadIndex threadCount, ProcessingTarget target, GraphicPipeline* gpu) {
     if (eventListener)
         eventListener->onRenderingStart();
 
@@ -131,20 +149,21 @@ bool SceneRenderer::doRender(GraphicPipeline& gpu, TaskThread& thread) {
     if (!scene)
         return true;
 
-    // setting output
-    if (output) {
-        output->lockContent(PixelFlow::GpuWrite);
-        gpu.bindOutput(*output);
-    }
-    else {
-        gpu.unbindOutput();
-    }
-
+    // init rendering context
     resolution = output ? output->getSize() : gpu.getDisplayResolution();
     RenderingContext context(gpu, eventListener,
         resolution,
         referenceWidth > 0 ? referenceWidth : resolution.getWidth(),
         output == nullptr);
+
+    // set output
+    if (output) {
+        context.writeLock(&gpu, output, ProcessingTarget::GPU);
+        gpu.bindOutput(*output);
+    }
+    else {
+        gpu.unbindOutput();
+    }
 
     // background
     if (background) {
@@ -153,7 +172,7 @@ bool SceneRenderer::doRender(GraphicPipeline& gpu, TaskThread& thread) {
     }
 
     // enable blending
-    gpu.switchAlphaBlending(true);
+    gpu.switchMode(GraphicPipeline::Mode::RENDERING);
 
     // compute initial mapping
     outputCoords.setIdentity();
@@ -181,21 +200,19 @@ bool SceneRenderer::doRender(GraphicPipeline& gpu, TaskThread& thread) {
             renderLayer(context, thread, layer, outputCoords);
     }
 
-    // unlock output
-    if (output)
-        output->unlockContent(PixelFlow::GpuWrite);
-
-    // swap output if needed (and if the rendering task was not aborted)
+    // finalize output
     if (!thread.isTaskAborted()) {
         if (!output)
             gpu.swapBuffers();
-
-        if (output && outputPixelsFetching) {
-            AbstractBitmap::WriteLock lock(*output);
-            gpu.fetchPixels(*output);
+        else if (outputPixelsFetching) {
+            context.writeLock(&gpu, output, ProcessingTarget::CPU);
+            gpu.pullPixels(*output);
+            context.unlock(output);
         }
     }
 
+    // unlock all
+    context.unlockAll();
     return true;
 }
 

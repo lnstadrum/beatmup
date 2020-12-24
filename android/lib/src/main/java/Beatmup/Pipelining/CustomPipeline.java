@@ -1,11 +1,32 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package Beatmup.Pipelining;
 
 import Beatmup.*;
 
 /**
- * Sequential task execution
+ * Custom pipeline: a sequence of tasks to be executed as a whole.
+ * Acts as an AbstractTask. Built by adding tasks one by one and calling measure() at the end.
  */
 public class CustomPipeline extends Task {
+
+    // native methods
     private native int getTaskCount(long handle);
     private native TaskHolder getTask(long handle, int index);
     private native int getTaskIndex(long handle, long taskHolderHandle);
@@ -26,7 +47,7 @@ public class CustomPipeline extends Task {
     }
 
     /**
-     * Retrieves a task by its index
+     * Retrieves a task by its index.
      * @param index     the index (its number in the task list)
      * @return the task holder
      */
@@ -56,20 +77,20 @@ public class CustomPipeline extends Task {
 
     /**
      * Puts a new task at a specified place in the task list of the pipeline
-     * @param task          the new task to put in the pipeline
-     * @param succeeding    the task holder before which the new task will be inserted
-     * @return task holder wrapping the new task
+     * @param task      The task to insert
+     * @param before    TaskHolder specifying position of the task that will follow the newly inserted task
+     * @return TaskHolder with the newly inserted task.
      */
-    public TaskHolder insertTask(Task task, TaskHolder succeeding) {
+    public TaskHolder insertTask(Task task, TaskHolder before) {
         TaskHolder holder = new TaskHolder(task);
-        holder.handle = insertTask(handle, holder, task, succeeding.handle);
+        holder.handle = insertTask(handle, holder, task, before.handle);
         return holder;
     }
 
     /**
-     * Removes a task from the task list of the pipeline
-     * @param taskHolder        the task to remove
-     * @return `true` on success, i.e., if the task actually was in the list; `false` otherwise
+     * Removes a task from the pipeline.
+     * @param taskHolder    The task to remove
+     * @return `true` on success, `false` if this TaskHolder is not in the pipeline.
      */
     public boolean removeTask(TaskHolder taskHolder) {
         return removeTask(handle, taskHolder.handle);
@@ -80,9 +101,5 @@ public class CustomPipeline extends Task {
      */
     public void measure() {
         measure(handle);
-    }
-
-    public void repeat(boolean abortCurrent) {
-        context.repeatTask(this, abortCurrent);
     }
 }

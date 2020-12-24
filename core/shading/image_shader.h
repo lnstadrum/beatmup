@@ -1,6 +1,21 @@
 /*
-    A GLSL program to process images
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #pragma once
 #include "../gpu/variables_bundle.h"
 #include "../gpu/pipeline.h"
@@ -20,11 +35,12 @@ namespace Beatmup {
         ImageShader(const ImageShader&) = delete;			//!< disabling copying constructor
     private:
         GL::RecycleBin& recycleBin;
-        GL::Program* program;
+        GL::RenderingProgram* program;
         std::string sourceCode;                             //!< last passed fragment shader source code
         bool upToDate;                                      //!< if `true`, the program is up-to-date with respect to the source code
         GL::TextureHandler::TextureFormat inputFormat;      //!< last used input texture format; when changed, the shader is recompiled
         IntRectangle outputClipRect;                        //!< output clip rectangle: only this specified area of the output image will be changed
+
     public:
         ImageShader(GL::RecycleBin& recycleBin);
         ImageShader(Context& ctx);
@@ -37,10 +53,9 @@ namespace Beatmup {
         void setSourceCode(const std::string& sourceCode);
 
         /**
-            \brief Specifies output clipping area.
-            Only this specified area of the output bitmap will be changed by executing the shader. This must be called
-            before prepare(..)
-            \param[in] The output clipping area in pixels
+            \brief Sets output clipping area.
+            Only this specified area of the output bitmap will be changed by executing the shader. This must be called before prepare().
+            \param[in] rectangle    The output clipping area in pixels
         */
         void setOutputClipping(const IntRectangle& rectangle);
 
@@ -78,17 +93,25 @@ namespace Beatmup {
         void process(GraphicPipeline& gpu);
 
         /**
+            Returns `true` if the shader has ressources attached to a given context.
+        */
+        inline bool usesContext(Context& context) const { return context.getGpuRecycleBin() == &recycleBin; }
+
+        /**
             A virtual input image type defined at shader compile time by ordinary texture
-            or OES texture sampler depending on the input bound.
+            or OES texture sampler depending on the input bound
         */
         static const std::string INPUT_IMAGE_DECL_TYPE;
 
         /**
-            Shader variable name referring to the input image.
+            Shader variable name referring to the input image
         */
         static const std::string INPUT_IMAGE_ID;
 
-        static const std::string CODE_HEAD;
+        /**
+            Shader code header containing necessary declarations
+        */
+        static const std::string CODE_HEADER;
 
         /**
             Expection thrown if no shader source is provided

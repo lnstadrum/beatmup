@@ -1,3 +1,21 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #pragma once
 #include "../exception.h"
 #include "abstract_bitmap.h"
@@ -5,11 +23,19 @@
 #include "mask_bitmap_access.h"
 
 namespace Beatmup {
+    /**
+        Contains templates calling elementary image processing routines depending on pixel formats of their arguments.
+        An elementary routine is a class template having a public function process() performing a specific processing action.
+        The template arguments of this class are readers of / writers to bitmaps specialized for given pixel formats.
+    */
     namespace BitmapProcessing {
+        /**
+            Exception thrown in a situation when a processing action is not implemented for pixel formats of specific arguments.
+        */
         class ProcessingActionNotImplemented : public Exception {
         public:
             ProcessingActionNotImplemented(PixelFormat fmt) :
-                Exception("Processing action is not implemented for given pixel fomat: '%s'", AbstractBitmap::PIXEL_FORMAT_NAMES[fmt])
+                Exception("Processing action is not implemented for given pixel format: '%s'", AbstractBitmap::PIXEL_FORMAT_NAMES[fmt])
             {}
         };
 

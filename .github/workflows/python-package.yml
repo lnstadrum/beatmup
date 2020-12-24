@@ -1,0 +1,112 @@
+name: 'Build Python packages'
+on:
+  push:
+    branches: [ master, release ]
+  pull_request:
+    branches: master
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-2019 ]
+        python-version: [3.5, 3.6, 3.7, 3.8, 3.9]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+          submodules: recursive
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Make build folder
+        shell: bash
+        run: mkdir -p build
+
+      - name: Install software (linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+            sudo apt -y install freeglut3-dev
+
+      - name: Install Python packages
+        shell: bash
+        run: |
+            python -m pip install -U wheel setuptools twine
+
+      - name: Add msbuild to PATH
+        if: runner.os == 'Windows'
+        uses: microsoft/setup-msbuild@v1.0.2
+
+        # Configure
+
+      - name: Configure CMake project (linux)
+        if: runner.os == 'Linux'
+        working-directory: 'build'
+        shell: bash
+        run: |
+            cmake -DUSE_GLX=ON -DPYTHON_EXECUTABLE=$(python3 -c "import sys; print(sys.executable)") ..
+
+      - name: Configure CMake project (windows)
+        if: runner.os == 'Windows'
+        working-directory: 'build'
+        shell: bash
+        run: |
+            cmake -DUSE_OPENGL=ON ..
+
+        # Build
+
+      - name: Build library (linux)
+        if: runner.os == 'Linux'
+        working-directory: 'build'
+        shell: bash
+        run: |
+            make -j`nproc` beatmup
+
+      - name: Build library (windows)
+        if: runner.os == 'Windows'
+        working-directory: 'build'
+        shell: cmd
+        run: |
+            msbuild glew-build/glew.sln  -m:2 /property:Configuration=Release /property:Platform=x64
+            msbuild Apps.sln             -m:2 /property:Configuration=Release /property:Platform=x64
+
+        # Build wheel
+
+      - name: Build wheel
+        working-directory: 'python'
+        shell: bash
+        run: |
+            python setup.py bdist_wheel clean
+
+        # Run Python
+
+      - name: Run Python
+        working-directory: 'python/dist'
+        shell: bash
+        run: |
+            python -m pip install --no-index --find-links=. beatmup
+            python -c "import beatmup; beatmup.say_hi()"
+
+        # Upload artifacts (release only)
+
+      - name: Upload artifacts (release only)
+        if: github.ref == 'refs/heads/release'
+        uses: actions/upload-artifact@v2
+        with:
+          name: python${{ matrix.python-version }}-${{ matrix.os }}
+          path: python/dist/*.whl
+
+        # Upload to PyPi (release only)
+
+      - name: Upload to PyPi (release only)
+        if: github.ref == 'refs/heads/release' && runner.os == 'Windows'    # because pypi does not accept non-manylinux packages
+        working-directory: 'python'
+        shell: bash
+        run: python -m twine upload --repository pypi -u __token__ -p ${{ secrets.pypi_password }} dist/*

@@ -41,29 +41,3 @@
 -keep,includedescriptorclasses class Beatmup.Visual.* {
     public *;
 }
-
--keepclassmembers class Beatmup.AndroidUITask {
-    protected boolean iterationCancelled();
-}
-
-#
-#   Following methods/fields are kept as they are addressed from JNI layer
-#
-
--keepclassmembers class Beatmup.Object {
-    protected int id;
-}
-
--keepclassmembers class Beatmup.Context {
-    private int envId;
-    private java.lang.Object glSurface;
-}
-
--keepclassmembers class Beatmup.Task {
-    protected boolean taskDone(boolean);
-}
-
--keepclassmembers class Beatmup.AndroidContext {
-    private void updateCamTextureCallback();
-    private void initCamTextureCallback(int);
-}

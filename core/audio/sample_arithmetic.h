@@ -1,16 +1,35 @@
 /*
-    Audio sample values arithmetic
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #pragma once
 #include "../basic_types.h"
+#include "../utils/utils.hpp"
 
 namespace Beatmup {
 
+    /**
+        Format of audio samples
+    */
     enum AudioSampleFormat {
-        Int8,
-        Int16,
-        Int32,
-        Float32
+        Int8,       //!< signed integer, 8 bit per sample
+        Int16,      //!< signed integer, 16 bit per sample
+        Int32,      //!< signed integer, 32 bit per sample
+        Float32     //!< floating point, 32 bit per sample
     };
 
     const int AUDIO_SAMPLE_SIZE[] = { 1, 2, 3, 4 };

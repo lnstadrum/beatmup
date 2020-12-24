@@ -1,3 +1,21 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "bmp_file.h"
 #include "../bitmap/bitmap_access.h"
 #include "../exception.h"
@@ -49,7 +67,7 @@ static const uint8_t
 const BmpFile::Header BmpFile::BMP_HEADER_REFERENCE = {
     { 'B', 'M' },		// magic
     0, { 0, 0 }, 0,
-    40,					// headerSize
+    36,					// headerSize
     0, 0,
     1,					// numColorPlanes
     0,
@@ -179,45 +197,50 @@ void BmpFile::save(
 
     // write out header & color space info
     if (header.bpp == 1) {
-        header.offset += sizeof(BMP_1BIT_COLOR_SPACE_HEADER) + sizeof(BMP_COLOR_SPACE_INFO) + sizeof(BMP_1BIT_COLOR_TABLE);
+        uint32_t size = sizeof(BMP_1BIT_COLOR_SPACE_HEADER) + sizeof(BMP_COLOR_SPACE_INFO);
+        header.offset += size + sizeof(BMP_1BIT_COLOR_TABLE);
         header.size += header.offset;
-        header.headerSize += sizeof(BMP_COLOR_SPACE_INFO);
+        header.headerSize += size;
         out.write((const char*)&header, sizeof(header));
         out.write((const char*)BMP_1BIT_COLOR_SPACE_HEADER, sizeof(BMP_1BIT_COLOR_SPACE_HEADER));
         out.write((const char*)BMP_COLOR_SPACE_INFO, sizeof(BMP_COLOR_SPACE_INFO));
         out.write((const char*)BMP_1BIT_COLOR_TABLE, sizeof(BMP_1BIT_COLOR_TABLE));
     }
     else if (header.bpp == 4) {
-        header.offset += sizeof(BMP_4BIT_COLOR_SPACE_HEADER) + sizeof(BMP_COLOR_SPACE_INFO) + sizeof(BMP_4BIT_COLOR_TABLE);
+        uint32_t size = sizeof(BMP_4BIT_COLOR_SPACE_HEADER) + sizeof(BMP_COLOR_SPACE_INFO);
+        header.offset += size + sizeof(BMP_4BIT_COLOR_TABLE);
         header.size += header.offset;
-        header.headerSize += sizeof(BMP_COLOR_SPACE_INFO);
+        header.headerSize += size;
         out.write((const char*)&header, sizeof(header));
         out.write((const char*)BMP_4BIT_COLOR_SPACE_HEADER, sizeof(BMP_4BIT_COLOR_SPACE_HEADER));
         out.write((const char*)BMP_COLOR_SPACE_INFO, sizeof(BMP_COLOR_SPACE_INFO));
         out.write((const char*)BMP_4BIT_COLOR_TABLE, sizeof(BMP_4BIT_COLOR_TABLE));
     }
     else if (header.bpp == 8) {
-        header.offset += sizeof(BMP_8BIT_COLOR_SPACE_HEADER) + sizeof(BMP_COLOR_SPACE_INFO) + sizeof(BMP_8BIT_COLOR_TABLE);
+        uint32_t size = sizeof(BMP_8BIT_COLOR_SPACE_HEADER) + sizeof(BMP_COLOR_SPACE_INFO);
+        header.offset += size + sizeof(BMP_8BIT_COLOR_TABLE);
         header.size += header.offset;
-        header.headerSize += sizeof(BMP_COLOR_SPACE_INFO);
+        header.headerSize += size;
         out.write((const char*)&header, sizeof(header));
         out.write((const char*)BMP_8BIT_COLOR_SPACE_HEADER, sizeof(BMP_8BIT_COLOR_SPACE_HEADER));
         out.write((const char*)BMP_COLOR_SPACE_INFO, sizeof(BMP_COLOR_SPACE_INFO));
         out.write((const char*)BMP_8BIT_COLOR_TABLE, sizeof(BMP_8BIT_COLOR_TABLE));
     }
     else if (header.bpp == 24) {
-        header.offset += sizeof(BMP_24BIT_COLOR_SPACE_HEADER) + sizeof(BMP_COLOR_SPACE_INFO);
+        uint32_t size = sizeof(BMP_24BIT_COLOR_SPACE_HEADER) + sizeof(BMP_COLOR_SPACE_INFO);
+        header.offset += size;
         header.size += header.offset;
-        header.headerSize += sizeof(BMP_COLOR_SPACE_INFO);
+        header.headerSize += size;
         out.write((const char*)&header, sizeof(header));
         out.write((const char*)BMP_24BIT_COLOR_SPACE_HEADER, sizeof(BMP_24BIT_COLOR_SPACE_HEADER));
         out.write((const char*)BMP_COLOR_SPACE_INFO, sizeof(BMP_COLOR_SPACE_INFO));
     }
     else if (header.bpp == 32) {
+        uint32_t size = sizeof(BMP_32BIT_COLOR_SPACE_HEADER) + sizeof(BMP_COLOR_SPACE_INFO);
         header.compression = BMP_32BIT_COMPRESSION;
-        header.offset += sizeof(BMP_32BIT_COLOR_SPACE_HEADER) + sizeof(BMP_COLOR_SPACE_INFO);
+        header.offset += size;
         header.size += header.offset;
-        header.headerSize += sizeof(BMP_COLOR_SPACE_INFO);
+        header.headerSize += size;
         out.write((const char*)&header, sizeof(header));
         out.write((const char*)BMP_32BIT_COLOR_SPACE_HEADER, sizeof(BMP_32BIT_COLOR_SPACE_HEADER));
         out.write((const char*)BMP_COLOR_SPACE_INFO, sizeof(BMP_COLOR_SPACE_INFO));

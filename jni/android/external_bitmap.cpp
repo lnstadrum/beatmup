@@ -1,3 +1,21 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2020, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "external_bitmap.h"
 #include <core/context.h>
 #include <core/gpu/bgl.h>
@@ -10,7 +28,7 @@ using namespace Android;
 class TextureHandleFactory : public AbstractTask {
 private:
     Context& ctx;
-    Beatmup::GL::glhandle textureHandle;
+    Beatmup::GL::handle_t textureHandle;
 
     TextureHandleFactory(Context& ctx):
         ctx(ctx)
@@ -25,12 +43,12 @@ private:
         return false;
     }
 
-    ExecutionTarget getExecutionTarget() const {
-        return ExecutionTarget::useGPU;
+    TaskDeviceRequirement getUsedDevices() const {
+        return TaskDeviceRequirement::GPU_ONLY;
     }
 
 public:
-    inline static Beatmup::GL::glhandle makeHandle(Context& ctx) {
+    inline static Beatmup::GL::handle_t makeHandle(Context& ctx) {
         TextureHandleFactory me(ctx);
         ctx.performTask(me);
         return me.textureHandle;
@@ -127,8 +145,8 @@ void ExternalBitmap::notifyUpdate(const int width, const int height) {
 }
 
 
-void ExternalBitmap::prepare(GraphicPipeline& gpu, bool queryData) {
-    TextureHandler::prepare(gpu, queryData);
+void ExternalBitmap::prepare(GraphicPipeline& gpu) {
+    TextureHandler::prepare(gpu);
 
     // call updateTexImage()
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, this->textureHandle);

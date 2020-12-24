@@ -1,10 +1,28 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package Beatmup;
 
 /**
- * Base class for any Java class whose instances interact with internal engine functions
+ * Base class for objects natively managed by Beatmup.
  */
 public class Object {
-    protected long handle;
+    protected long handle;      //!< pointer to the native object
 
     private native void disposeNative();
 
@@ -12,7 +30,11 @@ public class Object {
         this.handle = handle;
     }
 
-    public synchronized void dispose() {
+    /**
+     * Destroys the native object.
+     * After the native object is destroyed, its Java counterpart likely becomes unusable.
+     */
+    protected synchronized void dispose() {
         disposeNative();
     }
 

@@ -1,5 +1,19 @@
 /*
-    Useful utilities to work with bitmaps
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #pragma once
@@ -9,47 +23,80 @@
 #include "pixel_arithmetic.h"
 
 namespace Beatmup {
+    /**
+        Set of handy operations with images
+    */
     namespace BitmapTools {
         /**
-            \brief Makes a copy of a bitmap with a specified pixel format
+            Makes a copy of a bitmap.
+            The copy is done in an AbstractTask run in the default thread pool of the context the bitmap is attached to.
+            \param[in] bitmap       The bitmap to copy
         */
-        InternalBitmap* makeCopy(AbstractBitmap& source, PixelFormat newPixelFormat);
+        InternalBitmap* makeCopy(AbstractBitmap& bitmap);
 
         /**
-            \brief Makes a copy of a bitmap
+            Makes a copy of a bitmap converting the data to a given pixel format.
+            The copy is done in an AbstractTask run in the default thread pool of the context the bitmap is attached to.
+            \param[in] bitmap       The bitmap to copy
+            \param[in] pixelFormat  Pixel format of the copy
         */
-        InternalBitmap* makeCopy(AbstractBitmap& source);
+        InternalBitmap* makeCopy(AbstractBitmap& bitmap, PixelFormat pixelFormat);
 
         /**
-            Generates a chessboard
+            Makes a copy of a bitmap for a given Context converting the data to a given pixel format.
+            Can be used to exchange image content between different instances of Context.
+            The copy is done in an AbstractTask run in the default thread pool of the source bitmap context.
+            \param[in] bitmap       The bitmap to copy
+            \param[in] context      The Context instance the copy is associated with
+            \param[in] pixelFormat  Pixel format of the copy
         */
-        InternalBitmap* chessboard(Context& ctx, int width, int height, int cellSize, PixelFormat pixelFormat = BinaryMask);
+        InternalBitmap* makeCopy(AbstractBitmap& bitmap, Context& context, PixelFormat pixelFormat);
 
         /**
-            Replaces a rectangular area in a bitmap by random noise
+            Renders a chessboard image.
+            \param[in] context      A Context instance
+            \param[in] width        Width in pixels of the resulting bitmap
+            \param[in] height       Height in pixels of the resulting bitmap
+            \param[in] cellSize     Size of a single chessboard cell in pixels
+            \param[in] pixelFormat  Pixel format of the resulting bitmap
         */
-        void noise(AbstractBitmap&, IntRectangle);
-
-        void noise(AbstractBitmap&);
+        InternalBitmap* chessboard(Context& context, int width, int height, int cellSize, PixelFormat pixelFormat = BinaryMask);
 
         /**
-            Makes a bitmap area opaque
+            Replaces a rectangular area in a bitmap by random noise.
+            \param[in] bitmap       The bitmap
+            \param[in] area         The area in pixels to process
         */
-        void makeOpaque(AbstractBitmap&, IntRectangle);
+        void noise(AbstractBitmap& bitmap, IntRectangle area);
 
         /**
-            Computes the pixelwise inverse of a bitmap
+            Fills a given bitmap with random noise.
+            \param[in] bitmap       The bitmap to fill
+        */
+        void noise(AbstractBitmap& bitmap);
+
+        /**
+            Makes a bitmap area opaque.
+            Applies for bitmaps having the alpha channel (of QuadByte and QuadFloat pixel formats). Bitmaps of other
+            pixel formats remain unchanged.
+            \param[in] bitmap       The bitmap
+            \param[in] area         The area in pixels to process
+        */
+        void makeOpaque(AbstractBitmap& bitmap, IntRectangle area);
+
+        /**
+            Inverses colors of an image in a pixelwise fashion.
+            \param[in] input        The input image. Its content unchanged.
+            \param[in] output       The output image.
         */
         void invert(AbstractBitmap& input, AbstractBitmap& output);
 
-
         /**
-         * Searches for a pixel of a given value in scaline order starting from a given point
-         * @param source 		the bitmap to look in
-         * @param val 			the pixel value to look for
-         * @param startFrom 	the starting position
-         * @return the next closest position of the searched value (in scaline order) or (-1,-1) if
-         * not found.
+            Goes through a bitmap in scanline order (left to right, top to bottom) until a pixel of a given color is met.
+            \param[in] source       The bitmap to scan
+            \param[in] val          The color value to look for
+            \param[in] startFrom    Starting pixel position
+            \return the next closest position of the searched value (in scanline order) or (-1,-1) if not found.
          */
         IntPoint scanlineSearch(AbstractBitmap& source, pixint4 val, const IntPoint& startFrom);
         IntPoint scanlineSearch(AbstractBitmap& source, pixfloat4 val, const IntPoint& startFrom);

@@ -1,4 +1,23 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "bitmap.h"
+#include "../../core/bitmap/abstract_bitmap.h"
 #include <core/exception.h>
 #include <core/gpu/pipeline.h>
 
@@ -55,6 +74,7 @@ const PixelFormat Bitmap::getPixelFormat() const {
             return SingleByte;
         default:
             Insanity::insanity("AndroidBitmap_getInfo() returned unexpected format");
+            return SingleByte;
     }
 }
 
@@ -91,7 +111,16 @@ void Bitmap::unlockPixelData() {
 }
 
 
-pixbyte* Bitmap::getData(int x, int y) const {
+const pixbyte* Bitmap::getData(int x, int y) const {
+    RuntimeError::check(lockedPixels, "No pixel data available. Forget to lock the bitmap?");
+    if (x < 0 || y < 0 || x >= lockedWidth || y >= lockedHeight)
+        return nullptr;
+    msize n = y * lockedWidth + x;
+    return (pixbyte*)( (unsigned char*)lockedPixels + n * BITS_PER_PIXEL[lockedPixelFormat] / 8 );
+}
+
+
+pixbyte* Bitmap::getData(int x, int y) {
     RuntimeError::check(lockedPixels, "No pixel data available. Forget to lock the bitmap?");
     if (x < 0 || y < 0 || x >= lockedWidth || y >= lockedHeight)
         return nullptr;

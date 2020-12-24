@@ -1,13 +1,26 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "geometry.h"
 #include <limits>
 
 using namespace Beatmup;
 
-template<> const Point    Point::ZERO    = Point(0, 0);
-template<> const IntPoint IntPoint::ZERO = IntPoint(0, 0);
-template<> const Matrix2 Matrix2::IDENTITY(1,1);
-template<> const Rectangle    Rectangle::UNIT_SQUARE    = Rectangle(0, 0, 1, 1);
-template<> const IntRectangle IntRectangle::UNIT_SQUARE = IntRectangle(0, 0, 1, 1);
 const AffineMapping AffineMapping::IDENTITY(Matrix2::IDENTITY, Point::ZERO);
 
 
@@ -55,8 +68,8 @@ void AffineMapping::setCenterPosition(const Point& newPos) {
     position = newPos - matrix(0.5f, 0.5f);
 }
 
-void AffineMapping::translate(const Point& delta) {
-    position = position + delta;
+void AffineMapping::translate(const Point& shift) {
+    position = position + shift;
 }
 
 void AffineMapping::scale(float factor, const Point& fixedPoint) {

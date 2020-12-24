@@ -1,37 +1,35 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package Beatmup.Android;
-
-import android.graphics.SurfaceTexture;
-import android.hardware.Camera;
-
-import java.io.File;
-import java.io.IOException;
 
 /**
  * Beatmup engine context for Android
  */
 public class Context extends Beatmup.Context {
-    protected java.lang.Object glSurface;             //!< a handle to a surface currently bound to the context, accessed from JNI layer
-
-    private static native long newEnvironment(int numPools, String filesFolder);
-
-    private static String getPathAsPrefix(File filesDir) {
-        if (filesDir == null)
-            return null;
-        String path = filesDir.getAbsolutePath();
-        if (!path.endsWith(File.separator))
-            path = path + File.separator;
-        return path;
-    }
-
+    private static native long newContext(int numPools);
 
     /**
-     * Context initialization
-     * @param poolCount     desired number of thread pools (max number of tasks to run in parallel)
-     * @param filesDir      client files folder to use for swapping
+     * Creates a new Context.
+     * @param poolCount     Number of thread pools to run tasks. Equals to the max number of tasks running in parallel.
      */
-    public Context(final int poolCount, File filesDir) {
-        super(newEnvironment(poolCount, getPathAsPrefix(filesDir)));
-        glSurface = null;
+    public Context(final int poolCount) {
+        super(newContext(poolCount));
     }
 
 

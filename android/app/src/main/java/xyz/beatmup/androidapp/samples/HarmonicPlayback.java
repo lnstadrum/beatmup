@@ -1,3 +1,21 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2020, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package xyz.beatmup.androidapp.samples;
 
 import android.app.Activity;
@@ -8,7 +26,7 @@ import Beatmup.Android.Bitmap;
 import Beatmup.Android.Camera;
 import Beatmup.Audio.Playback;
 import Beatmup.Audio.SampleFormat;
-import Beatmup.Audio.Source.Harmonic;
+import Beatmup.Audio.HarmonicSource;
 import Beatmup.Context;
 import Beatmup.Exceptions.PlaybackException;
 import Beatmup.Geometry.AffineMapping;
@@ -16,7 +34,7 @@ import Beatmup.Rendering.Scene;
 import Beatmup.Task;
 
 public class HarmonicPlayback extends TestSample {
-    private Harmonic harmonic;
+    private HarmonicSource harmonic;
     private int playbackJob;
     private Context context;
 
@@ -31,11 +49,11 @@ public class HarmonicPlayback extends TestSample {
     @Override
     public Scene designScene(Task drawingTask, Activity app, Camera camera, String extFile) throws IOException {
         context = drawingTask.getContext();
-        harmonic = new Harmonic();
+        harmonic = new HarmonicSource();
         Playback playback = new Playback(context);
         playback.setSource(harmonic);
         try {
-            playback.configure(SampleFormat.Int16, 44100, 1, 2, 256);
+            playback.initialize(44100, SampleFormat.Int16, 1, 256, 2);
             playback.start();
             playbackJob = context.submitPersistentTask(playback, 1);
         } catch (PlaybackException e) {
