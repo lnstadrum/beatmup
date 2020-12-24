@@ -2,3 +2,6 @@
 	path = glew-cmake
 	url = https://github.com/Perlmint/glew-cmake
 
+[submodule "pybind11"]
+	path = pybind11
+	url = https://github.com/lnstadrum/pybind11.git

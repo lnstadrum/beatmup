@@ -1,17 +1,34 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "../basic_types.h"
 #include "../scene/scene.h"
 #include "../exception.h"
-#include "../color/colors.h"
+#include "../color/constants.h"
 #include <map>
 #include <vector>
 #include <cmath>
 
 using namespace Beatmup;
-using namespace std;
 
 
-string Scene::SceneIntegrityError::getSceneLog(const Scene& scene, const string prefix, int recursionLeft) const {
-    string log = prefix + "Scene has " + std::to_string(scene.getLayerCount()) + " layers\n";
+std::string Scene::SceneIntegrityError::getSceneLog(const Scene& scene, const std::string prefix, int recursionLeft) const {
+    std::string log = prefix + "Scene has " + std::to_string(scene.getLayerCount()) + " layers\n";
     const int N = scene.getLayerCount();
     for (int i = 0; i < N; i++) {
         Layer& layer = scene.getLayer(i);
@@ -80,7 +97,7 @@ Scene::SceneIntegrityError::SceneIntegrityError(const std::string reason, const 
 std::string generateUniqueLayerName(const Scene& scene, const char* prefix = "") {
     int n = 1;
     std::string candidate;
-    while (scene.getLayer((candidate = prefix + (" #" + to_string(n))).c_str()))
+    while (scene.getLayer((candidate = prefix + (" #" + std::to_string(n))).c_str()))
         n++;
     return candidate;
 }
@@ -249,7 +266,7 @@ Scene::BitmapLayer::BitmapLayer():
 {}
 
 Scene::BitmapLayer::BitmapLayer(Type type):
-    Layer(type), invAr(0), bitmap(nullptr), bitmapMapping(), modulation(Colors::White)
+    Layer(type), invAr(0), bitmap(nullptr), bitmapMapping(), modulation(Color::WHITE)
 {}
 
 
@@ -303,7 +320,7 @@ bool Scene::BitmapLayer::testPoint(float x, float y) const {
 
 
 Scene::CustomMaskedBitmapLayer::CustomMaskedBitmapLayer(Type type) :
-    BitmapLayer(type), maskMapping(), bgColor(Beatmup::Colors::Zero)
+    BitmapLayer(type), maskMapping(), bgColor(Beatmup::Color::ZERO)
 {}
 
 void Scene::CustomMaskedBitmapLayer::configure(RenderingContext& context, GL::TextureHandler* content) {
@@ -443,5 +460,6 @@ void Scene::ShadedBitmapLayer::render(RenderingContext& context) {
         arMapping.matrix.scale(1.0f, invAr);
 
     shader->prepare(context.getGpu(), content, TextureParam::INTERP_LINEAR, nullptr, arMapping);
-    context.blend();
+    shader->setInteger(GL::RenderingPrograms::VERTICAL_FLIP_ID, context.isRenderingOnScreen() ? 0 : 1);
+    shader->process(context.getGpu());
 }

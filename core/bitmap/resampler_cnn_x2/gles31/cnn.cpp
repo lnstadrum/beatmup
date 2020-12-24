@@ -1,3 +1,21 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2020, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "cnn.h"
 #include <algorithm>
 
@@ -43,10 +61,10 @@ void Beatmup::GLES31X2UpsamplingNetwork::Layer::prepare(GraphicPipeline& gpu, GL
 }
 
 GLES31X2UpsamplingNetwork::Layer::Layer(
-    GraphicPipeline& gpu, GL::RecycleBin& recycleBin, std::string sourceCodeTemplate,
+    GraphicPipeline& gpu, GL::RecycleBin& recycleBin, BitmapContentLock& lock, std::string sourceCodeTemplate,
     int inputZDim, int outputZDim, bool pointwise
 ):
-    recycleBin(recycleBin), sourceCodeTemplate(sourceCodeTemplate), numInputs(inputZDim / 4), numOutputs(outputZDim / 4), prepared(false)
+    recycleBin(recycleBin), lock(lock), sourceCodeTemplate(sourceCodeTemplate), numInputs(inputZDim / 4), numOutputs(outputZDim / 4), prepared(false)
 {
     program = new GL::ComputeProgram(gpu);
 
@@ -68,16 +86,7 @@ GLES31X2UpsamplingNetwork::Layer::Layer(
 
 
 GLES31X2UpsamplingNetwork::Layer::~Layer() {
-    class Deleter : public GL::RecycleBin::Item {
-        GL::ComputeProgram* program;
-    public:
-        Deleter(GL::ComputeProgram* program) : program(program) {}
-        ~Deleter() {
-            if (program)
-                delete program;
-        }
-    };
-    recycleBin.put(new Deleter(program));
+    recycleBin.put(program);
 }
 
 
@@ -91,7 +100,7 @@ void GLES31X2UpsamplingNetwork::Layer::process(GraphicPipeline& gpu, GL::Texture
     for (int i = 0; i < numOutputs; ++i) {
         if (outputs[i]->getWidth() != input.getWidth() || outputs[i]->getHeight() != input.getHeight())
             outputs[i]->reshape(input.getWidth(), input.getHeight());
-        outputs[i]->lockContent(PixelFlow::GpuWrite);
+        lock.writeLock(&gpu, outputs[i], ProcessingTarget::GPU);
         gpu.bind(*outputs[i], i, false, true);
     }
 
@@ -107,7 +116,7 @@ void GLES31X2UpsamplingNetwork::Layer::process(GraphicPipeline& gpu, GL::Texture
 
     // unlock outputs
     for (int i = 0; i < numOutputs; ++i)
-        outputs[i]->unlockContent(PixelFlow::GpuWrite);
+        lock.unlock(outputs[i]);
 }
 
 
@@ -121,7 +130,7 @@ unsigned int GLES31X2UpsamplingNetwork::Layer::process(GraphicPipeline& gpu, Int
     int bindingCtr = 0;
     for (int i = 0; i < numInputs; ++i) {
         InternalBitmap* input = inputs[i];
-        input->lockContent(PixelFlow::GpuRead);
+        lock.readLock(&gpu, input, ProcessingTarget::GPU);
         gpu.bind(*input, i, TextureParam::INTERP_NEAREST);
     }
     program->setIntegerArray("inFeatures", 0, numInputs);
@@ -140,7 +149,7 @@ unsigned int GLES31X2UpsamplingNetwork::Layer::process(GraphicPipeline& gpu, Int
 
     // unlock
     for (int i = 0; i < numInputs; ++i)
-        inputs[i]->unlockContent(PixelFlow::GpuRead);
+        lock.unlock(inputs[i]);
 
     return xWorkgroups * wgSize[0];
 }
@@ -160,7 +169,7 @@ void GLES31X2UpsamplingNetwork::Layer::processPointwise(GraphicPipeline& gpu, GL
     for (int i = 0; i < numOutputs; ++i) {
         if (outputs[i]->getWidth() != width || outputs[i]->getHeight() != height)
             outputs[i]->reshape(width, height);
-        outputs[i]->lockContent(PixelFlow::GpuWrite);
+        lock.writeLock(&gpu, outputs[i], ProcessingTarget::GPU);
         gpu.bind(*outputs[i], i, false, true);
     }
 
@@ -172,7 +181,7 @@ void GLES31X2UpsamplingNetwork::Layer::processPointwise(GraphicPipeline& gpu, GL
 
     // unlock
     for (int i = 0; i < numOutputs; ++i)
-        outputs[i]->unlockContent(PixelFlow::GpuWrite);
+        lock.unlock(outputs[i]);
 }
 
 
@@ -201,7 +210,7 @@ void GLES31X2UpsamplingNetwork::Layer::processPointwise(GraphicPipeline& gpu, GL
 
 void GLES31X2UpsamplingNetwork::process(GraphicPipeline& gpu, GL::TextureHandler& input, AbstractBitmap& output) {
     // disable alpha blend
-    gpu.switchAlphaBlending(false);
+    gpu.switchMode(GraphicPipeline::Mode::INFERENCE);
 
 #ifdef ENABLE_PROFILING
     Profiler profiler;
@@ -257,48 +266,48 @@ void GLES31X2UpsamplingNetwork::process(GraphicPipeline& gpu, GL::TextureHandler
 
 GLES31X2UpsamplingNetwork::GLES31X2UpsamplingNetwork(Context& ctx, GraphicPipeline& gpu) :
 #define STRINGIFY(...) #__VA_ARGS__
-#undef clamp
-    layer1_0(gpu, *ctx.getGpuRecycleBin(),
+
+    layer1_0(gpu, *ctx.getGpuRecycleBin(), *this,
 #include "l1-0.glsl"
         , 1, 24
     ),
-    layer1_1(gpu, *ctx.getGpuRecycleBin(),
+    layer1_1(gpu, *ctx.getGpuRecycleBin(), *this,
 #include "l1-1.glsl"
         , 1, 24
     ),
 
-    layer2_0(gpu, *ctx.getGpuRecycleBin(),
+    layer2_0(gpu, *ctx.getGpuRecycleBin(), *this,
 #include "l2-0.glsl"
         , 12, 8
     ),
-    layer2_1(gpu, *ctx.getGpuRecycleBin(),
+    layer2_1(gpu, *ctx.getGpuRecycleBin(), *this,
 #include "l2-1.glsl"
         , 12, 8
     ),
-    layer2_2(gpu, *ctx.getGpuRecycleBin(),
+    layer2_2(gpu, *ctx.getGpuRecycleBin(), *this,
 #include "l2-2.glsl"
         , 12, 8
     ),
-    layer2_3(gpu, *ctx.getGpuRecycleBin(),
+    layer2_3(gpu, *ctx.getGpuRecycleBin(), *this,
 #include "l2-3.glsl"
         , 12, 8
     ),
 
-    layer3(gpu, *ctx.getGpuRecycleBin(),
+    layer3(gpu, *ctx.getGpuRecycleBin(), *this,
 #include "l3.glsl"
         , 32, 24, true
     ),
 
-    layer4_0(gpu, *ctx.getGpuRecycleBin(),
+    layer4_0(gpu, *ctx.getGpuRecycleBin(), *this,
 #include "l4-0.glsl"
         , 12, 8
     ),
-    layer4_1(gpu, *ctx.getGpuRecycleBin(),
+    layer4_1(gpu, *ctx.getGpuRecycleBin(), *this,
 #include "l4-1.glsl"
         , 12, 8
     ),
 
-    layer5(gpu, *ctx.getGpuRecycleBin(),
+    layer5(gpu, *ctx.getGpuRecycleBin(), *this,
 #include "l5.glsl"
         , 16, 1, true
     ),

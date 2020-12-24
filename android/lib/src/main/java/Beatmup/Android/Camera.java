@@ -1,8 +1,25 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package Beatmup.Android;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
@@ -20,16 +37,18 @@ import android.hardware.camera2.params.StreamConfigurationMap;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.util.Log;
 import android.util.Size;
 import android.view.Display;
 import android.view.Surface;
-
 import java.util.Arrays;
 
-import Beatmup.Task;
-
+/**
+ * Android camera control API
+ */
 public class Camera {
+    /**
+     * Set of camera events callbacks
+     */
     public interface Callback {
         void onAccessError(Camera camera);
         void onConfigureFailed(Camera camera);
@@ -48,6 +67,9 @@ public class Camera {
         BIGGEST                 //!< pick the biggest available resolution
     };
 
+    /**
+     * Camera facing specification
+     */
     public enum Facing {
         FRONT,
         BACK,
@@ -70,7 +92,12 @@ public class Camera {
 
     private Callback callback;
 
-
+    /**
+     * Creates a Camera object instance to operate the device cameras and capture content
+     * @param beatmup       A Beatmup context instance
+     * @param context       An Android context instance
+     * @throws CameraAccessException when the device camera cannot be accessed.
+     */
     @TargetApi(Build.VERSION_CODES.M)
     public Camera(Beatmup.Android.Context beatmup, Context context) throws CameraAccessException {
         this.context = beatmup;
@@ -95,11 +122,13 @@ public class Camera {
         return image;
     }
 
-
+    /**
+     * Sets a Callback object instance. Its member functions are called when different events occur related to the camera configuration, capture, etc.
+     * @param callback  The callback object instance
+     */
     public void setCallback(Callback callback) {
         this.callback = callback;
     }
-
 
     /**
      * @return number of available cameras
@@ -107,7 +136,6 @@ public class Camera {
     public int getNumberOfCameras() {
         return cameraIds.length;
     }
-
 
     /**
      * Select a camera by its number.
@@ -126,12 +154,10 @@ public class Camera {
         }
     }
 
-
     /**
-     * Tries to find a camera having a specified facing.
-     * @param facing    The target camera facing
-     * @return `true` if found and selected, `false` otherwise (the selected camera remains
-     * unchanged).
+     * Searches for a camera with a specified facing and selects it if found.
+     * @param facing    The wanted facing
+     * @return `true` if found and selected, `false` otherwise (the selected camera remains unchanged then).
      */
     public boolean selectCamera(Facing facing) {
         CameraCharacteristics chars;
@@ -176,11 +202,12 @@ public class Camera {
         return false;
     }
 
-
+    /**
+     * @return currently selected camera number.
+     */
     public int getCameraNumber() {
         return selectedCameraIdx;
     }
-
 
     /**
      * Performs automatic search of the preview resolution according to a specified criterion.
@@ -221,24 +248,17 @@ public class Camera {
         return resolution;
     }
 
-
     /**
-     * @return currently used resolution.
+     * @return the currently configured capture resolution.
      */
     public Size getResolution() {
         return resolution;
     }
 
-
-    public Rect getSensorSpaceSize()  {
-        return characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
-    }
-
-
     /**
-     * Retrieves camera image orientation with respect to a given display
+     * Retrieves camera image orientation with respect to a given display.
      * @param display The display
-     * @return camera image orientation in degrees within [0..360) range.
+     * @return counterclockwise camera image orientation in degrees within [0..360) range.
      */
     public int getOrientation(Display display) {
         if (!checkAccess())
@@ -262,7 +282,10 @@ public class Camera {
         return (sensorOrientation + displayOrientation + 360) % 360;
     }
 
-
+    /**
+     * Enables face detection, if available.
+     * @return `true` on success.
+     */
     public boolean enableFaceDetection() {
         if (captureRequestBuilder == null)
             return false;
@@ -276,9 +299,8 @@ public class Camera {
         return true;
     }
 
-
     /**
-     * Initiates preview.
+     * Initiates camera preview.
      */
     @SuppressLint("MissingPermission")
     public void open() {
@@ -294,7 +316,9 @@ public class Camera {
         }
     }
 
-
+    /**
+     * Closes the camera.
+     */
     public void close() {
         stateCallback.close();
     }
@@ -413,7 +437,9 @@ public class Camera {
                     callback.onConfigureFailed(Camera.this);
             }
 
-
+            /**
+             * Internal class implementing capture completion callback
+             */
             private class CaptureCallback extends CameraCaptureSession.CaptureCallback {
                 @Override
                 public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {

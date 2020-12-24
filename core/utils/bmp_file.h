@@ -1,12 +1,30 @@
-/**
-    BMP
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #pragma once
 #include <fstream>
 #include <string>
-#include <stdint.h>
+#include <cstdint>
 
 namespace Beatmup {
+    /**
+        Toolset to load and store images in BMP format.
+    */
     class BmpFile {
     private:
 #ifdef _MSC_VER
@@ -38,14 +56,25 @@ namespace Beatmup {
 
         Header header;
         std::ifstream in;
+
     public:
         BmpFile(const char* filename);
+
+        /**
+            Loads the content of the file into memory.
+            \param[out] pixels              The memory buffer to fill with pixel data.
+            \param[in] pixelsSizeInBytes    The memory buffer size in bytes
+        */
         void load(void* pixels, const uint32_t pixelsSizeInBytes);
 
-        uint8_t getBitsPerPixel() const { return header.bpp; }
-        int32_t getWidth()        const { return header.width; }
-        int32_t getHeight()       const { return header.height; }
-
+        /**
+            Stores an image into a BMP file.
+            \param[in] pixels       Memory buffer containing the pixel data to save
+            \param[in] width        Image width in pixels
+            \param[in] height       Image height in pixels
+            \param[in] bpp          Number of bits per pixel
+            \param[in] filename     Name/path of the file to write the data to.
+         */
         static void save(
             const void* pixels,
             int32_t width,
@@ -53,5 +82,9 @@ namespace Beatmup {
             uint8_t bpp,
             const char* filename
         );
+
+        inline uint8_t getBitsPerPixel() const { return header.bpp; }
+        inline int32_t getWidth()        const { return header.width; }
+        inline int32_t getHeight()       const { return header.height; }
     };
 }

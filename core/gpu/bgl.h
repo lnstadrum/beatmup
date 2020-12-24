@@ -1,5 +1,19 @@
 /*
-    "BeatmupGL": platform-dependent OpenGL headers and auxiliary utilities
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #pragma once
@@ -35,23 +49,29 @@
 
 namespace Beatmup {
     namespace GL {
+
+        /**
+            GPU exception
+        */
         class GLException : public Beatmup::Exception {
         public:
-            GLException(const char* info, int errCode) : Exception("GL exception got: %s\nGL error %x", info, errCode) {}
-            GLException(const char* info) : Exception("GL exception got: %s\nGL error %x", info, glGetError()) {}
+            GLException(const char* info, int errCode) : Exception("GL error %x: %s", errCode, info) {}
+            GLException(const char* info) : Exception("GL error %x: %s", glGetError(), info) {}
 
-            static inline void check(const char* info) {
+            static inline void check(const std::string& info) {
                 GLuint err = glGetError();
                 if (err != GL_NO_ERROR)
-                    throw GLException(info, err);
+                    throw GLException(info.c_str(), err);
             }
         };
 
+        /**
+            Exception communicating the use of an unsupported feature on GPU
+        */
         class Unsupported : public Beatmup::Exception {
         public:
             Unsupported(const char* info) : Exception(info) {}
         };
-
 
         /**
             Mapping of bitmap pixel formats to GL pixel formats

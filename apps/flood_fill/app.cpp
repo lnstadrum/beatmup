@@ -1,3 +1,21 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 /**
     Example of generating a mask using flood fill.
 */
@@ -23,8 +41,8 @@ int main(int argc, char* argv[]) {
     Beatmup::IntPoint seeds[1] = { Beatmup::IntPoint(300, 20) };
 
     // floodfill
-    floodFill.setInput(spiral);
-    floodFill.setOutput(mask);
+    floodFill.setInput(&spiral);
+    floodFill.setOutput(&mask);
     floodFill.setSeeds(seeds, 1);
     floodFill.setBorderPostprocessing(Beatmup::FloodFill::BorderMorphology::ERODE, 2, 10);
 
@@ -36,10 +54,10 @@ int main(int argc, char* argv[]) {
     std::cout << time << " ms" << std::endl;
 
     // configure renderer
-    renderer.setScene(scene);
+    renderer.setScene(&scene);
     renderer.setOutputPixelsFetching(true);
     renderer.setOutputMapping(Beatmup::SceneRenderer::OutputMapping::FIT_WIDTH_TO_TOP);
-    renderer.setOutput(output);
+    renderer.setOutput(&output);
     ctx.warmUpGpu();
 
     // construct the scene

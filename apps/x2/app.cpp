@@ -1,3 +1,21 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2020, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 /**
     Upsamples an image using a convolutional neural net inferred on GPU.
     A basic example of using Resampler to infer the net is much simpler; in this app there is a lot of code
@@ -43,7 +61,7 @@ int main(int argc, char* argv[]) {
     );
 
     // Instantiate a resampler
-    Beatmup::BitmapResampler resampler;
+    Beatmup::BitmapResampler resampler(ctx);
     resampler.setMode(Beatmup::BitmapResampler::Mode::CONVNET);
 
     // Warm up GPU
@@ -56,7 +74,8 @@ int main(int argc, char* argv[]) {
     std::cout << "Compiling shaders... ";
     float time;
     Beatmup::InternalBitmap dummyInput(ctx, input.getPixelFormat(), input.getWidth(), input.getHeight());
-    resampler.setBitmaps(&dummyInput, &output);
+    resampler.setInput(&dummyInput);
+    resampler.setOutput(&output);
     time = ctx.performTask(resampler);
     std::cout << time << " ms" << std::endl;
 
@@ -67,7 +86,8 @@ int main(int argc, char* argv[]) {
 
     // Run the inference (possibly multiple times)
     std::cout << "Processing... " << std::endl;
-    resampler.setBitmaps(&input, &output);
+    resampler.setInput(&input);
+    resampler.setOutput(&output);
     const int repeat = argc > Args::REPEAT_COUNT ? std::stoi(argv[Args::REPEAT_COUNT]) : 1;
     float timeSum = 0, sqrTimeSum = 0, minTime, maxTime;
     for (int i = 0; i < repeat; ++i) {

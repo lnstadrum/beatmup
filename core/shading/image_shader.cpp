@@ -1,3 +1,21 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "image_shader.h"
 #include "../gpu/program.h"
 #include "../gpu/bgl.h"
@@ -10,7 +28,7 @@ using namespace Beatmup;
 const std::string
     ImageShader::INPUT_IMAGE_DECL_TYPE = "beatmupInputImage",
     ImageShader::INPUT_IMAGE_ID        = "image",
-    ImageShader::CODE_HEAD =
+    ImageShader::CODE_HEADER =
         INPUT_IMAGE_DECL_TYPE + " " + INPUT_IMAGE_ID +";\n" +
         GL::RenderingPrograms::DECLARE_TEXTURE_COORDINATES_IN_FRAG;
 
@@ -25,7 +43,7 @@ bool str_replace(std::string& str, const std::string& from, const std::string& t
 
 
 static AffineMapping getOutputCropMapping(const ImageResolution& out, const IntRectangle& outputClipRect) {
-    return AffineMapping(Rectangle(
+    return AffineMapping(Beatmup::Rectangle(
         (float)outputClipRect.getX1() / out.getWidth(),
         (float)outputClipRect.getY1() / out.getHeight(),
         (float)outputClipRect.getX2() / out.getWidth(),
@@ -48,17 +66,7 @@ ImageShader::ImageShader(Context& ctx) :
 
 
 ImageShader::~ImageShader() {
-    class Deleter : public GL::RecycleBin::Item {
-        GL::Program* program;
-    public:
-        Deleter(GL::Program* program): program(program) {};
-        ~Deleter() {
-             delete program;
-        }
-    };
-
-    if (program)
-        recycleBin.put(new Deleter(program));
+    recycleBin.put(program);
 }
 
 
@@ -114,8 +122,7 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, const
         // link program
         GL::FragmentShader fragmentShader(gpu, code);
         if (!program) {
-            program = new GL::Program(gpu);
-            program->link(gpu.getDefaultVertexShader(), fragmentShader);
+            program = new GL::RenderingProgram(gpu, fragmentShader);
         }
         else
             program->relink(fragmentShader);
@@ -124,14 +131,17 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, const
     }
 
     // enable program
-    gpu.getRenderingPrograms().enableProgram(&gpu, *program, input != nullptr);
+    program->enable(gpu);
+    program->setInteger(INPUT_IMAGE_ID, 0);
+    gpu.setTextureCoordinates(Rectangle::UNIT_SQUARE);
 
     // bind output
-    if (output)
+    if (output) {
         if (!outputClipRect.empty())
             gpu.bindOutput(*output, outputClipRect);
         else
             gpu.bindOutput(*output);
+    }
 
     // bind input
     if (input)
@@ -164,8 +174,7 @@ void ImageShader::prepare(GraphicPipeline& gpu, AbstractBitmap* output) {
         // link program
         GL::FragmentShader fragmentShader(gpu, BEATMUP_SHADER_HEADER_VERSION + sourceCode);
         if (!program) {
-            program = new GL::Program(gpu);
-            program->link(gpu.getDefaultVertexShader(), fragmentShader);
+            program = new GL::RenderingProgram(gpu, fragmentShader);
         }
         else
             program->relink(fragmentShader);
@@ -174,14 +183,15 @@ void ImageShader::prepare(GraphicPipeline& gpu, AbstractBitmap* output) {
     }
 
     // enable program
-    gpu.getRenderingPrograms().enableProgram(&gpu, *program, false);
+    program->enable(gpu);
 
     // bind output
-    if (output)
+    if (output) {
         if (!outputClipRect.empty())
             gpu.bindOutput(*output, outputClipRect);
         else
             gpu.bindOutput(*output);
+    }
 
     // set up mapping
     program->setMatrix3(
@@ -201,5 +211,5 @@ void ImageShader::bindSamplerArray(const char* uniformId, int startingUnit, int 
 
 
 void ImageShader::process(GraphicPipeline& gpu) {
-    gpu.getRenderingPrograms().blend(false);
+    program->blend();
 }

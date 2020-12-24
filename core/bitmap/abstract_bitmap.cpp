@@ -1,3 +1,21 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "abstract_bitmap.h"
 #include "../context.h"
 #include "../gpu/pipeline.h"
@@ -5,6 +23,8 @@
 #include "converter.h"
 #include "../gpu/bgl.h"
 #include "../exception.h"
+#include "../gpu/swapper.h"
+#include "../utils/bmp_file.h"
 #include <cstring>
 
 
@@ -31,44 +51,24 @@ const unsigned char AbstractBitmap::CHANNELS_PER_PIXEL[] = {
 };
 
 
-class UnavailablePixelData : public Exception {
-public:
-    UnavailablePixelData(const AbstractBitmap& bitmap, const char* info):
-        Exception("No pixel data available for bitmap %s. %s", bitmap.toString().c_str(), info)
-    {}
-};
+void AbstractBitmap::prepare(GraphicPipeline& gpu) {
+    const bool handleValid = hasValidHandle();
 
-
-void AbstractBitmap::prepare(GraphicPipeline& gpu, bool queryData) {
-#ifdef BEATMUP_DEBUG
-    if (queryData)
-        DebugAssertion::check(getData(0, 0) != nullptr, "Cannot transfer pixels to GPU: the bitmap is not locked");
-#endif
-    TextureHandler::prepare(gpu, queryData);
+    if (!handleValid)
+        TextureHandler::prepare(gpu);
     glBindTexture(GL_TEXTURE_2D, textureHandle);
 
-    // if the GPU version is up to date, return
-    if (upToDate[ProcessingTarget::GPU])
-        return;
-
     // setup alignment
-    if (queryData)
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
     if (isMask()) {
         // masks are stored as horizontally-stretched bitmaps
-        int W = getWidth() / (8 / getBitsPerPixel());
+        const int textureWidth = getWidth() / (8 / getBitsPerPixel());
 
 #ifdef BEATMUP_OPENGLVERSION_GLES20
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, W, getHeight(), 0, GL_ALPHA, GL_UNSIGNED_BYTE, getData(0, 0));
+        if (!handleValid)
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, textureWidth, getHeight(), 0, GL_ALPHA, GL_UNSIGNED_BYTE, nullptr);
 #else
-        glTexStorage2D(GL_TEXTURE_2D, 1, GL_R8, W, getHeight());
-        if (queryData)
-            glTexSubImage2D(GL_TEXTURE_2D,
-                0, 0, 0, W, getHeight(),
-                GL_RED,
-                GL_UNSIGNED_BYTE,
-                getData(0, 0));
+        if (!handleValid)
+            glTexStorage2D(GL_TEXTURE_2D, 1, GL_R8, textureWidth, getHeight());
 #endif
         GL::GLException::check("allocating texture image (mask)");
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -77,28 +77,22 @@ void AbstractBitmap::prepare(GraphicPipeline& gpu, bool queryData) {
 
     else {
 #ifdef BEATMUP_OPENGLVERSION_GLES20
-        glTexImage2D(GL_TEXTURE_2D,
-            0,
-            GL::BITMAP_INTERNALFORMATS[getPixelFormat()],
-            getWidth(), getHeight(),
-            0,
-            GL::BITMAP_PIXELFORMATS[getPixelFormat()],
-            GL::BITMAP_PIXELTYPES[getPixelFormat()],
-            queryData ? getData(0, 0) : nullptr);
-#else
-        glTexStorage2D(GL_TEXTURE_2D, 1, GL::BITMAP_INTERNALFORMATS[getPixelFormat()], getWidth(), getHeight());
-        if (queryData)
-            glTexSubImage2D(GL_TEXTURE_2D,
-                0, 0, 0, getWidth(), getHeight(),
+        if (!handleValid)
+            glTexImage2D(GL_TEXTURE_2D,
+                0,
+                GL::BITMAP_INTERNALFORMATS[getPixelFormat()],
+                getWidth(), getHeight(),
+                0,
                 GL::BITMAP_PIXELFORMATS[getPixelFormat()],
                 GL::BITMAP_PIXELTYPES[getPixelFormat()],
-                getData(0, 0));
+                nullptr);
+
+#else
+        if (!handleValid)
+            glTexStorage2D(GL_TEXTURE_2D, 1, GL::BITMAP_INTERNALFORMATS[getPixelFormat()], getWidth(), getHeight());
 #endif
         GL::GLException::check("allocating texture image");
     }
-
-    // the GPU version of the bitmap actually has changed
-    upToDate[ProcessingTarget::GPU] = true;
 }
 
 
@@ -106,39 +100,6 @@ const GL::TextureHandler::TextureFormat AbstractBitmap::getTextureFormat() const
     if (isMask())
         return TextureFormat::Rx8;
     return (TextureFormat)getPixelFormat();
-}
-
-
-void AbstractBitmap::lockContent(PixelFlow flow) {
-    // first check if the data is available if CPU read is requested
-    if ((flow & PixelFlow::CpuRead) && !upToDate[ProcessingTarget::CPU])
-        throw UnavailablePixelData(*this, "Ensure pixels are up-to-date in RAM using Swapper.");
-
-    // lock pixels only if working on CPU, or if GPU version is not up to date so that pixels will be queried from RAM
-    if ((flow & PixelFlow::CpuRead) || (flow & PixelFlow::CpuWrite) ||
-        ((flow & PixelFlow::GpuRead) && !isUpToDate(ProcessingTarget::GPU)))
-    {
-        lockPixelData();
-    }
-}
-
-
-void AbstractBitmap::unlockContent(PixelFlow flow) {
-    if ((flow & PixelFlow::CpuRead) || (flow & PixelFlow::CpuWrite) ||
-        ((flow & PixelFlow::GpuRead) && !isUpToDate(ProcessingTarget::GPU)))
-    {
-        unlockPixelData();
-    }
-    const bool cpuWrite = flow & PixelFlow::CpuWrite;
-    const bool gpuWrite = flow & PixelFlow::GpuWrite;
-    if (cpuWrite) {
-        upToDate[ProcessingTarget::CPU] = true;
-        upToDate[ProcessingTarget::GPU] = gpuWrite;
-    }
-    if (gpuWrite) {
-        upToDate[ProcessingTarget::GPU] = true;
-        upToDate[ProcessingTarget::CPU] = cpuWrite;
-    }
 }
 
 
@@ -225,6 +186,25 @@ std::string AbstractBitmap::toString() const {
 }
 
 
+void AbstractBitmap::saveBmp(const char* filename) {
+    if (!isUpToDate(ProcessingTarget::CPU)) {
+        // Grab output bitmap from GPU memory to RAM
+        Swapper::pullPixels(*this);
+    }
+
+    lockPixelData();
+
+    BmpFile::save(
+        getData(0, 0),
+        getWidth(), getHeight(),
+        getBitsPerPixel(),
+        filename
+    );
+
+    unlockPixelData();
+}
+
+
 AbstractBitmap::AbstractBitmap(Context& ctx) : ctx(ctx) {
     upToDate[ProcessingTarget::CPU] = true;
     upToDate[ProcessingTarget::GPU] = false;
@@ -244,6 +224,24 @@ Context& AbstractBitmap::getContext() const {
 
 
 void AbstractBitmap::zero() {
-    WriteLock lock(*this);
+    lockPixelData();
     memset(getData(0, 0), 0, getMemorySize());
+    unlockPixelData();
+    upToDate[ProcessingTarget::CPU] = true;
+    upToDate[ProcessingTarget::GPU] = false;
+}
+
+
+AbstractBitmap::ReadLock::ReadLock(AbstractBitmap& bitmap): bitmap(bitmap) {
+#ifdef BEATMUP_DEBUG
+    DebugAssertion::check(!bitmap.isDirty(), "Reading a dirty bitmap");
+#endif
+    if (bitmap.isUpToDate(ProcessingTarget::GPU) && !bitmap.isUpToDate(ProcessingTarget::CPU))
+        Swapper::pullPixels(bitmap);
+    bitmap.lockPixelData();
+}
+
+
+AbstractBitmap::ReadLock::~ReadLock() {
+    bitmap.unlockPixelData();
 }

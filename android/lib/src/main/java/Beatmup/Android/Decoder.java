@@ -1,3 +1,21 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2020, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package Beatmup.Android;
 
 import android.content.res.AssetFileDescriptor;
@@ -17,6 +35,9 @@ import java.util.Map;
 
 import Beatmup.Utils.SpeedLimiter;
 
+/**
+ * Android video decoder API
+ */
 public class Decoder {
     /**
      * Controls decoder realtime behavior.
@@ -39,9 +60,11 @@ public class Decoder {
     }
 
 
-
     private static final String LOG_TAG = "Beatmup decoder";
 
+    /**
+     * Sequence of samples or frames in time in the encoded content
+     */
     public static abstract class Track {
         class TrackThread extends Thread {
             boolean running, stop;
@@ -128,11 +151,12 @@ public class Decoder {
         }
     }
 
-
+    /**
+     * Implements a callback function invoked by Decoder when a new frame is available
+     */
     public static abstract class FrameAvailableCallback {
         public abstract void onFrameAvailable();
     }
-
 
     /**
      * Video track
@@ -181,6 +205,9 @@ public class Decoder {
             decoder.configure(format, surface, null, 0);
         }
 
+        /**
+         * @return a decoded image.
+         */
         public ExternalBitmap getFrame() {
             return outputImage;
         }
@@ -197,16 +224,17 @@ public class Decoder {
             this.blockingPolicy = policy;
         }
 
+        /**
+         * @return the current blocking policy.
+         */
         public BlockingPolicy getBlockingPolicy() {
             return blockingPolicy;
         }
 
         /**
          * Sets frame available callback.
-         * In processing mode (see {@link Decoder} constructor) the decoded frame texture given by
-         * getFrame() MUST BE PROCESSED within this callback, e.g. be rendered within a Scene.
-         * Namely updateTexImage() needs to be called on its respective {@link SurfaceTexture},
-         * otherwise the decoder stalls in a deadlock.
+         * In processing mode (see {@link Decoder} constructor) the decoded frame texture given by getFrame() MUST BE PROCESSED within this callback, e.g. be rendered within a
+         * Scene. Namely updateTexImage() needs to be called on its respective {@link SurfaceTexture}, otherwise the decoder stalls in a deadlock.
          * @param callback the callback.
          */
         public void setFrameAvailableCallback(FrameAvailableCallback callback) {
@@ -306,7 +334,7 @@ public class Decoder {
     }
 
     /**
-     * Opens a file to decoding.
+     * Opens an asset file to decode.
      * @param file the input file
      * @throws FileNotFoundException if ever the file cannot be accessed or read.
      */
@@ -325,7 +353,11 @@ public class Decoder {
             throw new FileNotFoundException(file.toString());
     }
 
-
+    /**
+     * Opens a file to decode.
+     * @param file the input file
+     * @throws FileNotFoundException if ever the file cannot be accessed or read.
+     */
     public void open(File file) throws FileNotFoundException {
         if (!file.canRead())
             throw new FileNotFoundException(file.toString());
@@ -375,7 +407,9 @@ public class Decoder {
         return null;
     }
 
-
+    /**
+     * Starts playing all the tracks.
+     */
     public synchronized void play() {
         if (running)
             stop();
@@ -385,7 +419,9 @@ public class Decoder {
         extractingThread.start();
     }
 
-
+    /**
+     * Stops playing all the tracks.
+     */
     public synchronized void stop() {
         for (Track t : tracks.values())
             t.stop();

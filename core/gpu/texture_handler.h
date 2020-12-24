@@ -1,6 +1,21 @@
 /*
-    A texture stored in GPU memory
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #pragma once
 #include "../basic_types.h"
 #include "../exception.h"
@@ -36,10 +51,12 @@ namespace Beatmup {
                 OES_Ext			//!< external EGL image
             };
 
+            static const int TEXTURE_FORMAT_BYTES_PER_PIXEL[];      //!< size of a texel in bytes for different texture formats
+
             static const char* textureFormatToString(const TextureFormat&);
 
         protected:
-            glhandle textureHandle;
+            handle_t textureHandle;
 
             TextureHandler();
 
@@ -47,17 +64,13 @@ namespace Beatmup {
                 Prepares (eventually uploads) texture data on GPU.
                 Called only by the context managing thread.
                 \param[in] gpu          Graphic pipeline instance
-                \param[in] queryData    If true, the texture data is intended to be used
             */
-            virtual void prepare(GraphicPipeline& gpu, bool queryData);
+            virtual void prepare(GraphicPipeline& gpu);
 
             /**
                 Forces disposing the texture data, e.g. when it is not used any more
             */
             void invalidate(RecycleBin&);
-
-        private:
-            unsigned int groupIndex;
 
         public:
             ~TextureHandler();
@@ -81,7 +94,7 @@ namespace Beatmup {
                 Aspect ratio of the texture.
             */
             float getAspectRatio() const { return (float)getWidth() / getHeight(); }
-            
+
             /**
                 Inverse of the aspect ratio of the texture.
             */
@@ -97,32 +110,15 @@ namespace Beatmup {
                 return format == TextureFormat::Rx32f || format == TextureFormat::RGBx32f || format == TextureFormat::RGBAx32f;
             }
 
+            /**
+                Returns number of channels containing in the texture
+            */
             const int getNumberOfChannels() const;
 
             /**
                 Returns `true` if the texture handle points to a valid texture
             */
-            bool hasValidHandle() const { return textureHandle > 0; }
-
-            /**
-                Assigns the texture handler to a new group
-            */
-            void assignToNewGroup();
-
-            /**
-                Assigns the texture handler to a group of another texture handler
-            */
-            void assignGroupFrom(const TextureHandler&);
-
-            /**
-                Checks whether the texture handler is assigned to the same group as another texture handler
-            */
-            bool isOfSameGroup(const TextureHandler&) const;
-
-            /**
-                Checks whether the texture handler is assigned to any group
-            */
-            bool isAssignedToGroup() const;
+            inline bool hasValidHandle() const { return textureHandle > 0; }
         };
     }
 

@@ -1,14 +1,30 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2020, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package xyz.beatmup.androidapp.samples;
 
 import android.app.Activity;
-
-import java.io.IOException;
 
 import Beatmup.Android.Camera;
 import Beatmup.Imaging.Color;
 import Beatmup.Imaging.ColorMatrix;
 import Beatmup.Rendering.Scene;
-import Beatmup.Shading.Shader;
+import Beatmup.Shading.ImageShader;
 import Beatmup.Task;
 
 public class BasicCameraUse extends TestSample {
@@ -22,7 +38,7 @@ public class BasicCameraUse extends TestSample {
     }
 
     @Override
-    public Scene designScene(Task drawingTask, Activity app, Camera camera, String extFile) throws IOException {
+    public Scene designScene(Task drawingTask, Activity app, Camera camera, String extFile) {
         Scene scene = new Scene();
 
         Scene.BitmapLayer layer1 = scene.newBitmapLayer();
@@ -37,10 +53,8 @@ public class BasicCameraUse extends TestSample {
         layer2.scale(0.5f);
         layer2.setCenterPosition(0.75f, 0.75f);
 
-        layer2.setShader(new Shader(drawingTask.getContext()));
-        ColorMatrix matrix = new ColorMatrix();
-        matrix.setColorInversion(Color.GREEN, 1, 1);
-        layer2.getShader().setColorMatrix("transform", matrix);
+        layer2.setShader(new ImageShader(drawingTask.getContext()));
+        layer2.getShader().setColorMatrix("transform", new ColorMatrix(Color.GREEN, 1.0f, 1.0f));
 
         layer2.getShader().setSourceCode(
                 "beatmupInputImage image;" +

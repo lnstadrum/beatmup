@@ -1,3 +1,21 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2020, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package xyz.beatmup.androidapp.samples;
 
 import android.app.Activity;
@@ -7,18 +25,15 @@ import java.io.IOException;
 import Beatmup.Android.Bitmap;
 import Beatmup.Android.Camera;
 import Beatmup.Context;
-import Beatmup.Imaging.Color;
-import Beatmup.Imaging.ColorMatrix;
+import Beatmup.Imaging.Filters.ColorMatrixTransform;
 import Beatmup.Pipelining.Multitask;
 import Beatmup.Pipelining.TaskHolder;
 import Beatmup.Rendering.Scene;
-import Beatmup.Shading.Shader;
-import Beatmup.Shading.ShaderApplicator;
 import Beatmup.Task;
 
 public class MultitaskRendering extends TestSample {
     private Multitask multitask;
-    private TaskHolder shaderApplication;
+    private TaskHolder cmtHolder;
 
     @Override
     public String getCaption() {
@@ -35,41 +50,23 @@ public class MultitaskRendering extends TestSample {
         Context context = drawingTask.getContext();
         Bitmap bitmap = Bitmap.decodeStream(context, app.getAssets().open("fecamp.bmp"));
 
-        // set up a shader applying a color matrix to the image
-        ShaderApplicator applicator = new ShaderApplicator(context);
-        applicator.addSampler(bitmap);
-        applicator.setOutput(Beatmup.Bitmap.createEmpty(bitmap));
-        applicator.setShader(new Shader(context));
-        applicator.getShader().setSourceCode(
-                "beatmupInputImage image;" +
-                "varying mediump vec2 texCoord;" +
-                "uniform mediump mat4 transform;" +
-                "uniform highp float dx;" +
-                "uniform highp float dy;" +
-                "void main() {" +
-                "   highp vec3 clr = texture2D(image, texCoord.xy).rgb;" +
-                "   gl_FragColor.rgba = transform * vec4(clr, 1.0);" +
-                "}"
-        );
-        applicator.getShader().setFloat("dx", 1.0f/bitmap.getWidth());
-        applicator.getShader().setFloat("dy", 1.0f/bitmap.getHeight());
-
-        // set color inversion preserving the sky color
-        ColorMatrix matrix = new ColorMatrix();
-        matrix.setColorInversion(Color.FECAMP_SKY, 1, 1);
-        applicator.getShader().setColorMatrix("transform", matrix);
+        // set up a color matrix transform
+        ColorMatrixTransform cmt = new ColorMatrixTransform(context);
+        cmt.setInput(bitmap);
+        cmt.setOutput(Beatmup.Bitmap.createEmpty(bitmap));
+        cmt.setHSVCorrection(0, 2, 1);
 
         // set up a scene
         Scene scene = new Scene();
         Scene.BitmapLayer bitmapLayer = scene.newBitmapLayer();
-        bitmapLayer.setBitmap(applicator.getOutput());
+        bitmapLayer.setBitmap(cmt.getOutput());
         bitmapLayer.scale(0.9f);
         bitmapLayer.setCenterPosition(0.5f, 0.5f);
         bitmapLayer.setName("Switch color");
 
-        // feed mutitask with the shader application and the drawing task
+        // feed multitask with the color matrix transform and the drawing task
         multitask = new Multitask(context);
-        shaderApplication = multitask.addTask(applicator, Multitask.RepetitionPolicy.REPEAT_UPDATE);
+        cmtHolder = multitask.addTask(cmt, Multitask.RepetitionPolicy.REPEAT_UPDATE);
         multitask.addTask(drawingTask);
         multitask.measure();
 
@@ -84,12 +81,8 @@ public class MultitaskRendering extends TestSample {
     @Override
     public void onTap(Scene.Layer layer) {
         if (layer.getName().equals("Switch color")) {
-            ColorMatrix matrix = new ColorMatrix();
-            matrix.setColorInversion(
-                    Color.byHue((float) Math.random() * 360.0f), 1, 1
-            );
-            ((ShaderApplicator)shaderApplication.getTask()).getShader().setColorMatrix("transform", matrix);
-            multitask.setRepetitionPolicy(shaderApplication, Multitask.RepetitionPolicy.REPEAT_UPDATE);
+            ((ColorMatrixTransform)cmtHolder.getTask()).setHSVCorrection((float) Math.random() * 360.0f, (float) Math.random() + 0.5f, (float) Math.random() + 0.5f);
+            multitask.setRepetitionPolicy(cmtHolder, Multitask.RepetitionPolicy.REPEAT_UPDATE);
         }
     }
 

@@ -1,10 +1,28 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package Beatmup.Utils;
 
 import Beatmup.*;
 import Beatmup.Imaging.ColorMatrix;
 
 /**
- * Collection of shader variables values
+ * Collection storing GLSL program parameters (scalars, matrices, vectors) to communicate them from user to GPU-managing thread.
  */
 public class VariablesBundle extends Beatmup.Object {
     private native void setInteger1(long handle, String name, int value);

@@ -1,5 +1,19 @@
-/**
-    Geometry datatypes and routines
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #pragma once
@@ -37,12 +51,24 @@ namespace Beatmup {
             return x == _.x && y == _.y;
         }
 
+        inline bool operator!=(const CustomPoint<numeric>& _) const {
+            return x != _.x || y != _.y;
+        }
+
         inline CustomPoint<numeric> operator+(const CustomPoint<numeric>& _) const {
             return CustomPoint<numeric>(x + _.x, y + _.y);
         }
 
         inline CustomPoint<numeric> operator-(const CustomPoint<numeric>& _) const {
             return CustomPoint<numeric>(x - _.x, y - _.y);
+        }
+
+        inline CustomPoint<numeric> operator*(const CustomPoint<numeric>& _) const {
+            return CustomPoint<numeric>(x * _.x, y * _.y);
+        }
+
+        inline CustomPoint<numeric> operator/(const CustomPoint<numeric>& _) const {
+            return CustomPoint<numeric>(x / _.x, y / _.y);
         }
 
         inline CustomPoint<numeric> operator+(numeric _) const {
@@ -93,7 +119,7 @@ namespace Beatmup {
             return p;
         }
 
-        static const CustomPoint<numeric> ZERO;    // zero point of type numeric
+        static const CustomPoint ZERO;    // zero point of type numeric
     };
 
     /**
@@ -106,21 +132,37 @@ namespace Beatmup {
         CustomRectangle() : a(0, 0), b(0, 0)
         {}
 
-        CustomRectangle(CustomPoint<numeric> a, CustomPoint<numeric> b) : a(a), b(b)
+        CustomRectangle(const CustomPoint<numeric>& a, const CustomPoint<numeric>& b) : a(a), b(b)
         {}
 
         CustomRectangle(numeric x1, numeric y1, numeric x2, numeric y2) : a(CustomPoint<numeric>(x1, y1)), b(CustomPoint<numeric>(x2, y2))
         {}
+
+        inline bool operator==(const CustomRectangle<numeric>& other) const {
+            return a == other.a && b == other.b;
+        }
+
+        inline bool operator!=(const CustomRectangle<numeric>& other) const {
+            return a != other.a || b != other.b;
+        }
 
         inline bool empty() const {
             return b.x <= a.x || b.y <= a.y;
         }
 
         inline CustomRectangle operator*(numeric _) const {
-            return CustomRectangle(_ * a, _ * b);
+            return CustomRectangle(a * _, b * _);
         }
 
         inline CustomRectangle operator/(numeric _) const {
+            return CustomRectangle(a / _, b / _);
+        }
+
+        inline CustomRectangle operator*(const CustomPoint<numeric>& _) const {
+            return CustomRectangle(a * _, b * _);
+        }
+
+        inline CustomRectangle operator/(const CustomPoint<numeric>& _) const {
             return CustomRectangle(a / _, b / _);
         }
 
@@ -145,7 +187,7 @@ namespace Beatmup {
         }
 
         /**
-            Filps corners coordinates guaranteeing that it has a non negative area, i.e. a <= b (componentwise)
+            Flips corners coordinates guaranteeing that it has a non negative area, i.e. a <= b (componentwise)
         */
         inline void normalize() {
             order<numeric>(a.x, b.x);
@@ -158,6 +200,11 @@ namespace Beatmup {
         inline void translate(numeric x, numeric y) {
             a.translate(x, y);
             b.translate(x, y);
+        }
+
+        inline void translate(const CustomPoint<numeric> pt) {
+            a.translate(pt.x, pt.y);
+            b.translate(pt.x, pt.y);
         }
 
         /**
@@ -185,10 +232,17 @@ namespace Beatmup {
         /**
             Returns a translated box
         */
-        inline CustomRectangle translated(numeric x, numeric y) {
+        inline CustomRectangle translated(numeric x, numeric y) const {
             return CustomRectangle(
                 CustomPoint<numeric>(a.x + x, a.y + y),
                 CustomPoint<numeric>(b.x + x, b.y + y)
+            );
+        }
+
+        inline CustomRectangle translated(CustomPoint<numeric> by) const {
+            return CustomRectangle(
+                CustomPoint<numeric>(a.x + by.x, a.y + by.y),
+                CustomPoint<numeric>(b.x + by.x, b.y + by.y)
             );
         }
 
@@ -207,7 +261,7 @@ namespace Beatmup {
         }
 
         /**
-            Rectangle positionning test with respect to a given vertical line
+            Rectangle positioning test with respect to a given vertical line
             \returns -1 if the line passes on the left side of the rectangle, 1 if it is on the right side, 0 otherwise
         */
         short int horizontalPositioningTest(numeric x) const {
@@ -219,7 +273,7 @@ namespace Beatmup {
         }
 
         /**
-            Rectangle positionning test with respect to a given horizontal line
+            Rectangle positioning test with respect to a given horizontal line
             \returns -1 if the line passes above the rectangle, 1 if it passes below, 0 otherwise
         */
         short int verticalPositioningTest(numeric y) const {
@@ -252,12 +306,25 @@ namespace Beatmup {
             return r;
         }
 
+        /**
+            \brief Finds a linear mapping of the rectangle onto another rectangle.
+            target = scale * this + offset
+            \param[in] target       The target domain rectangle
+            \param[out] scale       The scaling factor to apply to the current rectangle
+            \param[out] offset      The offset to apply to the current rectangle
+        */
+        inline void getMapping(const CustomRectangle& target, CustomPoint<float>& scale, CustomPoint<float>& offset) const {
+            scale.x = (float)target.width() / width();
+            scale.y = (float)target.height() / height();
+            offset = target.a - scale * a;
+        }
+
         static const CustomRectangle UNIT_SQUARE;
     };
 
     /**
-        2D affine transformation
-        Defines operators (...) to transform the points and a set of useful utilities to work with affine mappings
+        2D affine transformation.
+        Defines operators to transform 2D points and a set of useful utilities to work with affine mappings
     */
     template<typename numeric> class CustomMatrix2 {
     private:
@@ -391,7 +458,7 @@ namespace Beatmup {
         }
 
         /**
-            Computes inversed transformation
+            Computes inverse transformation
             \returns the inverse
         */
         CustomMatrix2 getInverse() const {
@@ -556,14 +623,18 @@ namespace Beatmup {
         return lhs.a == rhs.a && lhs.b == rhs.b;
     }
 
-    typedef CustomPoint<float> Point;
-    typedef CustomRectangle<float> Rectangle;
-    typedef CustomMatrix2<float> Matrix2;
-    typedef CustomPoint<int> IntPoint;
-    typedef CustomRectangle<int> IntRectangle;
+    using Point = CustomPoint<float>;
+    using Rectangle = CustomRectangle<float>;
+    using Matrix2 = CustomMatrix2<float>;
+    using IntPoint = CustomPoint<int>;
+    using IntRectangle = CustomRectangle<int>;
+
+    template<typename T> const CustomPoint<T>        CustomPoint<T>::ZERO    = CustomPoint<T>(0, 0);
+    template<typename T> const CustomMatrix2<T>      CustomMatrix2<T>::IDENTITY(1,1);
+    template<typename T> const CustomRectangle<T>    CustomRectangle<T>::UNIT_SQUARE    = CustomRectangle<T>(0, 0, 1, 1);
 
     /**
-        2x3 affine mapping regrouping Matrix2 and Point
+        2x3 affine mapping containing a 2x2 matrix and a 2D point
     */
     class AffineMapping {
     public:
@@ -587,6 +658,9 @@ namespace Beatmup {
             return matrix;
         }
 
+        /**
+            Maps a point
+        */
         inline Point operator()(const Point& point) const {
             return matrix(point) + position;
         }
@@ -598,43 +672,43 @@ namespace Beatmup {
         void setIdentity();
 
         /**
-            Inverts the mapping itself
+            Inverts the mapping
         */
         void invert();
 
         /**
-            Computes inversed mapping
+            Returns inverse mapping
         */
         AffineMapping getInverse() const;
 
         /**
-            Computes inverse of a point
+            Computes inverse mapping of a point
         */
         Point getInverse(const Point& pos) const;
         Point getInverse(float x, float y) const;
 
         /**
-            Set center position of the axes box
+            Adjusts the mapping origin so that the center of the axes box matches a given point
         */
         void setCenterPosition(const Point& newPos);
 
         /**
             Translates the mapping
         */
-        void translate(const Point& delta);
+        void translate(const Point& shift);
 
         /**
-            Scales a mapping around specified point in target domain
+            Scales the mapping around a given point in target domain
         */
         void scale(float factor, const Point& fixedPoint = Point::ZERO);
 
         /**
-            Rotates a mapping around specified point in target domain
+            Rotates the mapping around a given point in target domain
         */
         void rotateDegrees(float angle, const Point& fixedPoint = Point::ZERO);
 
         /**
-            Tests whether a point in output domain is inside the input axes span
+            Tests whether a point from the output domain is inside the input axes span
         */
         bool isPointInside(const Point& point) const;
         bool isPointInside(float x, float y) const;
@@ -642,4 +716,16 @@ namespace Beatmup {
 
         static const AffineMapping IDENTITY;
     };
+}
+
+namespace std {
+    using namespace Beatmup;
+
+    template<typename numeric> inline CustomPoint<numeric> min(const CustomPoint<numeric>& a, const CustomPoint<numeric>& b) {
+        return CustomPoint<numeric>(std::min(a.x, b.x), std::min(a.y, b.y));
+    }
+
+    template<typename numeric> inline CustomPoint<numeric> max(const CustomPoint<numeric>& a, const CustomPoint<numeric>& b) {
+        return CustomPoint<numeric>(std::max(a.x, b.x), std::max(a.y, b.y));
+    }
 }

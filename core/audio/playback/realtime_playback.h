@@ -1,6 +1,21 @@
 /*
-    Playback that performs in real time
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #pragma once
 
 #include "abstract_playback.h"
@@ -11,10 +26,14 @@
 namespace Beatmup {
     namespace Audio {
 
+        /**
+            Realtime playback base.
+            Manages a circular buffer queue storing a signal sampled from a Source.
+        */
         class BasicRealtimePlayback : public AbstractPlayback {
         protected:
             /**
-             * The way the output audio signal is handled by the audio backend.
+                Specifies how the output audio signal is handled by the audio backend.
              */
             enum class OutputMode {
                 PULL,       //!< The output is requested by pullOutput(..) called by the audio backend.
@@ -86,23 +105,20 @@ namespace Beatmup {
 
 
             /**
-             * Starts playback
+             * Starts playback.
              */
             virtual void start();
 
 
             /**
-             * Stops playback
+             * Stops playback.
              */
             virtual void stop() = 0;
 
 
             inline void bufferQueueCallbackFunc() {
                 // a buffer is played, step forward
-                //BEATMUP_DEBUG_I("Buffer played: %d", playIndex);
                 playIndex++;
-                // check for underrun
-                //underrun = (playIndex >= sendIndex);
             }
 
 

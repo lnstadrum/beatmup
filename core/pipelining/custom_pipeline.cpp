@@ -1,3 +1,21 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "../exception.h"
 #include "custom_pipeline.h"
 #include <algorithm>
@@ -12,7 +30,7 @@ private:
     std::mutex tasksAccess;					//!< task list access control
     GraphicPipeline* gpu;
     TaskThread* thread;
-    AbstractTask::ExecutionTarget executionMode;
+    AbstractTask::TaskDeviceRequirement executionMode;
     ThreadIndex maxThreadCount;
     bool measured;                          //!< if `true`, the execution mode and the thread count are determined
     bool abort;                             //!< if `true`, one of threads executing the current task caused its aborting
@@ -28,6 +46,10 @@ public:
             delete task;
     }
 
+    TaskHolder& getCurrentTask() {
+        return **currentTask;
+    }
+
     const TaskHolder& getCurrentTask() const {
         return **currentTask;
     }
@@ -37,7 +59,8 @@ public:
         TaskHolder& task = **currentTask;
         task.getTask().beforeProcessing(
             task.threadCount,
-            task.executionMode != AbstractTask::ExecutionTarget::doNotUseGPU && gpu ? gpu : nullptr
+            task.executionMode != AbstractTask::TaskDeviceRequirement::CPU_ONLY && gpu ? ProcessingTarget::GPU : ProcessingTarget::CPU,
+            gpu
         );
 
         // wait for other workers
@@ -45,7 +68,7 @@ public:
 
         // perform the task
         bool result;
-        if (task.executionMode != AbstractTask::ExecutionTarget::doNotUseGPU && gpu)
+        if (task.executionMode != AbstractTask::TaskDeviceRequirement::CPU_ONLY && gpu)
             result = task.getTask().processOnGPU(*gpu, *thread);
         else
             result = task.getTask().process(*thread);
@@ -58,7 +81,7 @@ public:
 
         task.getTask().afterProcessing(
             task.threadCount,
-            task.executionMode != AbstractTask::ExecutionTarget::doNotUseGPU && gpu ? gpu : nullptr,
+            task.executionMode != AbstractTask::TaskDeviceRequirement::CPU_ONLY && gpu ? gpu : nullptr,
             !abort
         );
 
@@ -104,13 +127,13 @@ public:
         tasks.push_back(taskHolder);
     }
 
-    void insertTask(TaskHolder* newbie, const TaskHolder* succeedingHoder) {
+    void insertTask(TaskHolder* newbie, const TaskHolder* before) {
         std::lock_guard<std::mutex> lock(tasksAccess);
-        const auto& nextHolder = std::find(tasks.cbegin(), tasks.cend(), succeedingHoder);
+        const auto& nextHolder = std::find(tasks.cbegin(), tasks.cend(), before);
         if (nextHolder == tasks.cend())
             throw RuntimeError("Reference task holder is not found in the task list");
         measured = false;
-        tasks.insert(nextHolder - 1, newbie);
+        tasks.insert(nextHolder , newbie);
     }
 
     bool removeTask(const TaskHolder* target) {
@@ -118,8 +141,8 @@ public:
         const auto& pointer = std::find(tasks.cbegin(), tasks.cend(), target);
         if (pointer == tasks.cend())
             return false;
-        tasks.erase(pointer);
         delete *pointer;
+        tasks.erase(pointer);
         return true;
     }
 
@@ -128,39 +151,40 @@ public:
      */
     void measure() {
         std::lock_guard<std::mutex> lock(tasksAccess);
-        executionMode = ExecutionTarget::doNotUseGPU;
+        executionMode = TaskDeviceRequirement::CPU_ONLY;
         maxThreadCount = 0;
         for (auto& it : tasks) {
-            switch (it->executionMode = it->getTask().getExecutionTarget()) {
-                case ExecutionTarget::useGPU:
-                    executionMode = ExecutionTarget::useGPU;
+            switch (it->executionMode = it->getTask().getUsedDevices()) {
+                case TaskDeviceRequirement::GPU_ONLY:
+                    executionMode = TaskDeviceRequirement::GPU_ONLY;
                     break;
-                case ExecutionTarget::useGPUIfAvailable:
-                    if (executionMode == ExecutionTarget::doNotUseGPU)
-                        executionMode = ExecutionTarget::useGPUIfAvailable;
+                case TaskDeviceRequirement::GPU_OR_CPU:
+                    if (executionMode == TaskDeviceRequirement::CPU_ONLY)
+                        executionMode = TaskDeviceRequirement::GPU_OR_CPU;
                     break;
                 default:
                     break;
             }
-            it->threadCount = it->getTask().maxAllowedThreads();
+            it->threadCount = it->getTask().getMaxThreads();
             maxThreadCount = std::max(maxThreadCount, it->threadCount);
         }
         measured = true;
     }
 
-    AbstractTask::ExecutionTarget getExecutionTarget() const {
+    AbstractTask::TaskDeviceRequirement getUsedDevices() const {
         if (!measured)
             throw PipelineNotReady("Pipeline not measured; call measure() first.");
         return executionMode;
     }
 
-    ThreadIndex maxAllowedThreads() const {
+    ThreadIndex getMaxThreads() const {
         if (!measured)
             throw PipelineNotReady("Pipeline not measured; call measure() first.");
         return maxThreadCount;
     }
 
-    void beforeProcessing() {
+    void beforeProcessing(GraphicPipeline *gpu) {
+        this->gpu = gpu;
         abort = false;
     }
 
@@ -171,7 +195,6 @@ public:
         // managing worker thread
         if (thread.isManaging()) {
             this->thread = &thread;
-            this->gpu = gpu;
             std::lock_guard<std::mutex> lock(tasksAccess);
             currentTask = tasks.begin();
             pipeline.route(*this);
@@ -193,16 +216,16 @@ public:
 };
 
 
-AbstractTask::ExecutionTarget CustomPipeline::getExecutionTarget() const {
-    return impl->getExecutionTarget();
+AbstractTask::TaskDeviceRequirement CustomPipeline::getUsedDevices() const {
+    return impl->getUsedDevices();
 }
 
-ThreadIndex CustomPipeline::maxAllowedThreads() const {
-    return impl->maxAllowedThreads();
+ThreadIndex CustomPipeline::getMaxThreads() const {
+    return impl->getMaxThreads();
 }
 
-void CustomPipeline::beforeProcessing(ThreadIndex threadCount, GraphicPipeline *gpu) {
-    impl->beforeProcessing();
+void CustomPipeline::beforeProcessing(ThreadIndex threadCount, ProcessingTarget target, GraphicPipeline *gpu) {
+    impl->beforeProcessing(gpu);
 }
 
 void CustomPipeline::afterProcessing(ThreadIndex threadCount, GraphicPipeline* gpu, bool aborted) {
@@ -243,9 +266,9 @@ CustomPipeline::TaskHolder& CustomPipeline::addTask(AbstractTask &task) {
     return *holder;
 }
 
-CustomPipeline::TaskHolder& CustomPipeline::insertTask(AbstractTask &task, const TaskHolder& goesAfter) {
+CustomPipeline::TaskHolder& CustomPipeline::insertTask(AbstractTask &task, const TaskHolder& before) {
     TaskHolder* holder = createTaskHolder(task);
-    impl->insertTask(holder, &goesAfter);
+    impl->insertTask(holder, &before);
     return *holder;
 }
 

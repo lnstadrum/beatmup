@@ -1,3 +1,21 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2020, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package xyz.beatmup.androidapp;
 
 import android.Manifest;
@@ -40,6 +58,7 @@ import Beatmup.Visual.Animator;
 import Beatmup.Visual.GestureListener;
 import xyz.beatmup.androidapp.samples.BasicCameraUse;
 import xyz.beatmup.androidapp.samples.BasicRendering;
+import xyz.beatmup.androidapp.samples.DogClassifier;
 import xyz.beatmup.androidapp.samples.HarmonicPlayback;
 import xyz.beatmup.androidapp.samples.MultitaskRendering;
 import xyz.beatmup.androidapp.samples.OptimizedMaskFromBitmap;
@@ -77,7 +96,8 @@ public class MainActivity extends Activity {
             new UpsamplingConvnetOnCamera(),
             new MultitaskRendering(),
             new HarmonicPlayback(),
-            new WavFilePlayback()
+            new WavFilePlayback(),
+            new DogClassifier()
     };
 
 
@@ -87,7 +107,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         // init context with two thread pools
-        context = new Context(2, getFilesDir());
+        context = new Context(2);
 
         // shape the secondary pool to a single thread
         context.limitWorkerCount(1, 1);
@@ -149,6 +169,7 @@ public class MainActivity extends Activity {
                 Log.i(this.getClass().getName(), "Hold event!");
             }
         });
+
         display.getGestureListener().enableHoldEvent(Animator.getInstance());
         display.addBindingListener(new BasicDisplay.OnBindingListener() {
             @Override
@@ -346,7 +367,7 @@ public class MainActivity extends Activity {
                             if (camera == null)
                                 try {
                                     camera = new Camera(context, MainActivity.this);
-                                    camera.chooseResolution(256,256, Camera.ResolutionSelectionPolicy.SMALLEST_COVERAGE);
+                                    camera.chooseResolution(385,385, Camera.ResolutionSelectionPolicy.SMALLEST_COVERAGE);
                                     Log.i("Beatmup", "Camera resolution: "
                                             + Integer.toString(camera.getResolution().getWidth()) + "x"
                                             + Integer.toString(camera.getResolution().getHeight()));

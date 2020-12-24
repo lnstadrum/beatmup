@@ -1,3 +1,21 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "variables_bundle.h"
 #include "../bitmap/pixel_arithmetic.h"
 #include "bgl.h"
@@ -103,6 +121,14 @@ void VariablesBundle::setFloat(std::string name, float x, float y, float z, floa
     data[3] = w;
 }
 
+void VariablesBundle::setFloatMatrix2(std::string name, const float matrix[4]) {
+    MatrixParameter& param = params[name];
+    param.configure(MatrixParameter::Type::FLOAT, 2, 2);
+    GLfloat *out = param.getData<GLfloat>();
+    for (const float* in = matrix; in < matrix + 4; ++in)
+        *out++ = *in;
+}
+
 void VariablesBundle::setFloatMatrix3(std::string name, const float matrix[9]) {
     MatrixParameter& param = params[name];
     param.configure(MatrixParameter::Type::FLOAT, 3, 3);
@@ -110,6 +136,7 @@ void VariablesBundle::setFloatMatrix3(std::string name, const float matrix[9]) {
     for (const float* in = matrix; in < matrix + 9; ++in)
         *out++ = *in;
 }
+
 void VariablesBundle::setFloatMatrix4(std::string name, const float matrix[16]) {
     MatrixParameter& param = params[name];
     param.configure(MatrixParameter::Type::FLOAT, 4, 4);

@@ -1,3 +1,21 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "sequence.h"
 #include "../exception.h"
 #include "../debug.h"
@@ -88,7 +106,7 @@ void Sequence::clear() {
 
 
 void Sequence::shrink(dtime timeLeft, dtime timeRight) {
-    if (timeLeft >= timeRight || timeLeft >= getLength() || timeRight <= 0) {
+    if (timeLeft >= timeRight || timeLeft >= getDuration() || timeRight <= 0) {
         clear();
         return;
     }
@@ -207,7 +225,7 @@ Sequence* Sequence::copy(dtime fromTime, dtime toTime) const {
 
 void Sequence::insert(const Sequence& sequence, dtime time) {
     // check if the time is okay
-    if (time < 0 || time > getLength())		// time may be equal to the length
+    if (time < 0 || time > getDuration())		// time may be equal to the length
         throw AccessException("Bad insert position", *this);
 
     // find the fragment (guaranteeing that it is split it in two)
@@ -238,11 +256,11 @@ void Sequence::remove(dtime fromTime, dtime toTime) {
         throw AccessException("Inconsistent time bounds when removing", *this);
 
     // nothing to remove
-    if (toTime < 0 || getLength() <= fromTime)
+    if (toTime < 0 || getDuration() <= fromTime)
         return;
 
     // whole sequence erased
-    if (fromTime <= 0 || toTime > getLength()) {
+    if (fromTime <= 0 || toTime > getDuration()) {
         clear();
         return;
     }
@@ -300,20 +318,19 @@ void Sequence::remove(dtime fromTime, dtime toTime) {
 }
 
 
-void Sequence::split(int time, Sequence* left, Sequence* right) {
-    const dtime l = getLength();
+void Sequence::split(int time, Sequence* left, Sequence* right) const {
+    const dtime duration = getDuration();
     if (time <= 0) {
         left = nullptr;
-        right = this;
+        right = copy(0, duration);
     }
-    else if (time >= l - 1) {
-        left = this;
+    else if (time >= duration - 1) {
+        left = copy(0, duration);
         right = nullptr;
     }
     else {
-        left = this;
-        right = copy(time, l);
-        shrink(0, time);
+        left = copy(0, time);
+        right = copy(time, duration);
     }
 }
 
@@ -366,7 +383,7 @@ void Sequence::Pointer::step() {
     else {
         fragmentIdx = VOID_RIGHT;
         pointer.nullify();
-        currentTime = sequence.getLength();
+        currentTime = sequence.getDuration();
     }
 }
 

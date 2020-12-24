@@ -1,0 +1,61 @@
+name: Generate docs
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+          submodules: recursive
+
+      - name: Install doxygen
+        run: sudo apt install -y doxygen
+
+      - name: Install Python modules
+        run: |
+            python3 -m pip install --upgrade pip sphinx
+            python3 -m pip install --upgrade setuptools>=42.0.0 tensorflow
+
+      - name: Build Python module
+        shell: bash
+        run: |
+            sudo apt -y install freeglut3-dev
+            mkdir -p build && cd build
+            cmake -DUSE_GLX=ON ..
+            make -j`nproc` beatmup
+
+      - name: Build doxygen docs
+        run: |
+            doxygen doc/cpp.Doxyfile
+            doxygen doc/java.Doxyfile
+
+      - name: Build sphinx docs
+        env:
+            PYTHONPATH: ${{ github.workspace }}/build:${{ github.workspace }}/python
+        run: python3 -m sphinx -b html doc/ doc/python
+
+      - name: Prepare commit
+        run: |
+            git config --local user.email "action@github.com"
+            git config --local user.name "GitHub Action"
+            git add doc/cpp doc/java doc/python
+
+      - name: Commit and push
+        if: github.ref != 'refs/heads/master'
+        run: |
+            git checkout -b docs/${{ github.sha }}
+            git commit -m "Updating documentation: $(git log -1 --pretty=%B)"
+            git push --set-upstream origin docs/${{ github.sha }}
+
+      - name: Commit and push (master)
+        if: github.ref == 'refs/heads/master'
+        run: |
+            git commit -m "Updating documentation: $(git log -1 --pretty=%B)"
+            git push --force origin HEAD:docs/master
+

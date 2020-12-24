@@ -1,17 +1,34 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package Beatmup;
 
-import java.io.File;
 import java.util.HashMap;
 
+import Beatmup.Exceptions.CoreException;
 import Beatmup.Geometry.IntPoint;
-import Beatmup.Geometry.IntRectangle;
 import Beatmup.Imaging.Color;
 import Beatmup.Imaging.FloatColor;
 import Beatmup.Imaging.PixelFormat;
 
 
 /**
- * Beatmup engine context
+ * Beatmup engine context.
  * Handles necessary data to interact with the engine through JNI layer
  */
 public class Context extends Object {
@@ -29,7 +46,7 @@ public class Context extends Object {
     private static native void detachEventListener(long eventListenerHandle);
     private static native long getTotalRam();
 
-    private native float performTask(long ctx, int poolIndex, Task task);
+    private native float performTask(long ctx, int poolIndex, Task task) throws CoreException;
     private native int submitTask(long ctx, int poolIndex, Task task);
     private native int submitPersistentTask(long ctx, int poolIndex, Task task);
     private native void repeatTask(long ctx, int poolIndex, Task task, boolean abortCurrent);
@@ -37,6 +54,7 @@ public class Context extends Object {
     private native boolean abortJob(long ctx, int poolIndex, int job);
     private native void waitForAllJobs(long ctx, int poolIndex);
     private native boolean busy(long ctx, int poolIndex);
+    private native void check(long ctx, int poolIndex) throws CoreException;
 
     private native long renderChessboard(long ctx, int width, int height, int cellSize, int pixelFormat);
     private native long copyBitmap(Bitmap bitmap, int newPixelFormat);
@@ -46,38 +64,38 @@ public class Context extends Object {
     private native int maxAllowedWorkerCount(long ctx, int poolIndex);
     private native void limitWorkerCount(long ctx, int poolIndex, int count);
 
-    private native long swapOnDisk(long ctx, long howMuch);
-
     private native boolean isGPUQueried(long ctx);
     private native boolean isGPUReady(long ctx);
     private native void recycleGPUGarbage(long ctx);
 
 
     /**
-     * Performs given task in the main thread pool.
-     * @param task        the task
-     * @return execution time in ms
+     * Performs a given task in the main thread pool.
+     * @param task        The task to run
+     * @return execution time in ms.
+     * @throws CoreException if the main thread pool has unprocessed exceptions thrown by previously executed tasks.
      */
-    public float performTask(Task task) {
+    public float performTask(Task task) throws CoreException {
         return performTask(handle, 0, task);
     }
 
 
     /**
-     * Performs given task.
-     * @param task          the task
-     * @param poolIndex     index of the thread pool to run the task in
-     * @return execution time in ms
+     * Performs a given task.
+     * @param task          The task to run
+     * @param poolIndex     Zero-based index of the thread pool to run the task in.
+     * @return execution time in ms.
+     * @throws CoreException if the thread pool has unprocessed exceptions thrown by previously executed tasks.
      */
-    public float performTask(Task task, int poolIndex) {
+    public float performTask(Task task, int poolIndex) throws CoreException {
         return performTask(handle, poolIndex, task);
     }
 
 
     /**
-     * Starts a  task or demands its repetition in the main thread pool.
+     * Ensures a given task executed at least once.
      * @param task          the task
-     * @param abortCurrent  if `true` and a task is running, abort signal is sent before repetition
+     * @param abortCurrent  if `true` and a task is running, the abort signal is sent.
      */
     public void repeatTask(Task task, boolean abortCurrent) {
         repeatTask(handle, 0, task, abortCurrent);
@@ -85,9 +103,9 @@ public class Context extends Object {
 
 
     /**
-     * Starts a  task or demands its repetition in a thread pool.
+     * Ensures a given task executed at least once in a specific thread pool.
      * @param task          The task
-     * @param abortCurrent  If `true` and a task is running, abort signal is sent before repetition
+     * @param abortCurrent  if `true` and a task is running, the abort signal is sent.
      * @param poolIndex     Index of the thread pool to run the task in
      */
     public void repeatTask(Task task, boolean abortCurrent, int poolIndex) {
@@ -130,7 +148,7 @@ public class Context extends Object {
      * @param job           The job
      * @param poolIndex     Thread pool index
      */
-    public void waitForJob(boolean abort, int job, int poolIndex) {
+    public void waitForJob(int job, int poolIndex) {
         waitForJob(handle, poolIndex, job);
     }
 
@@ -166,7 +184,7 @@ public class Context extends Object {
 
 
     /**
-     * Sets maximum number of threads executing tasks in a specified thread pool.
+     * Sets maximum number of threads executing tasks in a given thread pool.
      * @param newCount      the new thread count limit
      * @param poolIndex     index of the thread pool
      */
@@ -176,7 +194,27 @@ public class Context extends Object {
 
 
     /**
-     * Context initialization
+     * Checks if the main thread pool is doing great: rethrows exceptions occurred during tasks execution, if any.
+     * If no exception is thrown, the thread pool is okay.
+     * @throws CoreException occurred while running a task.
+     */
+    public void check() throws CoreException {
+        check(handle, 0);
+    }
+
+
+    /**
+     * Checks if a specific thread pool is doing great: rethrows exceptions occurred during tasks execution, if any.
+     * If no exception is thrown, the thread pool is okay.
+     * @param poolIndex         The thread pool index
+     * @throws CoreException occurred while running a task.
+     */
+    public void check(int poolIndex) throws CoreException {
+        check(handle, poolIndex);
+    }
+
+    /**
+     * Creates a new context.
      */
     protected Context(long handle) {
         super(handle);
@@ -221,7 +259,7 @@ public class Context extends Object {
 
 
     /**
-     * Renders a chessboard-like image
+     * Renders a chessboard-like image.
      * @param width         output image width in pixels
      * @param height        output image height in pixels
      * @param cellSize      chessboard cell size size in pixels
@@ -237,10 +275,10 @@ public class Context extends Object {
 
 
     /**
-     * Creates a copy of given bitmap
+     * Creates a copy of given bitmap.
      * @param source            the bitmap
      * @param pixelFormat       pixel format of the copy
-     * @return copy of the bitmap with specified pixel format
+     * @return copy of the bitmap in the given pixel format
      */
     public Bitmap copyBitmap(Bitmap source, PixelFormat pixelFormat) {
         return new Bitmap(this, copyBitmap(source, pixelFormat.ordinal()));
@@ -248,36 +286,24 @@ public class Context extends Object {
 
 
     /**
-     * Requests to swap some allocated memory on disk
-     * @param howMuch   number of bytes to swap
-     * @return actual number of swapped bytes
-     */
-    public long swapOnDisk(long howMuch) {
-        return swapOnDisk(handle, howMuch);
-    }
-
-
-    /**
-     * Runs through a bitmap in the scanline order (left to right, top to bottom) until a specified
-     * color is found.
-     * @param bitmap    the bitmap
-     * @param start     starting point
-     * @param color     color to find
-     * @return pixel position coming after the starting point in the scaline order, or
-     * {@link #SCANLINE_SEARCH_NOT_FOUND} if no such pixel found till the end (right-bottom bitmap
+     * Goes through a bitmap in scanline order (left to right, top to bottom) until a pixel of a given color is met.
+     * @param bitmap    the bitmap to scan
+     * @param color     the color value to look for
+     * @param start     starting pixel position
+     * @return pixel position coming after the starting point in the scaline order, or {@link #SCANLINE_SEARCH_NOT_FOUND} if no such pixel found till the end (right-bottom bitmap
      * corner).
      */
-    public IntPoint scanlineSearch(Bitmap bitmap, IntPoint start, Color color) {
+    public IntPoint scanlineSearch(Bitmap bitmap, Color color, IntPoint start) {
         return scanlineSearchInt(bitmap.handle, start.x, start.y, color.r, color.g, color.b, color.a);
     }
 
-    public IntPoint scanlineSearch(Bitmap source, IntPoint start, FloatColor color) {
+    public IntPoint scanlineSearch(Bitmap source, FloatColor color, IntPoint start) {
         return scanlineSearchFloat(source.handle, start.x, start.y, color.r, color.g, color.b, color.a);
     }
 
 
     /**
-     * Tests whether the GPU was already queried
+     * Tests whether the GPU was already queried.
      * @return `true` if the GPU was queried
      */
     public boolean isGPUQueried() {
@@ -309,5 +335,8 @@ public class Context extends Object {
         return getTotalRam();
     }
 
+    /**
+     * Returned by {@link Beatmup.Context.scanlineSearch()} if no pixel of a specific color is found in the image.
+     */
     public static final IntPoint SCANLINE_SEARCH_NOT_FOUND = new IntPoint(-1, -1);
 }

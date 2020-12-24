@@ -1,18 +1,46 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package Beatmup.Imaging;
 
 /**
- * Integer RGBA color
+ * Integer RGBA color value
  */
 public class Color {
-    public int r;
-    public int g;
-    public int b;
-    public int a;
+    public int r;       //!< red
+    public int g;       //!< green
+    public int b;       //!< blue
+    public int a;       //!< alpha
 
+    /**
+     * Creates a zero-valued color.
+     */
     public Color() {
         r = g = b = a = 0;
     }
 
+    /**
+     * Creates a color by aggregating the four channels values components
+     * @param r     the red channel value
+     * @param g     the green channel value
+     * @param b     the blue channel value
+     * @param a     the alpha channel value
+     */
     public Color(int r, int g, int b, int a) {
         this.r = r;
         this.g = g;
@@ -21,6 +49,10 @@ public class Color {
         // This constructor is called by JNI, do not remove it.
     }
 
+    /**
+     * Constructs a color from its integer code.
+     * @param code      The integer code.
+     */
     public Color(int code) {
         b = code % 256;
         g = (code >> 8) % 256;
@@ -28,13 +60,20 @@ public class Color {
         a = (code >> 24) % 256;
     }
 
-
+    /**
+     * @return the integer code of the current color.
+     */
     public int getRgbaCode() {
         return r | g << 8 | b << 16 | a << 24;
     }
 
-
-    public static Color parseString(String expr) {
+    /**
+     * Builds a color from a string.
+     * Accepts hexadecimal RGB and RGBA notations like "7f7f7f", "7f7f7fFF" (case-insensitive) and a comma-separed list of 3 or 4 decimal integer values like "127,127,127,255".
+     * @param expr  The string expression
+     * @return the corresponding color. If cannot parsem throws an exception.
+     */
+    public static Color parseString(String expr) throws IllegalArgumentException {
         // hex notation
         if (expr.matches("(\\d|[a-fA-F]){6}")) {
             Color c = new Color(Integer.parseInt(expr, 16));
@@ -55,7 +94,12 @@ public class Color {
         );
     }
 
-
+    /**
+     * Returns a scaled version of the current color by given factors.
+     * @param factorRGB         The color components scaling factor
+     * @param factorAlpha       The alpha component scaling factor
+     * @return the scaled color value. The current instance of Color is not changed.
+     */
     public Color scale(float factorRGB, float factorAlpha) {
         return new Color(
                 Math.round(r * factorRGB),
@@ -64,8 +108,12 @@ public class Color {
                 Math.round(a * factorAlpha)
         );
     }
-    
-    
+
+    /**
+     * Returns a fully saturated color from its hue.
+     * @param hueDegrees    The hue in degrees.
+     * @return the color having the given hue.
+     */
     public static Color byHue(float hueDegrees) {
         final double
             SQRT3 = 1.732050807568877,
@@ -82,7 +130,9 @@ public class Color {
         );
     }
 
-
+    /**
+     * Predefined color constants.
+     */
     public static final Color
             TRANSPARENT_BLACK = new Color(0, 0, 0, 0),
             BLACK       = new Color(0, 0, 0, 255),

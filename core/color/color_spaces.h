@@ -1,3 +1,21 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #pragma once
 #include "../bitmap/pixel_arithmetic.h"
 #include <algorithm>
@@ -5,17 +23,21 @@
 
 
 namespace Beatmup {
+/**
+    Color conversion
+*/
+namespace Color {
 
     /**
-        HSVA quad
+        HSVA quad (for hue, saturation, value and alpha)
     */
-    struct colorhsv {
+    struct hsva_t {
         pixfloat h, s, v;
 
         /**
             \brief Constructs an HSVA quad from r, g, b, a values
         */
-        inline colorhsv(pixfloat r, pixfloat g, pixfloat b) {
+        inline hsva_t(pixfloat r, pixfloat g, pixfloat b) {
             v = std::max(std::max(r, g), b);
             float C = v - std::min(std::min(r, g), b);
             if (C == 0)
@@ -62,31 +84,32 @@ namespace Beatmup {
             return out;
         }
 
-        inline colorhsv() : h(0), s(0), v(0) {}
+        inline hsva_t() : h(0), s(0), v(0) {}
 
-        inline colorhsv(const color3i& _) : colorhsv(_.r, _.g, _.b) {}
-        inline colorhsv(const color4i& _) : colorhsv(_.r, _.g, _.b) {}
-        inline colorhsv(const color3f& _) : colorhsv((float)_.r / 255, (float)_.g / 255, (float)_.b / 255) {}
-        inline colorhsv(const color4f& _) : colorhsv((float)_.r / 255, (float)_.g / 255, (float)_.b / 255) {}
+        inline hsva_t(const color3i& _) : hsva_t(_.r, _.g, _.b) {}
+        inline hsva_t(const color4i& _) : hsva_t(_.r, _.g, _.b) {}
+        inline hsva_t(const color3f& _) : hsva_t((float)_.r / 255, (float)_.g / 255, (float)_.b / 255) {}
+        inline hsva_t(const color4f& _) : hsva_t((float)_.r / 255, (float)_.g / 255, (float)_.b / 255) {}
 
-        inline colorhsv(const pixfloat1& _) {
+        inline hsva_t(const pixfloat1& _) {
             h = s = 0;
             v = _.x;
         }
         
-        inline colorhsv(const pixfloat3& _) : colorhsv(_.r, _.g, _.b) {}
+        inline hsva_t(const pixfloat3& _) : hsva_t(_.r, _.g, _.b) {}
 
-        inline colorhsv(const pixfloat4& _) : colorhsv(_.r, _.g, _.b) {}
+        inline hsva_t(const pixfloat4& _) : hsva_t(_.r, _.g, _.b) {}
         
-        inline colorhsv(const pixint1& _) {
+        inline hsva_t(const pixint1& _) {
             h = s = 0;
             v = (float)_.x / 255;
         }
 
-        inline colorhsv(const pixint3& _) : colorhsv((float)_.r / 255, (float)_.g / 255, (float)_.b / 255) {}
+        inline hsva_t(const pixint3& _) : hsva_t((float)_.r / 255, (float)_.g / 255, (float)_.b / 255) {}
 
-        inline colorhsv(const pixint4& _) : colorhsv((float)_.r / 255, (float)_.g / 255, (float)_.b / 255) {}
+        inline hsva_t(const pixint4& _) : hsva_t((float)_.r / 255, (float)_.g / 255, (float)_.b / 255) {}
 
     };
 
+}
 }

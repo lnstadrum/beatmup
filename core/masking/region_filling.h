@@ -1,25 +1,45 @@
 /*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
 
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #pragma once
 #include "../bitmap/abstract_bitmap.h"
 #include "../geometry.h"
 #include <queue>
 #include <mutex>
 
-namespace Beatmup {
+using namespace Beatmup;
 
+namespace Kernels {
+    /**
+        Region filling kernel implementing flood fill starting from a given seed
+    */
     template<typename in_t, typename out_t> class FillRegion {
     public:
         typedef typename in_t::pixtype::operating_type inpixvaltype;
         /**
-            Region filling
-            \param in			input bitmap reader
-            \param out			output mask writer
-            \param maskOffset	mask position in the bitmap
-            \param seed			entry point
-            \param tolerance	tolerance level: how much a pixel has to be different from seed to not to be filled
-            \param border		a vector to put border points to for further processing
+            Fills a region in an output bitmap starting from a given position in an input bitmap
+            \param input        Input bitmap reader
+            \param output       Output mask writer
+            \param maskOffset   Mask position in the bitmap
+            \param seed         Entry point
+            \param tolerance    Tolerance level: how much a pixel has to be different from seed to not to be filled
+            \param border       A vector to put border points to for further processing
+            \param bounds       Bounding box of the filled region; the input value is updated but not reset
         */
         static void process(
             AbstractBitmap& input,
@@ -120,16 +140,18 @@ namespace Beatmup {
     };
 
 
-
+    /**
+        Circular dilatation kernel for flood fill contours postprocessing
+    */
     template<typename out_t> class CircularDilatation {
     public:
         /**
             Circular dilatation of a mask at given points
-            \param bitmap			the mask bitmap
-            \param pointSet		the points
-            \param val			max value (amplitude)
-            \param holdRad		inner kernel radius; all pixels inside take `val` value
-            \param releaseRad	release ring outer radius; all pixels in the ring take linearly attenuated `val` value
+            \param bitmap       The mask bitmap
+            \param pointSet     The points
+            \param val          Max value (amplitude)
+            \param holdRad      Inner kernel radius; all pixels inside take `val` value
+            \param releaseRad   Release ring outer radius; all pixels in the ring take linearly attenuated `val` value
         */
         static void process(AbstractBitmap& bitmap, std::vector<IntPoint>& pointSet, int val, float holdRad, float releaseRad) {
             out_t mask(bitmap);
@@ -164,15 +186,18 @@ namespace Beatmup {
     };
 
 
+    /**
+        Circular erosion kernel for flood fill contours postprocessing
+    */
     template<typename out_t> class CircularErosion {
     public:
         /**
             Circular erosion of a mask at given points
-            \param bitmap			the mask bitmap
-            \param pointSet		the points
-            \param val			max value (amplitude)
-            \param holdRad		inner kernel radius; all pixels inside take `val` value
-            \param releaseRad	release ring outer radius; all pixels in the ring take linearly attenuated `val` value
+            \param bitmap       The mask bitmap
+            \param pointSet     The points
+            \param val          Max value (amplitude)
+            \param holdRad      Inner kernel radius; all pixels inside take `val` value
+            \param releaseRad   Release ring outer radius; all pixels in the ring take linearly attenuated `val` value
         */
         static void process(AbstractBitmap& bitmap, std::vector<IntPoint>& pointSet, int val, float holdRad, float releaseRad) {
             out_t mask(bitmap);

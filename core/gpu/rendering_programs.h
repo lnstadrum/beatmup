@@ -1,5 +1,19 @@
-/**
-    Common rendering programs management
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2020, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #pragma once
@@ -30,14 +44,17 @@ namespace Beatmup {
                 MASKED_BLEND_EXT,       //!< blending an image through a pixelwise mask (texture extension)
                 MASKED_8BIT_BLEND_EXT,  //!< blending an image through a 8 bit pixelwise mask (texture extension)
                 SHAPED_BLEND_EXT,       //!< shaping an image (texture extension)
-                CUSTOM                  //!< using a user-defined program with a shared vertex shader
             };
 
-            static const std::string
-                MODELVIEW_MATRIX_ID,      //!< Modelview matrix (mapping input geometry to output) shader variable name.
-                TEXTURE_COORDINATES_ID,   //!< Texture coordinates shader variable name
+            static const char
+                *VERTEX_COORD_ATTRIB_NAME,      //!< vertex coordinate attribute name in vertex shaders
+                *TEXTURE_COORD_ATTRIB_NAME,     //!< texture coordinate attribute name in vertex shaders
 
-                DECLARE_TEXTURE_COORDINATES_IN_FRAG;    //!< Declaring texture coordinates in fragment shader.
+                *VERTICAL_FLIP_ID,              //!< Vertical flipping variable name in vertex shader
+                *MODELVIEW_MATRIX_ID,           //!< Modelview matrix (mapping input geometry to output) shader variable name in vertex shader
+                *TEXTURE_COORDINATES_ID,        //!< Texture coordinates shader variable name in vertex shader
+
+                *DECLARE_TEXTURE_COORDINATES_IN_FRAG;    //!< Declaring texture coordinates in fragment shader.
 
 
 
@@ -48,17 +65,6 @@ namespace Beatmup {
                 \param[in,out] program		The selected common program to use
             */
             void enableProgram(GraphicPipeline* gpu, Operation program);
-
-
-            /**
-                \brief Enable a user-defined program.
-                The program must be linked.
-                \param[in,out] gpu          A graphic pipeline instance
-                \param[in,out] program      The program to use
-                \param[in] textured         If `true`, the program has an input texture
-                \param[in] textureArea      Specifies texture coordinates area sampled for the fragment shader
-            */
-            void enableProgram(GraphicPipeline* gpu, Program& program, bool textured, const Rectangle& textureArea = Rectangle::UNIT_SQUARE);
 
 
             /**
@@ -94,7 +100,7 @@ namespace Beatmup {
             /**
                 \return default blending vertex shader to be used in a user-defined single-image blending program.
             */
-            VertexShader& getDefaultVertexShader(const GraphicPipeline* gpu);
+            const VertexShader& getDefaultVertexShader(const GraphicPipeline* gpu) const;
 
             RenderingPrograms(GraphicPipeline* gpu);
             ~RenderingPrograms();
@@ -107,7 +113,7 @@ namespace Beatmup {
             bool maskSetUp;
 
             VertexShader defaultVertexShader;
-            std::map<Operation, Program> programs;
+            std::map<Operation, RenderingProgram> programs;
 
             Program& getProgram(const GraphicPipeline* gpu, Operation program);
         };

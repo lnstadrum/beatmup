@@ -1,11 +1,33 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "rendering_programs.h"
 #include "gpu/pipeline.h"
 #include "../gpu/bgl.h"
 
-const std::string
-    Beatmup::GL::RenderingPrograms::MODELVIEW_MATRIX_ID    = "modelview",
-    Beatmup::GL::RenderingPrograms::TEXTURE_COORDINATES_ID = "texCoord",
-    Beatmup::GL::RenderingPrograms::DECLARE_TEXTURE_COORDINATES_IN_FRAG = "varying highp vec2 texCoord;\n";
+
+const char
+    *Beatmup::GL::RenderingPrograms::VERTEX_COORD_ATTRIB_NAME    = "inVertex",
+    *Beatmup::GL::RenderingPrograms::TEXTURE_COORD_ATTRIB_NAME   = "inTexCoord",
+    *Beatmup::GL::RenderingPrograms::VERTICAL_FLIP_ID       = "flipVertically",
+    *Beatmup::GL::RenderingPrograms::MODELVIEW_MATRIX_ID    = "modelview",
+    *Beatmup::GL::RenderingPrograms::TEXTURE_COORDINATES_ID = "texCoord",
+    *Beatmup::GL::RenderingPrograms::DECLARE_TEXTURE_COORDINATES_IN_FRAG = "varying highp vec2 texCoord;\n";
 
 
 enum TextureUnits {
@@ -180,64 +202,12 @@ using namespace GL;
 
 class RenderingPrograms::Backend {
 private:
-    /**
-        Vertex attribute buffer entry
-    */
-    typedef struct {
-        GLfloat x, y, s, t;
-    } VertexAttribBufferElement;
-
     GLuint hMaskLookups[3];			//!< texture containing mask values for 1, 2 and 4 bpp
-
-    VertexAttribBufferElement vertexAttribBuffer[4];
-    GLuint hVertexAttribBuffer;				//!< buffer used when rendering
-
     bool maskLookupsSet;
 
 public:
-    Backend() : hVertexAttribBuffer(0), maskLookupsSet(false) {}
+    Backend() : maskLookupsSet(false) {}
     ~Backend() {}
-
-
-    void setVertexAttributes(Program& program, bool textured, const Rectangle& textureArea = Rectangle::UNIT_SQUARE) {
-        bool update = false;
-
-        // attribute buffer initialization
-        if (!hVertexAttribBuffer) {
-            glGenBuffers(1, &hVertexAttribBuffer);
-            glBindBuffer(GL_ARRAY_BUFFER, hVertexAttribBuffer);
-            vertexAttribBuffer[0] = { 0.0f, 0.0f, 0.0f, 0.0f };
-            vertexAttribBuffer[1] = { 1.0f, 0.0f, 1.0f, 0.0f };
-            vertexAttribBuffer[2] = { 0.0f, 1.0f, 0.0f, 1.0f };
-            vertexAttribBuffer[3] = { 1.0f, 1.0f, 1.0f, 1.0f };
-            update = true;
-        }
-
-        if (update ||
-            vertexAttribBuffer[0].s != textureArea.getX1() ||
-            vertexAttribBuffer[1].s != textureArea.getX2() ||
-            vertexAttribBuffer[0].t != textureArea.getY1() ||
-            vertexAttribBuffer[2].t != textureArea.getY2())
-        {
-            vertexAttribBuffer[0].s = vertexAttribBuffer[2].s = textureArea.getX1();
-            vertexAttribBuffer[1].s = vertexAttribBuffer[3].s = textureArea.getX2();
-            vertexAttribBuffer[0].t = vertexAttribBuffer[1].t = textureArea.getY1();
-            vertexAttribBuffer[2].t = vertexAttribBuffer[3].t = textureArea.getY2();
-            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-            glBufferData(GL_ARRAY_BUFFER, sizeof(vertexAttribBuffer), vertexAttribBuffer, GL_STATIC_DRAW);
-        }
-
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(program.getAttribLocation("inVertex"), 2, GL_FLOAT, GL_FALSE, sizeof(VertexAttribBufferElement), nullptr);
-
-        if (textured) {
-            glEnableVertexAttribArray(1);
-            glVertexAttribPointer(program.getAttribLocation("inTexCoord"), 2, GL_FLOAT, GL_FALSE, sizeof(VertexAttribBufferElement), (void*)(2 * sizeof(GLfloat)));
-        }
-#ifdef BEATMUP_DEBUG
-        GLException::check("vertex attributes buffer setup");
-#endif
-    }
 
 
     void bindMaskLookup(PixelFormat format) {
@@ -347,8 +317,11 @@ Program& RenderingPrograms::getProgram(const GraphicPipeline* gpu, Operation ope
     FragmentShader fragmentShader(*gpu, fragmentCode);
 
     // link program
-    Program& glProgram = programs.emplace(operation, *gpu).first->second;
-    glProgram.link(*vertexShader, fragmentShader);
+    Program& glProgram = programs.emplace(
+        std::piecewise_construct,
+        std::forward_as_tuple(operation),
+        std::forward_as_tuple(*gpu, *vertexShader, fragmentShader)
+    ).first->second;
     if (!useDefaultVertexShader)
         delete vertexShader;
     return glProgram;
@@ -360,7 +333,7 @@ void RenderingPrograms::enableProgram(GraphicPipeline* gpu, Operation operation)
     currentProgram = operation;
     currentGlProgram = &glProgram;
     glProgram.enable(*gpu);
-    backend->setVertexAttributes(glProgram, true);
+    gpu->setTextureCoordinates(Rectangle::UNIT_SQUARE);
     glProgram.setInteger("image", TextureUnits::IMAGE);
     switch (operation) {
     case Operation::MASKED_BLEND:
@@ -371,17 +344,6 @@ void RenderingPrograms::enableProgram(GraphicPipeline* gpu, Operation operation)
         glProgram.setInteger("mask", TextureUnits::MASK);
     default: break;
     }
-    maskSetUp = false;
-}
-
-
-void RenderingPrograms::enableProgram(GraphicPipeline* gpu, Program& program, bool textured, const Rectangle& textureArea) {
-    currentProgram = Operation::CUSTOM;
-    currentGlProgram = &program;
-    program.enable(*gpu);
-    backend->setVertexAttributes(program, textured, textureArea);
-    if (textured)
-        program.setInteger("image", TextureUnits::IMAGE);
     maskSetUp = false;
 }
 
@@ -411,7 +373,7 @@ void RenderingPrograms::blend(bool onScreen) {
         DebugAssertion::check(maskSetUp, "Mask was not set up in masked blending");
 #endif
 
-    getCurrentProgram().setInteger("flipVertically", onScreen ? 0 : 1);
+    getCurrentProgram().setInteger(VERTICAL_FLIP_ID, onScreen ? 0 : 1);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 #ifdef BEATMUP_DEBUG
@@ -432,21 +394,18 @@ void RenderingPrograms::paveBackground(GraphicPipeline* gpu, TextureHandler& con
     }
 
     // setting texture coords, bitmap size and updating buffer data in GPU
-    backend->setVertexAttributes(*currentGlProgram, true,
-        Rectangle(0, 0,
-            (float)(output ? output->getWidth()  : gpu->getDisplayResolution().getWidth() ) / content.getWidth(),
-            (float)(output ? output->getHeight() : gpu->getDisplayResolution().getHeight()) / content.getHeight()
-        )
-    );
+    gpu->setTextureCoordinates(Rectangle(0, 0,
+        (float)(output ? output->getWidth()  : gpu->getDisplayResolution().getWidth() ) / content.getWidth(),
+        (float)(output ? output->getHeight() : gpu->getDisplayResolution().getHeight()) / content.getHeight()
+    ));
 
     currentGlProgram->setMatrix3(MODELVIEW_MATRIX_ID, AffineMapping::IDENTITY);
     currentGlProgram->setVector4("modulationColor", 1.0f, 1.0f, 1.0f, 1.0f);
     gpu->bind(content, 0, TextureParam::REPEAT);
-    gpu->switchAlphaBlending(false);
     blend(output == nullptr);
 }
 
 
-VertexShader& RenderingPrograms::getDefaultVertexShader(const GraphicPipeline* gpu) {
+const VertexShader& RenderingPrograms::getDefaultVertexShader(const GraphicPipeline* gpu) const {
     return defaultVertexShader;
 }

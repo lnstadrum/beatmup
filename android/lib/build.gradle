@@ -29,8 +29,8 @@ android {
             debuggable true
             externalNativeBuild {
                 cmake {
-                    cFlags.add("-DBEATMUP_DEBUG")
-                    cppFlags.add("-DBEATMUP_DEBUG")
+                    cFlags.add("-DBEATMUP_DEBUG -g")
+                    cppFlags.add("-DBEATMUP_DEBUG -g")
                 }
             }
         }

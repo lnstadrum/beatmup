@@ -1,9 +1,27 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package Beatmup.Geometry;
 
 import android.graphics.Matrix;
 
 /**
- * A matrix 2x2 together with a translation vector
+ * A 2x2 matrix together with a translation vector
  */
 public class AffineMapping {
     public float
@@ -27,7 +45,7 @@ public class AffineMapping {
     }
 
     /**
-     * Creates a mapping that maps the unit square to given rectangle
+     * Creates a mapping that maps the unit square to given rectangle.
      * @param rectangle the target rectangle
      */
     public AffineMapping(Rectangle rectangle) {
@@ -52,7 +70,7 @@ public class AffineMapping {
 
 
     /**
-     * Retrieves the mapping from a string expression (typically obtained with AffineMapping.toString())
+     * Retrieves the mapping from a string expression (typically obtained with AffineMapping.toString()).
      * @param expr      the expression to parse, row-wise enumeration of matrix elements with ';' as separator
      */
     public void fromString(String expr) {
@@ -69,7 +87,7 @@ public class AffineMapping {
 
 
     /**
-     * Parses string and returns an affine mapping
+     * Parses string and returns an affine mapping.
      * @param expr the expression to parse
      * @return parsed mapping
      */
@@ -80,6 +98,10 @@ public class AffineMapping {
     }
 
 
+    /**
+     * Assigns a mapping to the current mapping.
+     * @param mapping   The mapping to assign to the current mapping
+     */
     public void assign(AffineMapping mapping) {
         x = mapping.x;
         y = mapping.y;
@@ -91,7 +113,7 @@ public class AffineMapping {
 
 
     /**
-     * Maps a point (horizontal coordinate is computed only)
+     * Maps a point (horizontal coordinate is computed only).
      * @param X the input point horizontal coordinate
      * @param Y the input point vertical coordinate
      * @return horizontal coordinate of the transformed point
@@ -102,7 +124,7 @@ public class AffineMapping {
 
 
     /**
-     * Maps a point (vertical coordinate is computed only)
+     * Maps a point (vertical coordinate is computed only).
      * @param X the input point horizontal coordinate
      * @param Y the input point vertical coordinate
      * @return vertical coordinate of the transformed point
@@ -110,20 +132,16 @@ public class AffineMapping {
     public float mapY(float X, float Y) {
         return a21 * X + a22 * Y + this.y;
     }
-
-
     public Point map(float X, float Y) {
         return new Point(mapX(X,Y), mapY(X,Y));
     }
-
-
     public Point map(Point point) {
         return new Point(mapX(point.x, point.y), mapY(point.x, point.y));
     }
 
 
     /**
-     * Maps a set of points
+     * Maps a set of points.
      * @param in        input array of point coordinates pairs (x,y)
      * @return output array of mapped points coordinates.
      */
@@ -139,7 +157,7 @@ public class AffineMapping {
 
 
     /**
-     * Maps a set of points
+     * Maps a set of points.
      * @param in        input array of point coordinates pairs (x,y)
      * @return output array of mapped points coordinates.
      */
@@ -155,7 +173,7 @@ public class AffineMapping {
 
 
     /**
-     * Specifies the translation component of the mapping through center point
+     * Specifies the translation component of the mapping through center point.
      * @param cx    horizontal coordinate of the new center
      * @param cy    vertical coordinate of the new center
      */
@@ -167,7 +185,7 @@ public class AffineMapping {
 
 
     /**
-     * Resets the mapping to identity
+     * Resets the mapping to identity.
      * @return the mapping itself
      */
     public AffineMapping setIdentity() {
@@ -178,7 +196,7 @@ public class AffineMapping {
 
 
     /**
-     * Initializes mapping from Anrdoid matrix
+     * Initializes mapping from Android matrix.
      * @param matrix    the matrix to initialize from
      */
     public AffineMapping setFromMatrix(Matrix matrix) {
@@ -195,7 +213,7 @@ public class AffineMapping {
 
 
     /**
-     * Translates the mapping in its domain
+     * Translates the mapping in its domain.
      * @param x     horizontal translation
      * @param y     vertical translation
      * @return the mapping itself
@@ -208,7 +226,7 @@ public class AffineMapping {
 
 
     /**
-     * Sets translation values
+     * Sets translation values.
      * @param x     horizontal translation
      * @param y     vertical translation
      * @return the mapping itself
@@ -219,8 +237,9 @@ public class AffineMapping {
         return this;
     }
 
+
     /**
-     * Scales the mapping keeping the (0,0) point at the same place
+     * Scales the mapping around (0,0) point.
      * @param factor    scale factor
      */
     public AffineMapping scale(float factor) {
@@ -233,9 +252,11 @@ public class AffineMapping {
 
 
     /**
-     * Scales the mapping keeping (x,y) point at the same place (in source coordinates)
-     * @param factorX    X scale factor
-     * @param factorY    Y scale factor
+     * Scales the mapping keeping (x,y) point at the same place (in source coordinates).
+     * @param x         fixed point horizontal coordinate
+     * @param y         fixed point vertical coordinate
+     * @param factorX   horizontal scaling factor
+     * @param factorY   vertical scaling factor
      */
     public AffineMapping scaleAround(float x, float y, float factorX, float factorY) {
         final float
@@ -256,7 +277,7 @@ public class AffineMapping {
 
 
     /**
-     * Rotates the mapping around (0,0) point
+     * Rotates the mapping around (0,0) point.
      * @param angleDegrees      rotation angle in degrees
      */
     public AffineMapping rotate(float angleDegrees) {
@@ -284,7 +305,7 @@ public class AffineMapping {
     }
 
     /**
-     * Skew transform (first along X axis and then along Y axis)
+     * Skew transform (first along X axis and then along Y axis).
      * @param angleXDegrees      angle in degrees for X-skew
      * @param angleYDegrees      angle in degrees for Y-skew
      */
@@ -333,7 +354,7 @@ public class AffineMapping {
     }
 
     /**
-     * Composition of the affine mapping with another one
+     * Computes composition of this affine mapping with another one.
      * @param mapping       the mapping to compose with
      * @return composed mapping; its application is equivalent to apply first `mapping` and then `this`
      */
@@ -349,7 +370,7 @@ public class AffineMapping {
     }
 
     /**
-     * Computes mappings composition `L` * `R` and assigns it to `target`
+     * Computes mappings composition `L` * `R` and assigns it to `target`.
      * @param target    a mapping to assign the composition to
      * @param L      left term of the composition
      * @param R      right term of the composition
@@ -423,7 +444,7 @@ public class AffineMapping {
 
 
     /**
-     * Computes bounding box of the quad that spans the axes
+     * Computes bounding box of the quad that spans the axes.
      * @return rectangle describing the bounding box
      */
     public Rectangle getAxesBoundingBox() {
@@ -435,7 +456,7 @@ public class AffineMapping {
     }
 
     /**
-     * Resolves an orthogonal mapping that transforms segment (X1,Y1),(X2,Y2) into another segment
+     * Resolves an orthogonal mapping that transforms segment (X1,Y1),(X2,Y2) into another segment.
      * @param X1          first input point horizontal coordinate
      * @param Y1          first input point vertical coordinate
      * @param X2          second input point horizontal coordinate

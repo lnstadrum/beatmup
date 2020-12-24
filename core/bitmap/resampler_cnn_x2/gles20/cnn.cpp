@@ -1,3 +1,21 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2020, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "cnn.h"
 
 #ifdef ENABLE_PROFILING
@@ -35,7 +53,7 @@ void GLES20X2UpsamplingNetwork::Layer::process(Context& ctx, GraphicPipeline& gp
 
     // process
     {
-        AbstractBitmap::ContentLock outputLock(*output, PixelFlow::GpuWrite);
+        AbstractBitmap::WriteLock<ProcessingTarget::GPU> outputLock(*output);
         shader.prepare(gpu, &input, TextureParam::INTERP_NEAREST, output, AffineMapping::IDENTITY);
         shader.process(gpu);
     }
@@ -51,7 +69,7 @@ void GLES20X2UpsamplingNetwork::Layer::process(Context& ctx, GraphicPipeline& gp
 
     // prepare and process
     {
-        AbstractBitmap::ContentLock outputLock(*output, PixelFlow::GpuWrite);
+        AbstractBitmap::WriteLock<ProcessingTarget::GPU> outputLock(*output);
         shader.setFloat("d1", 1.0f / input.getWidth(), 1.0f / input.getHeight());
         shader.prepare(gpu, nullptr, output);
 
@@ -68,7 +86,7 @@ void GLES20X2UpsamplingNetwork::Layer::process(Context& ctx, GraphicPipeline& gp
 
 void GLES20X2UpsamplingNetwork::process(GraphicPipeline& gpu, GL::TextureHandler& input, AbstractBitmap& output) {
     // disable alpha blend
-    gpu.switchAlphaBlending(false);
+    gpu.switchMode(GraphicPipeline::Mode::INFERENCE);
     Context& ctx = output.getContext();
 
 #ifdef ENABLE_PROFILING
@@ -150,7 +168,6 @@ GLES20X2UpsamplingNetwork::GLES20X2UpsamplingNetwork(GL::RecycleBin& recycleBin,
 
     int i = 0;
 #define STRINGIFY(...) BEATMUP_SHADER_CODE(__VA_ARGS__)
-#undef clamp
 
     layer1[0] = new Layer(recycleBin, gpu, nextStorage(i),
 #include "l1__0.glsl"

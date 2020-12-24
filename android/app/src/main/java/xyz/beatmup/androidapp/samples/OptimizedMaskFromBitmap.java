@@ -1,3 +1,21 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2020, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package xyz.beatmup.androidapp.samples;
 
 import android.app.Activity;
@@ -7,6 +25,7 @@ import java.util.ArrayList;
 
 import Beatmup.Android.Bitmap;
 import Beatmup.Android.Camera;
+import Beatmup.Exceptions.CoreException;
 import Beatmup.Geometry.AffineMapping;
 import Beatmup.Geometry.IntPoint;
 import Beatmup.Geometry.Rectangle;
@@ -27,7 +46,7 @@ public class OptimizedMaskFromBitmap extends TestSample {
     }
 
     @Override
-    public Scene designScene(Task drawingTask, Activity app, Camera camera, String extFile) throws IOException {
+    public Scene designScene(Task drawingTask, Activity app, Camera camera, String extFile) throws IOException, CoreException {
         Scene scene = new Scene();
 
         Beatmup.Bitmap heart = Bitmap.decodeStream(drawingTask.getContext(), app.getAssets().open("heart.png"));

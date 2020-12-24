@@ -1,3 +1,21 @@
+/*
+    Beatmup image and signal processing library
+    Copyright (C) 2019, lnstadrum
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "pipeline.h"
 #include "../bitmap/converter.h"
 #include "../bitmap/internal_bitmap.h"
@@ -14,17 +32,37 @@
 
 using namespace Beatmup;
 
+/**
+    \internal
+    Exception reporting issues occurred during initial GPU setup
+*/
+class GpuOperationError : public Beatmup::Exception {
+public:
+    GpuOperationError(const char* info) : Exception(info) {}
+    GpuOperationError(const char* info, int code) : Exception("%s (error %x)", info, code) {}
+};
+
 
 /**
     \internal
-    Graphic pipeline private implementation (pimpl)
+    Graphic pipeline private implementation
 */
 class GraphicPipeline::Impl {
 private:
+    /**
+        Vertex attribute buffer entry: vertex coordinates (x,y) and texture coordinates (s,t)
+    */
+    typedef struct {
+        GLfloat x, y, s, t;
+    } VertexAttribBufferElement;
 
     GraphicPipeline& front;
 
     GLuint hFrameBuffer;
+
+    VertexAttribBufferElement vertexAttribBuffer[4];
+    bool isRectangularTextureCoordinates;   //!< if `true`, the texture coordinates is a rectangle
+    GLuint hVertexAttribBuffer;				//!< buffer used when rendering
 
 
     ImageResolution displayResolution;    //!< width and height of a display obtained when switching
@@ -47,6 +85,8 @@ private:
 #endif
 
     struct {
+        int maxTextureImageUnits;
+        int maxFragmentUniformVectors;
         int maxWorkGroupCount[3];
         int maxWorkGroupSize[3];
         int maxTotalWorkGroupSize;
@@ -55,20 +95,19 @@ private:
 
 
 public:
-    Impl(GraphicPipeline& front) : front(front)
-    {
+    Impl(GraphicPipeline& front) : front(front) {
 #ifdef BEATMUP_OPENGLVERSION_GLES
         // Step 1 - Get the default display.
         if ((eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY)) == EGL_NO_DISPLAY)
-            throw GL::GLException("EGL: no display", eglGetError());
+            throw GpuOperationError("EGL: no display", eglGetError());
 
         // Step 2 - Initialize EGL.
         if (!eglInitialize(eglDisplay, 0, 0)) {
             auto err = eglGetError();
             if (err == EGL_NOT_INITIALIZED)
-                throw GL::GLException("EGL: display not initialized", err);
+                throw GpuOperationError("EGL: display not initialized", err);
             else
-                throw GL::GLException("EGL: initialization failed", err);
+                throw GpuOperationError("EGL: initialization failed", err);
         }
 
         // Step 3 - Make OpenGL ES the current API.
@@ -95,7 +134,7 @@ public:
         };
         int numConfigs;
         if (!eglChooseConfig(eglDisplay, configAttributes, &eglConfig, 1, &numConfigs))
-            throw GL::GLException("EGL: bad configuration", eglGetError());
+            throw GpuOperationError("EGL: bad configuration", eglGetError());
         BEATMUP_DEBUG_I("Number of EGL configs got: %d", numConfigs);
 
         // Step 6 - Create a context.
@@ -110,7 +149,7 @@ public:
         };
         eglContext = eglCreateContext(eglDisplay, eglConfig, EGL_NO_CONTEXT, contextAttributes);
         if (eglContext == EGL_NO_CONTEXT)
-            throw GL::GLException("EGL: context initialization failed", eglGetError());
+            throw GpuOperationError("EGL: context initialization failed", eglGetError());
 
         eglDefaultSurface = eglSurface = EGL_NO_SURFACE;
 
@@ -123,11 +162,11 @@ public:
 
         eglDefaultSurface = eglSurface = eglCreatePbufferSurface(eglDisplay, eglConfig, surfaceAttributes);
         if (eglSurface == EGL_NO_SURFACE)
-            throw GL::GLException("EGL: window surface creation failed when init", eglGetError());
+            throw GpuOperationError("EGL: window surface creation failed when init", eglGetError());
 
         // Step 7 - Bind the context to the current thread
         if (!eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext))
-            throw GL::GLException("EGL: making current", eglGetError());
+            throw GpuOperationError("EGL: making current", eglGetError());
 
 #elif BEATMUP_PLATFORM_WINDOWS
         PIXELFORMATDESCRIPTOR pfd;
@@ -148,7 +187,7 @@ public:
             WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
             0, 0, 1, 1, 0, 0, GetModuleHandle(NULL), 0);
         if (!hwnd)
-            throw GL::GLException("Unable to initialize GL context");
+            throw GpuOperationError("Unable to initialize GL context");
 
         ShowWindow(hwnd, SW_HIDE);
         HDC hdc = GetDC(hwnd);
@@ -157,34 +196,36 @@ public:
         hglrc = wglCreateContext(hdc);
         wglMakeCurrent(hdc, hglrc);
         if (!wglGetCurrentContext())
-            throw GL::GLException("Unable to initialize GL context");
+            throw GpuOperationError("Unable to initialize GL context");
 
         // init glew
         glewExperimental = GL_TRUE;
         GLenum err = glewInit();
         if (err != GLEW_OK)
-            throw GL::GLException((const char*)glewGetErrorString(err));
+            throw GpuOperationError((const char*)glewGetErrorString(err));
 
 #else
         // creating a display & a window
         xDisplay = XOpenDisplay(0);
+        if (xDisplay == nullptr)
+            throw GpuOperationError("Cannot open a display connection to X11 server");
         xWindow = XCreateSimpleWindow(xDisplay, DefaultRootWindow(xDisplay),
-            0, 0,   /* x, y */
-            1, 1, /* width, height */
+            0, 0,     /* x, y */
+            1, 1,     /* width, height */
             0, 0,     /* border_width, border */
             0);       /* background */
 
         // setup a bootstrap context to load glew
         static int dummy_visual_attribs[] = { GLX_RGBA, None };
         XVisualInfo* vi = glXChooseVisual(xDisplay, 0, dummy_visual_attribs);
-        glxContext = glXCreateContext(xDisplay, vi, NULL, GL_TRUE);
+        glxContext = glXCreateContext(xDisplay, vi, nullptr, GL_TRUE);
         glXMakeCurrent(xDisplay, xWindow, glxContext);
 
         // power on glew
         glewExperimental = GL_TRUE;
         GLenum err = glewInit();
         if (err != GLEW_OK)
-            throw GL::GLException((const char*)glewGetErrorString(err));
+            throw GpuOperationError((const char*)glewGetErrorString(err));
 
         // destroying the bootstrap context
         glXDestroyContext(xDisplay, glxContext);
@@ -199,7 +240,7 @@ public:
         GLXFBConfig *config = glXChooseFBConfig(xDisplay, DefaultScreen(xDisplay),
             visual_attribs, &num_fbc);
         if (!config)
-            throw GL::GLException("glXChooseFBConfig() failed");
+            throw GpuOperationError("Choosing framebuffer configuration failed");
 
         // create pbuffer
         static int pbuffer_attribs[] = {
@@ -216,6 +257,8 @@ public:
 #endif
 
         // query GL limits
+        glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &glLimits.maxTextureImageUnits);
+        glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS, &glLimits.maxFragmentUniformVectors);
 #if defined(BEATMUP_OPENGLVERSION_GLES31) || defined(BEATMUP_PLATFORM_WINDOWS)
         glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, glLimits.maxWorkGroupCount + 0);
         glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, glLimits.maxWorkGroupCount + 1);
@@ -231,9 +274,10 @@ public:
             *renderer = (char*)glGetString(GL_RENDERER);
         BEATMUP_DEBUG_I("__________________________________________________________");
         BEATMUP_DEBUG_I("Beatmup GL startup: %s / %s", renderer, vendor);
-        BEATMUP_DEBUG_I(" - Max workgroups: %d, %d, %d", glLimits.maxWorkGroupCount[0], glLimits.maxWorkGroupCount[1], glLimits.maxWorkGroupCount[2]);
-        BEATMUP_DEBUG_I(" - Max local groups: %d, %d, %d / %d", glLimits.maxWorkGroupSize[0], glLimits.maxWorkGroupSize[1], glLimits.maxWorkGroupSize[2],
-            glLimits.maxTotalWorkGroupSize);
+        BEATMUP_DEBUG_I(" - Max workgroups: %d, %d, %d",
+            glLimits.maxWorkGroupCount[0], glLimits.maxWorkGroupCount[1], glLimits.maxWorkGroupCount[2]);
+        BEATMUP_DEBUG_I(" - Max local groups: %d, %d, %d / %d",
+            glLimits.maxWorkGroupSize[0], glLimits.maxWorkGroupSize[1], glLimits.maxWorkGroupSize[2], glLimits.maxTotalWorkGroupSize);
         BEATMUP_DEBUG_I(" - Shared memory: %lu KB", (unsigned long)(glLimits.maxSharedMemSize / 1024));
         BEATMUP_DEBUG_I("__________________________________________________________");
 #endif
@@ -248,14 +292,29 @@ public:
         glGenFramebuffers(1, &hFrameBuffer);
         GL::GLException::check("initialization");
 
+        // init attribute buffers
+        glGenBuffers(1, &hVertexAttribBuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, hVertexAttribBuffer);
+        vertexAttribBuffer[0] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        vertexAttribBuffer[1] = { 1.0f, 0.0f, 1.0f, 0.0f };
+        vertexAttribBuffer[2] = { 0.0f, 1.0f, 0.0f, 1.0f };
+        vertexAttribBuffer[3] = { 1.0f, 1.0f, 1.0f, 1.0f };
+        isRectangularTextureCoordinates = true;
+
+        glEnableVertexAttribArray(GraphicPipeline::ATTRIB_VERTEX_COORD);
+        glEnableVertexAttribArray(GraphicPipeline::ATTRIB_TEXTURE_COORD);
+        glVertexAttribPointer(GraphicPipeline::ATTRIB_VERTEX_COORD, 2, GL_FLOAT, GL_FALSE, sizeof(VertexAttribBufferElement), nullptr);
+        glVertexAttribPointer(GraphicPipeline::ATTRIB_TEXTURE_COORD, 2, GL_FLOAT, GL_FALSE, sizeof(VertexAttribBufferElement), (void*)(2 * sizeof(GLfloat)));
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertexAttribBuffer), vertexAttribBuffer, GL_STATIC_DRAW);
+
         // setting up main controls
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
-        glEnable(GL_BLEND);
         glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
         glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        GL::GLException::check("enabling / disabling");
+        switchMode(GraphicPipeline::Mode::RENDERING);
+        GL::GLException::check("initial GPU setup");
     }
 
 
@@ -274,6 +333,7 @@ public:
 #else
         glXDestroyContext(xDisplay, glxContext);
         glXDestroyPbuffer(xDisplay, glxPbuffer);
+        XCloseDisplay(xDisplay);
 #endif
     }
 
@@ -283,7 +343,7 @@ public:
     */
     void switchDisplay(void* data) {
 #ifdef BEATMUP_PLATFORM_WINDOWS
-        throw GL::GLException("switchDisplay is not implemented on Windows");
+        throw GL::Unsupported("switchDisplay is not implemented on Windows");
 #elif BEATMUP_PLATFORM_ANDROID
         // disconnecting old surface
         eglMakeCurrent(eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
@@ -299,11 +359,11 @@ public:
 
             eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, (ANativeWindow*)data, surfaceAttributes);
             if (eglSurface == EGL_NO_SURFACE)
-                throw GL::GLException("EGL: window surface creation failed when switching display", eglGetError());
+                throw GpuOperationError("EGL: window surface creation failed when switching display", eglGetError());
 
             // bind the context to the current thread
             if (! eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext))
-                throw GL::GLException("EGL: switching display", eglGetError());
+                throw GpuOperationError("EGL: switching display", eglGetError());
 
             // setting viewport
             displayResolution.set(ANativeWindow_getWidth((ANativeWindow*)data), ANativeWindow_getHeight((ANativeWindow*)data));
@@ -312,7 +372,7 @@ public:
         else {
             eglSurface = eglDefaultSurface;
             if (! eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext))
-                throw GL::GLException("EGL: making current", eglGetError());
+                throw GpuOperationError("EGL: making current", eglGetError());
             //fixme: what about display resolution?
         }
 #endif
@@ -328,32 +388,31 @@ public:
     void swapBuffers() {
         glFinish();
 #ifdef BEATMUP_PLATFORM_WINDOWS
-        throw GL::GLException("swapBuffers is not implemented on Windows");
-#elif BEATMUP_PLATFORM_ANDROID
+        throw GL::Unsupported("swapBuffers is not implemented on Windows");
+#elif BEATMUP_OPENGLVERSION_GLES
         if (! eglSwapBuffers(eglDisplay, eglSurface))
-            throw GL::GLException("EGL: swapping buffers", eglGetError());
+            throw GpuOperationError("EGL: swapping buffers", eglGetError());
 #endif
     }
 
 
     /**
         Binds a texture handle to an image unit
-        \param[in] bitmap		The texture handler
-        \param[in] imageUnit	The image unit number
-        \param[in] read			If `true`, the image will be read
-        \param[in] write		If `true`, the image will be modified
+        \param[in] texture      The texture handler
+        \param[in] imageUnit    The image unit number
+        \param[in] read         If `true`, the image will be read
+        \param[in] write        If `true`, the image will be modified
     */
     void bindImage(GL::TextureHandler& texture, int imageUnit, bool read, bool write) {
 #ifdef BEATMUP_OPENGLVERSION_GLES20
         throw GL::Unsupported("Images binding is not supported in GL ES 2.0.");
 #else
 
-        texture.prepare(front, read);
+        texture.prepare(front);
 
         // if the following is not set, black images are out when writing with imageStore()
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        GL::GLException::check("allocating texture image");
 
         // binding, actually
         glBindImageTexture(imageUnit,
@@ -373,7 +432,7 @@ public:
         case GL::TextureHandler::TextureFormat::Rx8:
         case GL::TextureHandler::TextureFormat::RGBx8:
         case GL::TextureHandler::TextureFormat::RGBAx8:
-            texture.prepare(front, true);
+            texture.prepare(front);
             if (param & TextureParam::INTERP_LINEAR) {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -387,7 +446,7 @@ public:
         case GL::TextureHandler::TextureFormat::Rx32f:
         case GL::TextureHandler::TextureFormat::RGBx32f:
         case GL::TextureHandler::TextureFormat::RGBAx32f:
-            texture.prepare(front, true);
+            texture.prepare(front);
 #ifndef BEATMUP_OPENGLVERSION_GLES
             if (param & TextureParam::INTERP_LINEAR) {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -405,7 +464,7 @@ public:
             break;
 
         case GL::TextureHandler::TextureFormat::OES_Ext:
-            texture.prepare(front, true);
+            texture.prepare(front);
             break;
         }
 
@@ -425,14 +484,21 @@ public:
     void bindOutput(AbstractBitmap& bitmap, const IntRectangle& viewport) {
         if (bitmap.isMask())
             throw GL::GLException("Mask bitmaps can not be used as output");
-        bitmap.prepare(front, false);
+        bitmap.prepare(front);
         bindOutput(bitmap.textureHandle);
         glViewport(viewport.getX1(), viewport.getY1(), viewport.width(), viewport.height());
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
 
-    void bindOutput(GL::glhandle texture) {
+    void bindOutput(GL::TextureHandler& textureHandler) {
+        textureHandler.prepare(front);
+        bindOutput(textureHandler.textureHandle);
+        glViewport(0, 0, textureHandler.getWidth(), textureHandler.getHeight());
+    }
+
+
+    void bindOutput(GL::handle_t texture) {
         // setting up a texture
         glBindFramebuffer(GL_FRAMEBUFFER, hFrameBuffer);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
@@ -447,7 +513,6 @@ public:
     void unbindOutput() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, displayResolution.getWidth(), displayResolution.getHeight());
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
@@ -456,26 +521,22 @@ public:
         return displayResolution;
     }
 
-
     /**
-        Transfers texture data from GPU to CPU. The bitmap is assumed to be locked.
+        Transfers texture data from GPU to CPU. The bitmap is assumed locked.
     */
-    void fetchPixels(AbstractBitmap& bitmap) {
+    void pullPixels(AbstractBitmap& bitmap) {
 #ifdef BEATMUP_DEBUG
-        DebugAssertion::check(bitmap.getData(0, 0) != nullptr, "Cannot transfer pixels to RAM: the bitmap is not locked");
+        DebugAssertion::check(bitmap.getData(0, 0) != nullptr, "Cannot pull pixels: the bitmap is not locked");
 #endif
-
-        if (!bitmap.upToDate[ProcessingTarget::GPU])
-            return;
 
 #ifdef BEATMUP_OPENGLVERSION_GLES20
         if (bitmap.isFloat())
             throw GL::Unsupported("Floating point valued bitmaps are not updatable from GPU memory");
-                // 'cause GLES does not support such data to be transfered from GPU to CPU memory
+                // 'cause GLES does not support such data to be transferred from GPU to CPU memory
 #endif
 
         glBindFramebuffer(GL_FRAMEBUFFER, hFrameBuffer);
-        bitmap.prepare(front, false);
+        bitmap.prepare(front);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, bitmap.textureHandle, 0);
 
         // disable high order alignment
@@ -498,17 +559,19 @@ public:
             InternalBitmap buffer(bitmap.getContext(),
                 bitmap.isFloat() ? PixelFormat::QuadFloat : PixelFormat::QuadByte,
                 bitmap.getWidth(), bitmap.getHeight());
-            AbstractBitmap::WriteLock lock(buffer);
 
-            glReadPixels(0, 0, buffer.getWidth(), buffer.getHeight(),
-                GL::BITMAP_PIXELFORMATS[buffer.getPixelFormat()],
-                GL::BITMAP_PIXELTYPES[buffer.getPixelFormat()],
-                buffer.getData(0, 0)
-            );
-            GL::GLException::check("reading pixel data from GPU memory");
+            {
+                AbstractBitmap::WriteLock<ProcessingTarget::CPU> lock(buffer);
+                glReadPixels(0, 0, buffer.getWidth(), buffer.getHeight(),
+                    GL::BITMAP_PIXELFORMATS[buffer.getPixelFormat()],
+                    GL::BITMAP_PIXELTYPES[buffer.getPixelFormat()],
+                    buffer.getData(0, 0)
+                );
+                GL::GLException::check("reading pixel data from GPU memory");
+            }
 
             // converting to the required format
-            BitmapConverter::convert(buffer, bitmap);
+            FormatConverter::convert(buffer, bitmap);
         }
 
         // copy data directly
@@ -526,8 +589,70 @@ public:
     }
 
 
+    /**
+        Transfers texture data from CPU to GPU. The bitmap is assumed locked.
+    */
+    void pushPixels(AbstractBitmap& bitmap) {
+        bitmap.prepare(front);
+
+        // pushing data if any
+        if (bitmap.getTextureFormat() != GL::TextureHandler::TextureFormat::OES_Ext) {
+#ifdef BEATMUP_DEBUG
+            DebugAssertion::check(bitmap.getData(0, 0) != nullptr, "Cannot push pixels: the bitmap is not locked");
+#endif
+
+            // setup alignment
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+            if (bitmap.isMask()) {
+                // masks are stored as horizontally-stretched bitmaps
+                const int textureWidth = bitmap.getWidth() / (8 / bitmap.getBitsPerPixel());
+
+#ifdef BEATMUP_OPENGLVERSION_GLES20
+                glTexImage2D(GL_TEXTURE_2D,
+                    0, GL_ALPHA,
+                    textureWidth, bitmap.getHeight(),
+                    0, GL_ALPHA, GL_UNSIGNED_BYTE,
+                    bitmap.getData(0, 0));
+#else
+                glTexSubImage2D(GL_TEXTURE_2D,
+                    0, 0, 0, textureWidth, bitmap.getHeight(),
+                    GL_RED,
+                    GL_UNSIGNED_BYTE,
+                    bitmap.getData(0, 0));
+#endif
+                GL::GLException::check("sending texture data (mask)");
+            }
+
+            else {
+#ifdef BEATMUP_OPENGLVERSION_GLES20
+                glTexImage2D(GL_TEXTURE_2D,
+                    0,
+                    GL::BITMAP_INTERNALFORMATS[bitmap.getPixelFormat()],
+                    bitmap.getWidth(), bitmap.getHeight(),
+                    0,
+                    GL::BITMAP_PIXELFORMATS[bitmap.getPixelFormat()],
+                    GL::BITMAP_PIXELTYPES[bitmap.getPixelFormat()],
+                    bitmap.getData(0, 0));
+#else
+                glTexSubImage2D(GL_TEXTURE_2D,
+                    0, 0, 0, bitmap.getWidth(), bitmap.getHeight(),
+                    GL::BITMAP_PIXELFORMATS[bitmap.getPixelFormat()],
+                    GL::BITMAP_PIXELTYPES[bitmap.getPixelFormat()],
+                    bitmap.getData(0, 0));
+#endif
+                GL::GLException::check("sending texture data");
+            }
+        }
+
+        bitmap.upToDate[ProcessingTarget::GPU] = true;
+    }
+
+
     int getLimit(GraphicPipeline::Limit limit) const {
         switch (limit) {
+        case Limit::TEXTURE_IMAGE_UNITS: return glLimits.maxTextureImageUnits;
+        case Limit::FRAGMENT_UNIFORM_VECTORS: return glLimits.maxFragmentUniformVectors;
         case Limit::LOCAL_GROUPS_TOTAL: return glLimits.maxTotalWorkGroupSize;
         case Limit::LOCAL_GROUPS_X: return glLimits.maxWorkGroupSize[0];
         case Limit::LOCAL_GROUPS_Y: return glLimits.maxWorkGroupSize[1];
@@ -542,11 +667,52 @@ public:
     }
 
 
-    void switchAlphaBlending(bool enable) {
-        if (enable)
+    void switchMode(GraphicPipeline::Mode mode) {
+        if (mode == GraphicPipeline::Mode::RENDERING) {
             glEnable(GL_BLEND);
-        else
+            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        } else if (mode == GraphicPipeline::Mode::INFERENCE) {
             glDisable(GL_BLEND);
+            glClearColor(0, 0, 0, 0);
+        }
+    }
+
+
+    void setTextureCoordinates(const Rectangle& coords) {
+        if (vertexAttribBuffer[0].s != coords.getX1() ||
+            vertexAttribBuffer[1].s != coords.getX2() ||
+            vertexAttribBuffer[0].t != coords.getY1() ||
+            vertexAttribBuffer[2].t != coords.getY2() ||
+            !isRectangularTextureCoordinates)
+        {
+            vertexAttribBuffer[0].s = vertexAttribBuffer[2].s = coords.getX1();
+            vertexAttribBuffer[1].s = vertexAttribBuffer[3].s = coords.getX2();
+            vertexAttribBuffer[0].t = vertexAttribBuffer[1].t = coords.getY1();
+            vertexAttribBuffer[2].t = vertexAttribBuffer[3].t = coords.getY2();
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertexAttribBuffer), vertexAttribBuffer);
+            isRectangularTextureCoordinates = true;
+        }
+#ifdef BEATMUP_DEBUG
+        GL::GLException::check("vertex attributes buffer setup");
+#endif
+    }
+
+    void setTextureCoordinates(const Point& leftTop, const Point& rightTop, const Point& leftBottom, const Point& rightBottom) {
+        vertexAttribBuffer[0].s = leftTop.x;
+        vertexAttribBuffer[0].t = leftTop.y;
+        vertexAttribBuffer[1].s = rightTop.x;
+        vertexAttribBuffer[1].t = rightTop.y;
+        vertexAttribBuffer[2].s = leftBottom.x;
+        vertexAttribBuffer[2].t = leftBottom.y;
+        vertexAttribBuffer[3].s = rightBottom.x;
+        vertexAttribBuffer[3].t = rightBottom.y;
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertexAttribBuffer), vertexAttribBuffer);
+        isRectangularTextureCoordinates = false;
+#ifdef BEATMUP_DEBUG
+        GL::GLException::check("vertex attributes buffer setup");
+#endif
     }
 };
 
@@ -562,16 +728,6 @@ GraphicPipeline::GraphicPipeline() {
 GraphicPipeline::~GraphicPipeline() {
     delete renderingPrograms;
     delete impl;
-}
-
-
-void GraphicPipeline::lock() {
-    access.lock();
-}
-
-
-void GraphicPipeline::unlock() {
-    access.unlock();
 }
 
 
@@ -605,7 +761,12 @@ void GraphicPipeline::bindOutput(AbstractBitmap& bitmap, const IntRectangle& vie
 }
 
 
-void GraphicPipeline::bindOutput(GL::glhandle texture) {
+void GraphicPipeline::bindOutput(GL::TextureHandler& textureHandler) {
+    impl->bindOutput(textureHandler);
+}
+
+
+void GraphicPipeline::bindOutput(GL::handle_t texture) {
     impl->bindOutput(texture);
 }
 
@@ -620,8 +781,13 @@ const ImageResolution& GraphicPipeline::getDisplayResolution() const {
 }
 
 
-void GraphicPipeline::fetchPixels(AbstractBitmap& bitmap) {
-    impl->fetchPixels(bitmap);
+void GraphicPipeline::pullPixels(AbstractBitmap& bitmap) {
+    impl->pullPixels(bitmap);
+}
+
+
+void GraphicPipeline::pushPixels(AbstractBitmap& bitmap) {
+    impl->pushPixels(bitmap);
 }
 
 
@@ -635,9 +801,10 @@ int GraphicPipeline::getLimit(Limit limit) const {
 }
 
 
-void GraphicPipeline::switchAlphaBlending(bool enable) {
-    impl->switchAlphaBlending(enable);
+void GraphicPipeline::switchMode(Mode mode) {
+    impl->switchMode(mode);
 }
+
 
 const char* GraphicPipeline::getGpuVendorString() const {
     return (const char*)glGetString(GL_VENDOR);
@@ -646,4 +813,39 @@ const char* GraphicPipeline::getGpuVendorString() const {
 
 const char* GraphicPipeline::getGpuRendererString() const {
     return (const char*)glGetString(GL_RENDERER);
+}
+
+
+void GraphicPipeline::setTextureCoordinates(const Beatmup::Rectangle& coords) {
+    impl->setTextureCoordinates(coords);
+}
+
+
+void GraphicPipeline::setTextureCoordinates(const Point& leftTop, const Point& rightTop, const Point& leftBottom, const Point& rightBottom) {
+    impl->setTextureCoordinates(leftTop, rightTop, leftBottom, rightBottom);
+}
+
+
+Beatmup::Rectangle GraphicPipeline::getTextureCoordinates(const Beatmup::Rectangle& area, const IntPoint& size, const IntPoint& sampling) {
+    /* Common OpenGL texture sampling model, likely:
+        . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .    <- texture pixels (`size` in number).
+           |  *     *     *     *     *     *     *     *     *  |               <- sampling point locations (`area`).
+           |                                                     |                  There are exactly `sampling` points.
+           |_____________________________________________________|               <- texture coordinates to give to
+                                                                                    the shaders to get the texture
+                                                                                    sampled in the starred locations.
+    */
+
+    // compute offsets of texture coordinates with respect to the sampling positions
+    const float
+        dx = sampling.x > 1 ?  0.5f * area.width()  / (sampling.x - 1)  : 0.0f,
+        dy = sampling.y > 1 ?  0.5f * area.height() / (sampling.y - 1)  : 0.0f;
+
+    // compute texture coordinates: x + 0.5 is the target sampling position, dx is the offset
+    return Beatmup::Rectangle(
+        (area.a.x + 0.5f - dx) / size.x,
+        (area.a.y + 0.5f - dy) / size.y,
+        (area.b.x + 0.5f + dx) / size.x,
+        (area.b.y + 0.5f + dy) / size.y
+    );
 }
