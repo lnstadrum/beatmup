@@ -140,9 +140,7 @@ Prebuilt python packages are available in 64-bit Windows for Python **3.5**, **3
 
 ## Ubuntu-based linux
 
-Prebuilt packages for x64 desktop Ubuntu-based linux distributions are available for downloading.
-
-TODO: add the link here
+Prebuilt packages for x64 desktop Ubuntu-based linux distributions are available for downloading [here](https://github.com/lnstadrum/beatmup#ubuntu-based-linux).
 
 ## Compiling Python package
 
