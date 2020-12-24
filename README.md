@@ -1,4 +1,4 @@
-![android](https://github.com/lnstadrum/beatmup-dev/workflows/Android/badge.svg) ![linux](https://github.com/lnstadrum/beatmup-dev/workflows/linux/badge.svg) ![windows](https://github.com/lnstadrum/beatmup-dev/workflows/windows/badge.svg) ![Python packages](https://github.com/lnstadrum/beatmup-dev/workflows/Build%20Python%20packages/badge.svg)
+![android](https://github.com/lnstadrum/beatmup/workflows/android/badge.svg) ![linux](https://github.com/lnstadrum/beatmup/workflows/linux/badge.svg) ![windows](https://github.com/lnstadrum/beatmup/workflows/windows/badge.svg) ![Python packages](https://github.com/lnstadrum/beatmup/workflows/Build%20Python%20packages/badge.svg)
 
 
 # Overview
