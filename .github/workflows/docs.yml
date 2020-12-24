@@ -2,7 +2,7 @@ name: Generate docs
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, bugfix/docs ]
 
 jobs:
   build:
@@ -38,24 +38,27 @@ jobs:
       - name: Build sphinx docs
         env:
             PYTHONPATH: ${{ github.workspace }}/build:${{ github.workspace }}/python
-        run: python3 -m sphinx -b html docs/ docs/python
+        run: |
+            python3 -m sphinx -b html docs/ docs/python
+            touch docs/.nojekyll
 
       - name: Prepare commit
         run: |
             git config --local user.email "action@github.com"
             git config --local user.name "GitHub Action"
-            git add docs/cpp docs/java docs/python
+            git add docs/cpp docs/java docs/python docs/.nojekyll
 
-      - name: Commit and push
-        if: github.ref != 'refs/heads/master'
-        run: |
-            git checkout -b docs/${{ github.sha }}
-            git commit -m "Updating documentation: $(git log -1 --pretty=%B)"
-            git push --set-upstream origin docs/${{ github.sha }}
+#      - name: Commit and push
+#        if: github.ref != 'refs/heads/master'
+#        run: |
+#            git checkout -b docs/${{ github.sha }}
+#            git commit -m "Updating documentation: $(git log -1 --pretty=%B)"
+#            git push --set-upstream origin docs/${{ github.sha }}
 
       - name: Commit and push (master)
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/bugfix/docs'
         run: |
             git commit -m "Updating documentation: $(git log -1 --pretty=%B)"
             git push --force origin HEAD:docs/master
+
 
