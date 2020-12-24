@@ -67,11 +67,6 @@ with open(os.path.join(rootdir, 'README.md'), 'r') as file:
     long_description = file.read()
 
 
-# grab licence
-with open(os.path.join(rootdir, 'COPYING'), 'r') as file:
-    licence = file.read()
-
-
 # build package
 setup(
     name='beatmup',
@@ -93,5 +88,9 @@ setup(
         'bdist_wheel': BdistWheelCommand,
         'clean': CleanCommand
     },
-    license=licence
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "Topic :: Scientific/Engineering :: Image Processing",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)"
+    ]
 )
