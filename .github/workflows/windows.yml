@@ -1,0 +1,42 @@
+name: windows
+
+on:
+  push:
+    branches: [ develop, master ]
+  pull_request:
+    branches: master
+  schedule:
+    - cron: '5 9 * * SAT'
+
+jobs:
+  build:
+    runs-on: windows-2019
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          path: beatmup
+          ref: ${{ github.ref }}
+          submodules: recursive
+
+      - name: Configure CMake project
+        working-directory: 'beatmup'
+        run: |
+            md build && cd build
+            cmake -DUSE_OPENGL=ON ..
+
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.0.2
+
+      - name: Build
+        working-directory: 'beatmup/build'
+        run: |
+            msbuild glew-build/glew.sln  -m:2 /property:Configuration=Release /property:Platform=x64
+            msbuild Apps.sln             -m:2 /property:Configuration=Release /property:Platform=x64
+
+      - name: Run Python
+        working-directory: 'beatmup/build'
+        shell: cmd
+        run: |
+            set PYTHONPATH=%cd%\\Release
+            python -c "import beatmup; beatmup.say_hi()"

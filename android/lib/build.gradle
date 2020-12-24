@@ -1,0 +1,100 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 29
+	defaultPublishConfig "fullRelease"
+
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 29
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+		externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_ARM_NEON=TRUE", "-DANDROID_STL=c++_shared", "-DANDROID_CPP_FEATURES=exceptions"
+                cppFlags.addAll(["-std=c++11", "-fexceptions", "-fvisibility=hidden", "-ffunction-sections", "-fdata-sections",
+                                 "-Wl,--gc-sections", "-Os", "-fno-rtti"])
+                abiFilters.addAll(["arm64-v8a", "armeabi-v7a", "x86", "x86_64"])
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+            useProguard false
+            debuggable true
+            externalNativeBuild {
+                cmake {
+                    cFlags.add("-DBEATMUP_DEBUG -g")
+                    cppFlags.add("-DBEATMUP_DEBUG -g")
+                }
+            }
+        }
+		
+        release {
+            minifyEnabled false
+            useProguard true
+			proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+			externalNativeBuild {
+                cmake {
+                    cppFlags.addAll(["-O3", "-s"])
+                }
+            }
+        }
+    }
+
+
+    flavorDimensions "version"
+
+    productFlavors {
+        full {
+            dimension "version"
+            externalNativeBuild {
+                cmake {
+                    arguments.addAll(["-DPROFILE_NNETS=true", "-DPROFILE_AUDIO=true"])
+                }
+            }
+        }
+
+        imaging {
+            dimension "version"
+            externalNativeBuild {
+                cmake {
+                    arguments.addAll(["-DPROFILE_NNETS=true", "-DPROFILE_AUDIO=false"])
+                }
+            }
+        }
+
+        audio {
+            dimension "version"
+            externalNativeBuild {
+                cmake {
+                    arguments.add("-DPROFILE_AUDIO=true")
+                }
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path 'src/main/cpp/CMakeLists.txt'
+        }
+    }
+
+    packagingOptions {
+        pickFirst '**/*.so'
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+}
