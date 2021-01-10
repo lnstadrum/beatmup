@@ -156,6 +156,10 @@ void VariablesBundle::setFloatMatrix4(std::string name, const Color::Matrix& mat
     }
 }
 
+void VariablesBundle::setFloatArray(std::string name, const std::vector<float>& values) {
+    floatArrays[name] = values;
+}
+
 float VariablesBundle::getFloat(const std::string& name) const {
     const auto& it = floats.find(name);
     if (it == floats.cend())
@@ -166,8 +170,10 @@ float VariablesBundle::getFloat(const std::string& name) const {
 void VariablesBundle::apply(Program& program) {
     for (auto& var : integers)
         program.setInteger(var.first.c_str(), var.second);
+
     for (auto& var : floats)
         program.setFloat(var.first.c_str(), var.second);
+
     for (auto& var : params) {
         // assign a vector
         if (var.second.getHeight() == 1 && var.second.getCount() == 1)
@@ -251,4 +257,17 @@ void VariablesBundle::apply(Program& program) {
             Insanity::insanity("Invalid matrix size");
         GL::GLException::check((std::string("setting uniform variable ") + var.first).c_str());
     }
+
+    for (auto& var : floatArrays) {
+        glUniform1fv(program.getUniformLocation(var.first.c_str()), var.second.size(), var.second.data());
+        GL::GLException::check((std::string("setting uniform variable ") + var.first).c_str());
+    }
+}
+
+
+void VariablesBundle::clear() {
+    integers.clear();
+    floats.clear();
+    floatArrays.clear();
+    params.clear();
 }

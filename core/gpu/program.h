@@ -98,6 +98,7 @@ namespace Beatmup {
         protected:
             inline handle_t getHandle() const { return handle; }
             void assertLinked() const;
+            void clearCaches();
 
         public:
             AbstractProgram(const GraphicPipeline& gpu);
@@ -139,7 +140,7 @@ namespace Beatmup {
             handle_t getAttribLocation(const std::string& name);
 
             /**
-                Assignes a value to a specified integer variable in the program
+                Assigns a value to a specific integer variable in the program.
                 \param name			the variable name
                 \param value		the value to assign
                 \param safe			if `true` check if the target variable exists before assigning
@@ -148,7 +149,7 @@ namespace Beatmup {
             void setUnsignedInteger(const std::string& name, const unsigned int value, bool safe = false);
 
             /**
-                Assignes a value to a specified floating poitn variable in the program
+                Assigns a value to a specific floating point variable in the program.
                 \param name			the variable name
                 \param value		the value to assign
                 \param safe			if `true` check if the target variable exists before assigning
@@ -187,8 +188,6 @@ namespace Beatmup {
             Program(const GraphicPipeline& gpu);
             Program(const GraphicPipeline& gpu, const VertexShader&, const FragmentShader&);
             void link(const VertexShader&, const FragmentShader&);
-            void relink(const VertexShader&);
-            void relink(const FragmentShader&);
         };
 
         /**
@@ -199,6 +198,7 @@ namespace Beatmup {
         public:
             RenderingProgram(const GraphicPipeline& gpu, const FragmentShader&);
             RenderingProgram(const GraphicPipeline& gpu, const VertexShader&, const FragmentShader&);
+            void link(const GraphicPipeline& gpu, const FragmentShader&);
             void blend(bool onScreen);
             void blend();
         };

@@ -452,6 +452,8 @@ bool Conv2D::initDeserializer() {
                   groups: 1            # number of groups for grouped convolution (defaults to 1)
                   activation: default  # activation function
                 \endcode
+
+                For activation functions see \ref NNetsActivationFunctionsSerialization.
             */
             return new Conv2D(
                 block["_name"],

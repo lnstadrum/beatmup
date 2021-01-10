@@ -1,4 +1,5 @@
 build
+.git
 android/local.properties
 android/app/build
 android/lib/build

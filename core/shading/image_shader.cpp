@@ -124,15 +124,17 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, const
         if (!program) {
             program = new GL::RenderingProgram(gpu, fragmentShader);
         }
-        else
-            program->relink(fragmentShader);
+        else {
+            program->link(gpu, fragmentShader);
+        }
 
         upToDate = true;
     }
 
     // enable program
     program->enable(gpu);
-    program->setInteger(INPUT_IMAGE_ID, 0);
+    if (input)
+        program->setInteger(INPUT_IMAGE_ID, 0);
     gpu.setTextureCoordinates(Rectangle::UNIT_SQUARE);
 
     // bind output
@@ -176,8 +178,9 @@ void ImageShader::prepare(GraphicPipeline& gpu, AbstractBitmap* output) {
         if (!program) {
             program = new GL::RenderingProgram(gpu, fragmentShader);
         }
-        else
-            program->relink(fragmentShader);
+        else {
+            program->link(gpu, fragmentShader);
+        }
 
         upToDate = true;
     }

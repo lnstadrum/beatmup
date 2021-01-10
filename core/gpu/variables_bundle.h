@@ -21,6 +21,7 @@
 #include "../color/matrix.h"
 #include "program.h"
 #include <map>
+#include <vector>
 #include <string>
 
 namespace Beatmup {
@@ -64,14 +65,25 @@ namespace Beatmup {
 
             std::map<std::string, int> integers;
             std::map<std::string, float> floats;
+            std::map<std::string, std::vector<float>> floatArrays;
             std::map<std::string, MatrixParameter> params;
 
         protected:
             void apply(Program& program);
 
         public:
+            /**
+                Removes all stored variables.
+            */
+            void clear();
 
+            /**
+                Sets a scalar integer uniform value.
+                \param name     The uniform variable name
+                \param value    The variable value
+            */
             void setInteger(std::string name, int value);
+
             void setInteger(std::string name, int x, int y);
             void setInteger(std::string name, int x, int y, int z);
             void setInteger(std::string name, int x, int y, int z, int w);
@@ -114,6 +126,13 @@ namespace Beatmup {
                 \param matrix   The color matrix to copy values from
             */
             void setFloatMatrix4(std::string name, const Color::Matrix& matrix);
+
+            /**
+                Sets a float array variable value.
+                \param name     The uniform variable name
+                \param values   The values
+            */
+            void setFloatArray(std::string name, const std::vector<float>& values);
 
             /**
                 Retrieves a value of a scalar float uniform variable by its name.

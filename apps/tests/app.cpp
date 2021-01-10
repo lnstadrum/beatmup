@@ -28,6 +28,7 @@
 #include "shading/shader_applicator.h"
 #include "bitmap/internal_bitmap.h"
 #include "context.h"
+#include "gpu/float16.h"
 #include "gpu/linear_mapping.h"
 #include "gpu/swapper.h"
 #include "nnets/deserialized_model.h"
@@ -50,6 +51,24 @@ public:
 
     void operator()() {
         context.performTask(*this);
+    }
+
+    static std::vector<float> makeRandomQuantizedVector(const int length, const int seed = 123) {
+        std::vector<float> data(length);
+        std::uniform_int_distribution<int> ran(0, 255);
+        std::default_random_engine dom(seed);
+        for (auto &_ : data)
+            _ = ran(dom) / 255.0f;
+        return data;
+    }
+
+    static std::vector<float> makeRandomVector(const int length, const float min, const float max, const int seed = 123) {
+        std::vector<float> data(length);
+        std::uniform_real_distribution<float> ran(min, max);
+        std::default_random_engine dom(seed);
+        for (auto &_ : data)
+            _ = ran(dom);
+        return data;
     }
 };
 
@@ -90,6 +109,180 @@ public:
 
 
 /**
+    Encoding/decoding of Float16.
+    FIXME: make this passing on Pi
+*/
+class Float16Test {
+    Context context;
+    ShaderApplicator applicator;
+    ImageShader shader;
+    InternalBitmap input, output;
+
+    bool runEncodingTest(std::vector<float>& values) {
+        // encode-decode the input values; Float16 compression is idempotent, this ensures zero error
+        for (auto& value : values)
+            value = (float)GL::Float16(value);
+
+        // send the test vector to the shader
+        shader.setFloatArray("values", values);
+
+        // run shader application
+        context.performTask(applicator);
+
+        // get pixels containing processed values
+        Swapper::pullPixels(output);
+
+        // compare values
+        AbstractBitmap::ReadLock lock(output);
+        const pixbyte *ptr = (pixbyte *) output.getData(0, 0);
+        float error = 0;
+        for (size_t i = 0; i < values.size(); ++i, ptr += 4) {
+            GL::Float16 testVal(ptr[0], ptr[1]);
+            error = std::max(error, std::abs(values[i] - (float)testVal));
+        }
+
+        return error <= std::numeric_limits<float>::epsilon();
+    }
+
+
+    bool runDecodingTest(std::vector<float>& values) {
+        // fill the input bitmap with encoded values
+        {
+            AbstractBitmap::WriteLock<ProcessingTarget::CPU> lock(input);
+            pixbyte *ptr = (pixbyte *) input.getData(0, 0);
+            for (size_t i = 0; i < values.size(); ++i, ptr += 4) {
+                GL::Float16 value(values[i]);
+                ptr[0] = value.getFrac();
+                ptr[1] = value.getExp();
+                values[i] = value;
+            }
+        }
+
+        // send the test data to the shader
+        shader.setFloatArray("refValues", values);
+        applicator.addSampler(&input, "encValues");
+
+        // run shader application
+        context.performTask(applicator);
+
+        // get pixels containing processed values
+        Swapper::pullPixels(output);
+
+        // decode differences
+        AbstractBitmap::ReadLock lock(output);
+        const pixbyte *ptr = (pixbyte *) output.getData(0, 0);
+        float error = 0;
+        for (size_t i = 0; i < values.size(); ++i, ptr += 4) {
+            GL::Float16 diff(ptr[0], ptr[1]);
+            error = std::max(error, (float)diff);
+        }
+
+        return error <= std::numeric_limits<float>::epsilon();
+    }
+
+public:
+    Float16Test():
+        shader(context),
+        input(context, PixelFormat::QuadByte, 128, 1),
+        output(context, PixelFormat::QuadByte, 128, 1)
+    {
+        applicator.setShader(&shader);
+        applicator.setOutputBitmap(&output);
+    }
+
+    void operator()() {
+        // test conversion in [-128, 127] range first
+        float error = 0, intError = 0;
+        for (int i = -12800; i <= 12700; ++i) {
+            float x = i * 0.01f;
+            GL::Float16 y(x);
+            GL::Float16 y2(y);
+            if (y2.getFrac() != y.getFrac() || y2.getExp() != y.getExp())
+                throw std::runtime_error("Float16 idempotence test fail");
+            error = std::max(error, std::abs(y-x));
+            if (i % 100 == 0)
+                intError = std::max(intError, std::abs(y-x));
+        }
+        if (error > 1)
+            throw std::runtime_error("Float16 test error is too big: " + std::to_string(error));
+        if (intError != 0)
+            throw std::runtime_error("Float16 test integer error is too big: " + std::to_string(error));
+
+        // test GLSL encoding
+        {
+            // shader receives a vector of values to encode, and writes the encoded result to output
+            shader.setSourceCode(BEATMUP_SHADER_CODE(
+                    uniform highp float values[128];
+                )
+                + GL::Float16::encodeGlsl() +
+                R"(void main() {
+                    lowp vec2 enc = encode(values[int(gl_FragCoord.x)]);
+                    gl_FragColor = vec4(enc, 0.0, 1.0);
+                })"
+            );
+
+            std::vector<float> values(input.getWidth());
+
+            for (int i = -64; i < 64; ++i)
+                values[i+64] = i;
+            if (!runEncodingTest(values))
+                throw std::runtime_error("Float16 GLSL encoding test integer error is too big");
+
+            for (int i = -64; i < 64; ++i)
+                values[i+64] = i * 0.0123f;
+            if (!runEncodingTest(values))
+                throw std::runtime_error("Float16 GLSL encoding test error is too big");
+
+            for (int i = -64; i < 64; ++i)
+                values[i+64] = i * 55;
+            if (!runEncodingTest(values))
+                throw std::runtime_error("Float16 GLSL encoding test error is too big");
+        }
+
+        shader.clear();
+
+        // test GLSL decoding
+        {
+            // shader reads encoded values, decodes them and encodes the difference with the reference
+            shader.setSourceCode(BEATMUP_SHADER_CODE(
+                    uniform highp float refValues[128];
+                    uniform sampler2D encValues;
+                )
+                + std::string(GL::RenderingPrograms::DECLARE_TEXTURE_COORDINATES_IN_FRAG) +
+                GL::Float16::encodeGlsl() +
+                GL::Float16::decodeGlsl() +
+                R"(void main() {
+                    highp float refValue = refValues[int(gl_FragCoord.x)];
+                    highp float testValue = decode(texture2D(encValues, texCoord).xy);
+                    lowp vec2 enc = encode(testValue - refValue);
+                    gl_FragColor = vec4(enc, 0.0, 1.0);
+                })"
+            );
+
+            std::vector<float> values(input.getWidth());
+            float error;
+
+            for (int i = -64; i < 64; ++i)
+                values[i+64] = i;
+            if (!runDecodingTest(values))
+                throw std::runtime_error("Float16 GLSL decoding test integer error is too big");
+
+            for (int i = -64; i < 64; ++i)
+                values[i+64] = i * 0.0123f;
+            if (!runDecodingTest(values))
+                throw std::runtime_error("Float16 GLSL decoding test error is too big");
+
+            for (int i = -64; i < 64; ++i)
+                values[i+64] = i * 55;
+            if (!runDecodingTest(values))
+                throw std::runtime_error("Float16 GLSL decoding test error is too big");
+        }
+    }
+};
+
+
+
+/**
     Sending a random vector to GPU memory converting it to 16-bit fixed point representation, fetching back and comparing.
 */
 class GpuFixedPointVectorTest : public GpuTestTask {
@@ -98,12 +291,7 @@ class GpuFixedPointVectorTest : public GpuTestTask {
         static const float ERROR_THRESHOLD = 1.1f / 512;
 
         // make random vector
-        std::vector<float> vector(SIZE), swapped;
-        std::random_device dev;
-        std::mt19937 dom(dev());
-        std::uniform_real_distribution<float> ran(-10, 10);
-        for (auto& _ : vector)
-            _ = ran(dom);
+        std::vector<float> vector = makeRandomVector(SIZE, -10, 10), swapped;
 
         // put to GPU memory and read back
         GL::Vector glVector(context, gpu, vector.size(), GL::Vector::Format::FIXED16, vector.data());
@@ -138,12 +326,7 @@ class IdentityMatrixMultiplicationTest : public GpuTestTask {
                 matrix[i] = x == y ? 1.0f : 0.0f;
 
         // make random vector
-        std::vector<float> vector(size);
-        std::random_device dev;
-        std::default_random_engine dom(dev());
-        std::uniform_int_distribution<int> ran(0, 255);
-        for (auto& _ : vector)
-            _ = ran(dom) / 255.0f;
+        auto vector = makeRandomQuantizedVector(size);
 
         // set up GL stuff
         GL::Vector glVector(context, gpu, size, format, vector.data());
@@ -184,30 +367,13 @@ class LinearMappingTest : public GpuTestTask {
 
     bool processOnGPU(GraphicPipeline& gpu, TaskThread& thread) {
         // make random matrix
-        std::vector<float> matrix(width * height);
-        std::random_device dev;
-        std::default_random_engine dom(1);
-        {
-            std::uniform_real_distribution<float> ran(-1, 1);
-            for (auto& _ : matrix)
-                _ = ran(dom);
-        }
+        std::vector<float> matrix = makeRandomVector(width * height, -1, 1, 12345);
 
         // make random vector
-        std::vector<float> vector(width);
-        {
-            std::uniform_int_distribution<int> ran(0, 255);
-            for (auto& _ : vector)
-                _ = ran(dom) / 255.0f;
-        }
+        std::vector<float> vector = makeRandomQuantizedVector(width);
 
         // make random bias
-        std::vector<float> bias(height);
-        {
-            std::uniform_real_distribution<float> ran(-1, 1);
-            for (auto& _ : bias)
-                _ = ran(dom);
-        }
+        std::vector<float> bias = makeRandomVector(width * height, -1, 1, 123456);
 
         // set up GL stuff
         GL::Vector glVector(context, gpu, width, GL::Vector::Format::TEXTURE, vector.data());
@@ -257,12 +423,7 @@ class StoragePushingPullingTest : public GpuTestTask {
         NNets::Storage storage(ctx, gpu, size, 0);
 
         // generate data
-        std::vector<float> data(size.volume());
-        std::random_device dev;
-        std::default_random_engine dom;
-        std::uniform_int_distribution<int> ran(0, 255);
-        for (auto &_ : data)
-            _ = ran(dom) / 255.0f;
+        auto data = makeRandomQuantizedVector(size.volume());
 
         // push and pull
         storage.push(gpu, data.data(), data.size());

@@ -27,20 +27,21 @@ import struct
 import tensorflow as tf
 
 
-def brelu01(x):
+def brelu1(x):
     """ Activation function: ReLU clipped into [0, 1] range.
     Corresponds to :attr:`DEFAULT <beatmup.nnets.ActivationFunction>` activation function.
     """
     return tf.keras.backend.clip(x, 0, 1)
 
 
-def sigmoid_like(x):
-    """ Activation function approximating sigmoid in a piecewise-linear fashion.
-    Corresponds to :attr:`SIGMOID_LIKE <beatmup.nnets.ActivationFunction>` activation function.
+def brelu6(x):
+    """ Activation function: 1/6 * ReLU clipped into [0, 1] range.
+    Corresponds to :attr:`BRELU6 <beatmup.nnets.ActivationFunction>` activation function.
+    This is the activation function used in MobileNet v1 and v2 architectures with the output stretched to 0..1 range.
+    This stretching is added to cope with the backend constraints, namely to be able to store the activation values
+    into integer-valued textures on low-end devicees.
     """
-    from tensorflow.keras import backend as kb
-    y = kb.clip(0.2*x, -0.2, 0.2)
-    return kb.clip(y + 0.1*x, -0.5, 0.5) + 0.5
+    return tf.keras.backend.clip(x * 0.167, 0, 1)
 
 
 class Shuffle(tf.keras.layers.Layer):
@@ -78,8 +79,8 @@ class Shuffle(tf.keras.layers.Layer):
 
 # adding custom objects to keras to enable model loading
 tf.keras.utils.get_custom_objects().update({
-    'brelu01': brelu01,
-    'sigmoid_like': sigmoid_like,
+    'brelu1': brelu1,
+    'brelu6': brelu6,
     'Shuffle': Shuffle
 })
 
@@ -158,10 +159,10 @@ def export_model(model, context, model_data=None, prefix=""):
                 CannotExport.check(conv2d_activation_func is None, layer, 'activation function is redefined for ' + conv2d_layer.name)
 
                 # setup activation layer
-                if layer.activation == brelu01:
+                if layer.activation == brelu1:
                     conv2d_activation_func = bnn.ActivationFunction.DEFAULT
-                elif layer.activation == sigmoid_like:
-                    conv2d_activation_func = bnn.ActivationFunction.SIGMOID_LIKE
+                elif layer.activation == brelu6:
+                    conv2d_activation_func = bnn.ActivationFunction.BRELU6
                 else:
                     CannotExport.check(False, layer, 'unsupported activation function')
 
