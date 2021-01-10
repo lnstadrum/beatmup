@@ -48,7 +48,7 @@
     ops:
     - _name: convolution
         _type: conv2d
-        activation: sigmoid_like
+        activation: brelu6
         input_channels: 3
         kernel_size: 3
         output_channels: 16
@@ -76,6 +76,7 @@
 
     - \subpage NNetsOpsSerialization
     - \subpage NNetsConnectionsSerialization
+    - \subpage NNetsActivationFunctionsSerialization
 */
 
 namespace Beatmup {

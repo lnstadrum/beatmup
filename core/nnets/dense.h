@@ -30,7 +30,9 @@ namespace Beatmup {
             Computes `A*x + b` for input feature vector `x`, a matrix `A` and an optional bias vector `b`.
             Accepts a GL::Vector or a flat Storage view on input, amd only a GL::Vector on output.
 
-            Constraints: number of input channels must be a multiple of 8.
+            Constraints:
+                - Number of input channels must be a multiple of 8.
+                - No activation function is applied on output (not yet implemented).
 
             The matrix and bias coefficients are searched in chunks. The chunk names consist of the operation name followed
             by Dense::MATRIX_CHUNK_SUFFIX and Dense::BIAS_CHUNK_SUFFIX respectively.
