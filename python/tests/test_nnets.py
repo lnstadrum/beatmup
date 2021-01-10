@@ -219,7 +219,7 @@ class ChunkCollectionTest(unittest.TestCase):
 
 class Conv2DTests(unittest.TestCase):
     @test_model(0.003)
-    def single_conv_test(self, image_size, kernel_size=3, channels=32, stride=1, activation_function=beatmup_keras.brelu01, bias=True):
+    def single_conv_test(self, image_size, kernel_size=3, channels=32, stride=1, activation_function=beatmup_keras.brelu1, bias=True):
         """ Single convolution layer test
         """
         # generate input image
@@ -242,7 +242,7 @@ class Conv2DTests(unittest.TestCase):
         """ Runs the single convolution layer test on a grid of parameters
         """
         if VERBOSE: print('---- Single Conv2D...')
-        activation_functions = [beatmup_keras.brelu01, beatmup_keras.sigmoid_like]
+        activation_functions = [beatmup_keras.brelu1, beatmup_keras.brelu6]
         for kernel_size in [1, 2, 3, 5]:
             for channels in [4, 32]:
                 for stride in [1, 2, 5]:
@@ -271,7 +271,7 @@ class Conv2DTests(unittest.TestCase):
                     kernel_initializer='random_normal',
                     bias_initializer='random_normal',
                     use_bias=True),
-            tf.keras.layers.Activation(beatmup_keras.sigmoid_like),
+            tf.keras.layers.Activation(beatmup_keras.brelu6),
             beatmup_keras.Shuffle(step=shuffle_step),
             tf.keras.layers.Conv2D(16, 1,
                     name='conv2',
@@ -280,7 +280,7 @@ class Conv2DTests(unittest.TestCase):
                     bias_initializer='random_normal',
                     padding='same',
                     use_bias=True),
-            tf.keras.layers.Activation(beatmup_keras.sigmoid_like)
+            tf.keras.layers.Activation(beatmup_keras.brelu6)
         ])
 
 
@@ -307,7 +307,7 @@ class Conv2DTests(unittest.TestCase):
                     kernel_initializer='random_normal',
                     bias_initializer='random_normal',
                     use_bias=False)(input)
-        x = residual = tf.keras.layers.Activation(beatmup_keras.sigmoid_like)(x)
+        x = residual = tf.keras.layers.Activation(beatmup_keras.brelu6)(x)
         x = tf.keras.layers.DepthwiseConv2D(3,
                     name='depthwise_conv',
                     strides=1,
@@ -315,7 +315,7 @@ class Conv2DTests(unittest.TestCase):
                     bias_initializer='random_normal',
                     padding='same',
                     use_bias=True)(x)
-        x = tf.keras.layers.Activation(beatmup_keras.sigmoid_like)(x)
+        x = tf.keras.layers.Activation(beatmup_keras.brelu6)(x)
         x = tf.keras.layers.Conv2D(channels, 1,
                     name='pointwise_conv',
                     strides=1,
@@ -324,7 +324,7 @@ class Conv2DTests(unittest.TestCase):
                     padding='same',
                     use_bias=True)(x)
         x = tf.keras.layers.Add(name="add_residual")([x, residual])
-        x = tf.keras.layers.Activation(beatmup_keras.brelu01)(x)
+        x = tf.keras.layers.Activation(beatmup_keras.brelu1)(x)
         return input_image, tf.keras.models.Model(inputs=input, outputs=x)
 
 
@@ -354,7 +354,7 @@ class Conv2DTests(unittest.TestCase):
                     kernel_initializer='random_normal',
                     bias_initializer='random_normal',
                     use_bias=True),
-            tf.keras.layers.Activation(beatmup_keras.sigmoid_like),
+            tf.keras.layers.Activation(beatmup_keras.brelu6),
             tf.keras.layers.Conv2D(out_channels, 3,
                     name='conv2',
                     groups=num_groups,
@@ -363,7 +363,7 @@ class Conv2DTests(unittest.TestCase):
                     bias_initializer='random_normal',
                     padding='same',
                     use_bias=True),
-            tf.keras.layers.Activation(beatmup_keras.sigmoid_like)
+            tf.keras.layers.Activation(beatmup_keras.brelu6)
         ])
 
 
@@ -396,7 +396,7 @@ class PoolingTests(unittest.TestCase):
                     kernel_initializer='random_normal',
                     bias_initializer='random_normal',
                     use_bias=True),
-            tf.keras.layers.Activation(beatmup_keras.sigmoid_like),
+            tf.keras.layers.Activation(beatmup_keras.brelu6),
             pool_op(size, name='pool', strides=stride, padding=padding)
         ])
 
@@ -437,7 +437,7 @@ class GlobalPoolingTests(unittest.TestCase):
                     kernel_initializer='random_normal',
                     bias_initializer='random_normal',
                     use_bias=True),
-            tf.keras.layers.Activation(beatmup_keras.sigmoid_like),
+            tf.keras.layers.Activation(beatmup_keras.brelu6),
             pool_op(name='pool'),
         ])
 
@@ -473,7 +473,7 @@ class DenseTests(unittest.TestCase):
                 kernel_initializer='random_normal',
                 bias_initializer='random_normal',
                 use_bias=False),
-            tf.keras.layers.Activation(beatmup_keras.sigmoid_like),
+            tf.keras.layers.Activation(beatmup_keras.brelu6),
             tf.keras.layers.GlobalMaxPooling2D(),
             tf.keras.layers.Dense(out_channels,
                 name='dense',
@@ -509,7 +509,7 @@ class DenseTests(unittest.TestCase):
                 kernel_initializer='random_normal',
                 bias_initializer='random_normal',
                 use_bias=False),
-            tf.keras.layers.Activation(beatmup_keras.sigmoid_like),
+            tf.keras.layers.Activation(beatmup_keras.brelu6),
             tf.keras.layers.GlobalMaxPooling2D(),
             tf.keras.layers.Dense(mid_channels,
                 name='dense1',
@@ -555,7 +555,7 @@ class BatchNormalizationTests(unittest.TestCase):
                 gamma_initializer='random_normal',
                 moving_mean_initializer='random_normal',
                 moving_variance_initializer=tf.keras.initializers.RandomUniform(0, 100)),
-            tf.keras.layers.Activation(beatmup_keras.sigmoid_like),
+            tf.keras.layers.Activation(beatmup_keras.brelu6),
         ])
 
 
@@ -584,7 +584,7 @@ class SoftmaxTests(unittest.TestCase):
                 kernel_initializer='random_normal',
                 bias_initializer='random_normal',
                 use_bias=False),
-            tf.keras.layers.Activation(beatmup_keras.sigmoid_like),
+            tf.keras.layers.Activation(beatmup_keras.brelu6),
             beatmup_keras.Shuffle(),
             tf.keras.layers.GlobalMaxPooling2D(),
             tf.keras.layers.Softmax()
@@ -614,7 +614,7 @@ class SerializationTest(unittest.TestCase):
                     kernel_initializer='random_normal',
                     bias_initializer='random_normal',
                     use_bias=False)(input)
-        x = residual = tf.keras.layers.Activation(beatmup_keras.sigmoid_like)(x)
+        x = residual = tf.keras.layers.Activation(beatmup_keras.brelu6)(x)
         x = tf.keras.layers.DepthwiseConv2D(3,
                     name='depthwise_conv_2',
                     strides=1,
@@ -622,7 +622,7 @@ class SerializationTest(unittest.TestCase):
                     bias_initializer='random_normal',
                     padding='same',
                     use_bias=True)(x)
-        x = tf.keras.layers.Activation(beatmup_keras.sigmoid_like)(x)
+        x = tf.keras.layers.Activation(beatmup_keras.brelu6)(x)
         x = tf.keras.layers.Conv2D(32, 1,
                     name='pointwise_conv_2',
                     strides=1,
@@ -630,7 +630,7 @@ class SerializationTest(unittest.TestCase):
                     bias_initializer='random_normal',
                     use_bias=True)(x)
         x = tf.keras.layers.Add(name="add_residual_1")([x, residual])
-        x = tf.keras.layers.Activation(beatmup_keras.brelu01)(x)
+        x = tf.keras.layers.Activation(beatmup_keras.brelu1)(x)
 
         x = tf.keras.layers.MaxPooling2D(2)(x)
         x = tf.keras.layers.Conv2D(64, 1,
@@ -638,7 +638,7 @@ class SerializationTest(unittest.TestCase):
                     kernel_initializer='random_normal',
                     bias_initializer='random_normal',
                     use_bias=True)(x)
-        x = tf.keras.layers.Activation(beatmup_keras.brelu01)(x)
+        x = tf.keras.layers.Activation(beatmup_keras.brelu1)(x)
         x = residual = beatmup_keras.Shuffle(2)(x)
 
         x = tf.keras.layers.DepthwiseConv2D(3,
@@ -648,7 +648,7 @@ class SerializationTest(unittest.TestCase):
                     bias_initializer='random_normal',
                     padding='same',
                     use_bias=True)(x)
-        x = tf.keras.layers.Activation(beatmup_keras.sigmoid_like)(x)
+        x = tf.keras.layers.Activation(beatmup_keras.brelu6)(x)
         x = tf.keras.layers.Conv2D(64, 1,
                     name='pointwise_conv_3',
                     strides=1,
@@ -656,7 +656,7 @@ class SerializationTest(unittest.TestCase):
                     bias_initializer='random_normal',
                     use_bias=True)(x)
         x = tf.keras.layers.Add(name="add_residual_2")([x, residual])
-        x = tf.keras.layers.Activation(beatmup_keras.brelu01)(x)
+        x = tf.keras.layers.Activation(beatmup_keras.brelu1)(x)
 
         x = tf.keras.layers.GlobalAveragePooling2D()(x)
         x = tf.keras.layers.Dense(40)(x)
@@ -716,7 +716,7 @@ class ImageSamplerTest(unittest.TestCase):
                 kernel_initializer='random_normal',
                 bias_initializer='random_normal',
                 use_bias=False),
-            tf.keras.layers.Activation(beatmup_keras.brelu01)
+            tf.keras.layers.Activation(beatmup_keras.brelu1)
         ])
 
         # get "test id" to add as prefix to model layers
@@ -772,7 +772,7 @@ class ImageSamplerTest(unittest.TestCase):
                 kernel_initializer='random_normal',
                 bias_initializer='random_normal',
                 use_bias=False),
-            tf.keras.layers.Activation(beatmup_keras.brelu01)
+            tf.keras.layers.Activation(beatmup_keras.brelu1)
         ])
 
         # convert model

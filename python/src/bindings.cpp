@@ -705,7 +705,7 @@ PYBIND11_MODULE(beatmup, module) {
                 instance.setFloatMatrix2(name, matrix.data());
             },
             py::arg("name"), py::arg("matrix"),
-            "Sets a float 2*2 matrix variable value.")
+            "Sets a float 2*2 matrix variable value")
 
         .def("set_float_matrix3", [](GL::VariablesBundle& instance, const char* name, const std::vector<float>& matrix) {
                 if (matrix.size() != 3*3)
@@ -714,7 +714,7 @@ PYBIND11_MODULE(beatmup, module) {
                 instance.setFloatMatrix3(name, matrix.data());
             },
             py::arg("name"), py::arg("matrix"),
-            "Sets a float 3*3 matrix variable value.")
+            "Sets a float 3*3 matrix variable value")
 
         .def("set_float_matrix4", [](GL::VariablesBundle& instance, const char* name, const std::vector<float>& matrix) {
                 if (matrix.size() != 4*4)
@@ -723,7 +723,11 @@ PYBIND11_MODULE(beatmup, module) {
                 instance.setFloatMatrix4(name, matrix.data());
             },
             py::arg("name"), py::arg("matrix"),
-            "Sets a float 4*4 matrix variable value.");
+            "Sets a float 4*4 matrix variable value")
+
+        .def("set_float_array", &GL::VariablesBundle::setFloatArray,
+            py::arg("name"), py::arg("values"),
+            "Sets a float array variable value");
 
     /**
      *  Metric
@@ -1240,8 +1244,8 @@ PYBIND11_MODULE(beatmup, module) {
      * NNets::ActivationFunction
      */
     py::enum_<NNets::ActivationFunction>(nnets, "ActivationFunction", "Activation function specification")
-        .value("DEFAULT",      NNets::ActivationFunction::DEFAULT,      "default activation: 0..1 bounded ReLU: identity clipped to 0..1 range")
-        .value("SIGMOID_LIKE", NNets::ActivationFunction::SIGMOID_LIKE, "piecewise-linear sigmoid approximation")
+        .value("DEFAULT", NNets::ActivationFunction::DEFAULT, "default activation: 0..1 bounded ReLU (identity clipped to 0..1 range)")
+        .value("BRELU6",  NNets::ActivationFunction::BRELU6,  "0.167 times identity clipped to 0..1 range")
         .export_values();
 
     /**

@@ -53,33 +53,33 @@ test_images = test_images.astype(numpy.float32) / 255.0
 model = tf.keras.models.Sequential([
     tf.keras.layers.Input((32, 32, 3)),
 
-    tf.keras.layers.Conv2D(32, 3, name='conv1', strides=2, use_bias=False),
+    tf.keras.layers.Conv2D(32, 3, name='conv1', use_bias=False),
     tf.keras.layers.BatchNormalization(momentum=0.9),
-    tf.keras.layers.Activation(beatmup_keras.sigmoid_like),
+    tf.keras.layers.Activation(beatmup_keras.brelu6),
 
     tf.keras.layers.Conv2D(64, 3, name='conv2', groups=4, use_bias=False),
     tf.keras.layers.BatchNormalization(momentum=0.9),
-    tf.keras.layers.Activation(beatmup_keras.sigmoid_like),
+    tf.keras.layers.Activation(beatmup_keras.brelu6),
     beatmup_keras.Shuffle(),
 
-    tf.keras.layers.Conv2D(64, 3, name='conv3', groups=8, use_bias=False),
+    tf.keras.layers.Conv2D(64, 3, name='conv3', strides=2, groups=8, use_bias=False),
     tf.keras.layers.BatchNormalization(momentum=0.9),
-    tf.keras.layers.Activation(beatmup_keras.sigmoid_like),
+    tf.keras.layers.Activation(beatmup_keras.brelu6),
     beatmup_keras.Shuffle(),
 
     tf.keras.layers.Conv2D(96, 3, name='conv4', groups=8, use_bias=False),
     tf.keras.layers.BatchNormalization(momentum=0.9),
-    tf.keras.layers.Activation(beatmup_keras.sigmoid_like),
+    tf.keras.layers.Activation(beatmup_keras.brelu6),
     beatmup_keras.Shuffle(),
 
-    tf.keras.layers.Conv2D(96, 3, name='conv5', groups=12, use_bias=False),
+    tf.keras.layers.Conv2D(96, 3, name='conv5', strides=2, groups=12, use_bias=False),
     tf.keras.layers.BatchNormalization(momentum=0.9),
-    tf.keras.layers.Activation(beatmup_keras.sigmoid_like),
+    tf.keras.layers.Activation(beatmup_keras.brelu6),
     beatmup_keras.Shuffle(),
 
     tf.keras.layers.Conv2D(144, 3, name='conv6', groups=12, use_bias=False),
     tf.keras.layers.BatchNormalization(momentum=0.9),
-    tf.keras.layers.Activation(beatmup_keras.sigmoid_like),
+    tf.keras.layers.Activation(beatmup_keras.brelu6),
 
     tf.keras.layers.GlobalAveragePooling2D(),
 
@@ -95,8 +95,8 @@ model.compile(optimizer=tf.keras.optimizers.Adam(),
 
 # Train the model
 print('===== Training model...')
-lr_scheduler = tf.keras.callbacks.LearningRateScheduler(lambda epoch, _: 0.1 if epoch < 20 else 0.01)
-model.fit(train_images, train_labels, epochs=50, batch_size=256,
+lr_scheduler = tf.keras.callbacks.LearningRateScheduler(lambda epoch, _: 0.1 ** (1 + epoch // 20))
+model.fit(train_images, train_labels, epochs=60, batch_size=256,
     validation_data=(test_images, test_labels),
     callbacks=[lr_scheduler])
 

@@ -101,7 +101,7 @@ class ResamplerTests(unittest.TestCase):
         ctx = beatmup.Context()
         resampler = beatmup.BitmapResampler(ctx)
         resampler.mode = beatmup.BitmapResampler.CONVNET
-        input = beatmup.InternalBitmap(ctx, "../images/fecamp.bmp")
+        input = beatmup.InternalBitmap(ctx, "../../images/fecamp.bmp")
         output = beatmup.InternalBitmap(ctx, beatmup.PixelFormat.TRIPLE_BYTE, input.get_width() * 2, input.get_height() * 2)
         resampler.input = input
         resampler.output = output
@@ -160,7 +160,7 @@ class SceneRenderingTests(unittest.TestCase):
         # create shaders
         distortion = beatmup.ImageShader(ctx)
         distortion.set_source_code(distortion.CODE_HEADER + """
-            highp vec2 distort(vec2 xy) {
+            highp vec2 distort(highp vec2 xy) {
                 highp vec2 r = xy - vec2(0.5, 0.5);
                 highp float t = length(r);
                 return (-0.5 * t * t + 0.9) * r + vec2(0.5, 0.5);
@@ -172,7 +172,7 @@ class SceneRenderingTests(unittest.TestCase):
 
         gray_shift = beatmup.ImageShader(ctx)
         gray_shift.set_source_code(gray_shift.CODE_HEADER + """
-            highp float gray(vec2 pos) {
+            highp float gray(highp vec2 pos) {
                 highp vec4 clr = texture2D(image, pos);
                 return 0.333 * (clr.r + clr.g + clr.b);
             }
@@ -294,7 +294,7 @@ class ShaderApplicationTests(unittest.TestCase):
         applicator.shader = beatmup.ImageShader(ctx)
         applicator.shader.set_source_code(beatmup.ImageShader.CODE_HEADER + """
             uniform sampler2D testSampler;
-            highp vec2 distort(vec2 xy) {
+            highp vec2 distort(highp vec2 xy) {
                 highp vec2 r = xy - vec2(0.5, 0.5);
                 highp float t = length(r);
                 return (-0.5 * t * t + 0.9) * r + vec2(0.5, 0.5);
@@ -322,7 +322,7 @@ class MultitaskTests(unittest.TestCase):
         applicator.shader = beatmup.ImageShader(ctx)
         applicator.shader.set_source_code(beatmup.ImageShader.CODE_HEADER + """
             uniform highp float factor;
-            highp vec2 distort(vec2 xy) {
+            highp vec2 distort(highp vec2 xy) {
                 highp vec2 r = xy - vec2(0.5, 0.5);
                 highp float t = length(r);
                 return (-factor * t * t + 0.9) * r + vec2(0.5, 0.5);

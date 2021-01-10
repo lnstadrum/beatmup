@@ -115,7 +115,7 @@ void ShaderApplicator::clearSamplers() {
 
 
 void ShaderApplicator::setOutputBitmap(AbstractBitmap *bitmap) {
-    output = bitmap;
+    this->output = bitmap;
 }
 
 

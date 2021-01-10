@@ -59,7 +59,8 @@ assert c == 3, "A three-channel input image is expected"
 output = beatmup.Bitmap(ctx, numpy.zeros((2 * h, 2 * w, c), numpy.uint8))
 
 # feed the resampler with input and output
-resampler.set_bitmaps(beatmup.Bitmap(ctx, image), output)
+resampler.input = beatmup.Bitmap(ctx, image)
+resampler.output = output
 
 # run the resampling task
 ctx.perform_task(resampler)

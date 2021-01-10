@@ -1,13 +1,28 @@
 #
-# A minimum linux environment to build linux Beatmup binaries and Python package
+# A minimum linux environment to build linux Beatmup binaries and Python package and run few tests using OpenGL software emulation
 #
 
 FROM ubuntu:18.04
 
-RUN apt update && apt -y install g++ cmake freeglut3-dev python3 python3-pip
+# install stuff
+RUN apt update && apt install -y \
+        g++ cmake freeglut3-dev python3 python3-pip \
+        libegl1-mesa-dev libgles2-mesa-dev xvfb
 
+# add source code
 ADD . /opt/beatmup
-ENTRYPOINT cd /opt/beatmup && mkdir -p build && cd build &&\
-    cmake -DUSE_GLX=ON -DDEBUG=ON .. && make -j`nproc` &&\
-    PYTHONPATH=$(pwd) python3 -c "import beatmup; beatmup.say_hi()"
 
+# compile beatmup
+RUN cd /opt/beatmup && mkdir -p build && cd build &&\
+    cmake -DUSE_EGL=ON -DGLES_VERSION=20 -DDEBUG=ON .. &&\
+    make -j`nproc`
+
+# run tests
+RUN cd /opt/beatmup/build && xvfb-run ./Tests
+
+# set python path
+ENV PYTHONPATH=/opt/beatmup/build
+
+# run python tests
+RUN python3 -m pip install numpy
+RUN cd /opt/beatmup/python/tests && xvfb-run -a python3 test.py

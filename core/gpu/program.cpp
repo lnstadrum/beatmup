@@ -126,6 +126,12 @@ void AbstractProgram::assertLinked() const {
 }
 
 
+void AbstractProgram::clearCaches() {
+    uniformsCache.clear();
+    attribsCache.clear();
+}
+
+
 void AbstractProgram::enable(const GraphicPipeline& gpu) {
     glUseProgram(handle);
     GL::GLException::check("enabling a program");
@@ -394,22 +400,7 @@ void Program::link(const VertexShader& vertexShader, const FragmentShader& fragm
     glDetachShader(getHandle(), fragmentShader.handle);
     assertLinked();
     GL::GLException::check("program linking");
-}
-
-
-void Program::relink(const VertexShader& vertexShader) {
-    glAttachShader(getHandle(), vertexShader.handle);
-    glLinkProgram(getHandle());
-    glDetachShader(getHandle(), vertexShader.handle);
-    assertLinked();
-}
-
-
-void Program::relink(const FragmentShader& fragmentShader) {
-    glAttachShader(getHandle(), fragmentShader.handle);
-    glLinkProgram(getHandle());
-    glDetachShader(getHandle(), fragmentShader.handle);
-    assertLinked();
+    clearCaches();
 }
 
 
@@ -425,12 +416,17 @@ RenderingProgram::RenderingProgram(const GraphicPipeline& gpu, const VertexShade
     glBindAttribLocation(getHandle(), GraphicPipeline::ATTRIB_VERTEX_COORD,  RenderingPrograms::VERTEX_COORD_ATTRIB_NAME);
 
     // link
-    link(vertexShader, fragmentShader);
+    Program::link(vertexShader, fragmentShader);
 
     // setting common stuff
     enable(gpu);
     setMatrix3(RenderingPrograms::MODELVIEW_MATRIX_ID, AffineMapping::IDENTITY);
     setInteger(RenderingPrograms::VERTICAL_FLIP_ID, 1);
+}
+
+
+void RenderingProgram::link(const GraphicPipeline& gpu, const FragmentShader& fragmentShader) {
+    Program::link(gpu.getDefaultVertexShader(), fragmentShader);
 }
 
 

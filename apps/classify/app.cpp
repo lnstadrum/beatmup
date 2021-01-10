@@ -24,12 +24,8 @@
     //!< When defined, a Profiler is attached to the Model in order to meter every operation execution time. This makes the processing slower.
 
 #include <bitmap/internal_bitmap.h>
-#include <nnets/classifier.h>
-#include <nnets/conv2d.h>
-#include <nnets/dense.h>
-#include <nnets/image_sampler.h>
-#include <nnets/pooling2d.h>
-#include <nnets/softmax.h>
+#include <nnets/deserialized_model.h>
+#include <nnets/inference_task.h>
 #include <utils/profiler.h>
 #include <iostream>
 #include <iomanip>
@@ -37,132 +33,6 @@
 #include <chrono>
 #include <thread>
 #include <regex>
-
-
-/**
-    A dog breed classifier.
-    An example of Classifier implementation recognizing 119 dogs breeds and 1 cat breed.
-    Contains a ResNeXt-like convolution neural net constructed programmatically. Requires a chunkfile with the model data.
-*/
-class DogClassifier : public Beatmup::NNets::Classifier {
-private:
-    /**
-        Add connections between operations in a unit (block).
-        \param after            The preceding operation name
-        \param prefix           The unit prefix
-        \param shuffleInput     If `true`, a shuffling operation is applied at input
-    */
-    inline void addUnit(std::string& after, const std::string& prefix, bool shuffleInput = false) {
-        // main connections
-        addConnection(after, prefix + "-pw", 0, 0, shuffleInput ? 8 : 0);
-        addConnection(prefix + "-pw", prefix + "-dw", 0, 0);
-
-        // residual connection
-        addConnection(after, prefix + "-dw", 0, 1);
-        after = prefix + "-dw";
-    }
-
-    /**
-        Adds a connection to a specific operation
-        \param after            A preceding operation name
-        \param name             An operation to connect
-    */
-    inline void addLayer(std::string& after, const std::string& name) {
-        addConnection(after, name);
-        after = name;
-    }
-
-    Beatmup::ChunkFile modelData;       //!< model data (convolution filters, biases, dense matrix)
-
-public:
-    /**
-        Creates a DogClassifier instance.
-        \param context              A context instance the classifier will use to store its internal data
-        \param pathToModelData      Relative path to the chunkfile containing the model data.
-    */
-    inline DogClassifier(Beatmup::Context& context, const char* pathToModelData):
-        modelData(pathToModelData),
-        Classifier(context, modelData)
-    {
-        using namespace Beatmup::NNets;
-
-        // Create and add operations in the order they are executed. This does not add connections between the ops though.
-        append({
-            new ImageSampler("input", Beatmup::IntPoint(385, 385)),
-            new Conv2D("b0-conv", 5, 3, 32, 2, Size::Padding::VALID, true, 1, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b1-stage1-pw", 1, 32, 32, 1, Size::Padding::SAME, true, 1, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b1-stage1-dw", 3, 32, 32, 1, Size::Padding::SAME, true, 8, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b1-stage2-pw", 1, 32, 32, 1, Size::Padding::SAME, true, 1, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b1-stage2-dw", 3, 32, 32, 1, Size::Padding::SAME, true, 8, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b1-scale", 3, 32, 64, 2, Size::Padding::VALID, true, 8, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b2-stage1-pw", 1, 64, 64, 1, Size::Padding::SAME, true, 2, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b2-stage1-dw", 3, 64, 64, 1, Size::Padding::SAME, true, 16, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b2-stage2-pw", 1, 64, 64, 1, Size::Padding::SAME, true, 2, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b2-stage2-dw", 3, 64, 64, 1, Size::Padding::SAME, true, 16, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b2-stage3-pw", 1, 64, 64, 1, Size::Padding::SAME, true, 2, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b2-stage3-dw", 3, 64, 64, 1, Size::Padding::SAME, true, 16, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b2-scale", 3, 64, 96, 2, Size::Padding::VALID, true, 8, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b3-stage1-pw", 1, 96, 96, 1, Size::Padding::SAME, true, 3, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b3-stage1-dw", 3, 96, 96, 1, Size::Padding::SAME, true, 24, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b3-stage2-pw", 1, 96, 96, 1, Size::Padding::SAME, true, 3, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b3-stage2-dw", 3, 96, 96, 1, Size::Padding::SAME, true, 24, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b3-stage3-pw", 1, 96, 96, 1, Size::Padding::SAME, true, 3, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b3-stage3-dw", 3, 96, 96, 1, Size::Padding::SAME, true, 24, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b3-scale", 3, 96, 96, 2, Size::Padding::VALID, true, 24, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b4-stage1-pw", 1, 96, 96, 1, Size::Padding::SAME, true, 3, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b4-stage1-dw", 3, 96, 96, 1, Size::Padding::SAME, true, 24, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b4-stage2-pw", 1, 96, 96, 1, Size::Padding::SAME, true, 3, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b4-stage2-dw", 3, 96, 96, 1, Size::Padding::SAME, true, 24, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b4-stage3-pw", 1, 96, 96, 1, Size::Padding::SAME, true, 3, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b4-stage3-dw", 3, 96, 96, 1, Size::Padding::SAME, true, 24, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b4-stage4-pw", 1, 96, 96, 1, Size::Padding::SAME, true, 3, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b4-stage4-dw", 3, 96, 96, 1, Size::Padding::SAME, true, 24, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b4-scale", 3, 96, 192, 2, Size::Padding::VALID, true, 24, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b5-stage1-pw", 1, 192, 192, 1, Size::Padding::SAME, true, 6, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b5-stage1-dw", 3, 192, 192, 1, Size::Padding::SAME, true, 48, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b5-stage2-pw", 1, 192, 192, 1, Size::Padding::SAME, true, 6, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b5-stage2-dw", 3, 192, 192, 1, Size::Padding::SAME, true, 48, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b5-stage3-pw", 1, 192, 192, 1, Size::Padding::SAME, true, 6, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b5-stage3-dw", 3, 192, 192, 1, Size::Padding::SAME, true, 48, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b5-stage4-pw", 1, 192, 192, 1, Size::Padding::SAME, true, 6, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b5-stage4-dw", 3, 192, 192, 1, Size::Padding::SAME, true, 48, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b5-scale", 3, 192, 192, 2, Size::Padding::VALID, true, 48, ActivationFunction::SIGMOID_LIKE),
-            new Conv2D("b6-conv1", 3, 192, 192, 1, Size::Padding::VALID, true, 24, ActivationFunction::SIGMOID_LIKE),
-            new Pooling2D("b7-pool", Pooling2D::Operator::AVERAGE, 3, 1, Size::Padding::VALID),
-            new Dense(context, "Dense", 120, true),
-            new Softmax("Softmax")
-        });
-
-        // Add connections between operations
-        std::string ptr = getFirstOperation().getName();
-        addLayer(ptr, "b0-conv");
-        addUnit (ptr, "b1-stage1");
-        addUnit (ptr, "b1-stage2");
-        addLayer(ptr, "b1-scale");
-        addUnit (ptr, "b2-stage1", true);
-        addUnit (ptr, "b2-stage2", true);
-        addUnit (ptr, "b2-stage3", true);
-        addLayer(ptr, "b2-scale");
-        addUnit (ptr, "b3-stage1", true);
-        addUnit (ptr, "b3-stage2", true);
-        addUnit (ptr, "b3-stage3", true);
-        addLayer(ptr, "b3-scale");
-        addUnit (ptr, "b4-stage1", true);
-        addUnit (ptr, "b4-stage2", true);
-        addUnit (ptr, "b4-stage3", true);
-        addUnit (ptr, "b4-stage4", true);
-        addLayer(ptr, "b4-scale");
-        addUnit (ptr, "b5-stage1", true);
-        addUnit (ptr, "b5-stage2", true);
-        addUnit (ptr, "b5-stage3", true);
-        addUnit (ptr, "b5-stage4", true);
-        addLayer(ptr, "b5-scale");
-        addLayer(ptr, "b6-conv1");
-        addLayer(ptr, "b7-pool");
-        addLayer(ptr, "Dense");
-        addLayer(ptr, "Softmax");
-    }
-};
 
 
 /**
@@ -191,8 +61,6 @@ enum Args {
 /**
     Relative path to the chunkfile containing the model data.
     This app uses the same chunkfile as in the Android dog classification test sample.
-    The chunkfile actually contains a serialized model, so there is a simpler way to build the classifier using Beatmup::NNets::DeserializedModel
-    (see the Java sample). However, for illustration purposes, in this app the model is constructed by hand layer-by-layer.
     The path is given relatively to the repository root folder.
 */
 static constexpr const char* PATH_TO_MODEL_DATA = "android/app/src/main/assets/dog_classifier.chunks";
@@ -205,8 +73,17 @@ int mainThatThrowsExceptions(int argc, char* argv[]) {
     // Create a context
     Beatmup::Context ctx;
 
-    // Init classifier
-    DogClassifier classifier(ctx, PATH_TO_MODEL_DATA);
+    // Init classifier. By convention, the chunk having empty name contains the model description in a YML-like format
+    // that can be feed to DeserializedModel constructor.
+    Beatmup::ChunkFile modelData(PATH_TO_MODEL_DATA);
+    Beatmup::NNets::DeserializedModel classifier(ctx, modelData.read<std::string>(""));
+
+    // Keep a reference to the Softmax layer providing the output.
+    const auto& softmax = static_cast<Beatmup::NNets::Softmax&>(classifier.getLastOperation());
+
+    // Init the inference task
+    Beatmup::NNets::InferenceTask inference(classifier, modelData);
+
 #ifdef PROFILE
     Beatmup::Profiler profiler;
     classifier.setProfiler(&profiler);
@@ -220,7 +97,8 @@ int mainThatThrowsExceptions(int argc, char* argv[]) {
 
     // Initiate the first run and wait till the model is ready
     Beatmup::InternalBitmap dummyInput(ctx, Beatmup::PixelFormat::TripleByte, 385, 385);
-    classifier.start(dummyInput);
+    inference.connect(dummyInput, classifier.getFirstOperation(), 0);
+    ctx.submitTask(inference);
     std::cout << "Preparing classifier:" << std::endl;
     waitTillDone(classifier.getPreparingProgress(), ctx);
 
@@ -252,7 +130,8 @@ int mainThatThrowsExceptions(int argc, char* argv[]) {
         static const int numRepeats = 10;
         for (int i = 0; i < numRepeats; ++i) {
             auto startTime = std::chrono::high_resolution_clock::now();
-            classifier(input);
+            inference.connect(input, classifier.getFirstOperation());
+            ctx.performTask(inference);
             auto finishTime = std::chrono::high_resolution_clock::now();
             const float time = std::chrono::duration<float, std::milli>(finishTime - startTime).count();
             fastestRunTime = i > 0 ? std::min(fastestRunTime, time) : time;
@@ -267,7 +146,7 @@ int mainThatThrowsExceptions(int argc, char* argv[]) {
             std::cout << "Class probabilities:" << std::endl;
 
         *ostr << std::setprecision(5) << std::fixed;
-        for (auto p : classifier.getProbabilities())
+        for (auto p : softmax.getProbabilities())
             *ostr << p << ", ";
         *ostr << std::endl;
 
@@ -322,14 +201,15 @@ int mainThatThrowsExceptions(int argc, char* argv[]) {
 
             // Run inference
             auto startTime = std::chrono::high_resolution_clock::now();
-            classifier(input);
+            inference.connect(input, classifier.getFirstOperation());
+            ctx.performTask(inference);
             auto finishTime = std::chrono::high_resolution_clock::now();
             const float time = std::chrono::duration<float, std::milli>(finishTime - startTime).count();
             averageTime.update(time);
             fastestRunTime = numImages > 0 ? std::min(fastestRunTime, time) : time;
 
             // Check if the prediction matches the class label, if given
-            const auto& probs = classifier.getProbabilities();
+            const auto& probs = softmax.getProbabilities();
             if (meterAccuracy) {
                 int max = 0;
                 for (size_t i = 1; i < probs.size(); ++i)

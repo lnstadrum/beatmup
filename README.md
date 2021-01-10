@@ -73,7 +73,7 @@ There is a number of test apps showcasing the use of Beatmup with additional exp
  * [cifar100.py](python/examples/cifar100.py) explains how to train a neural net with TensorFlow/Keras, convert it into a Beatmup-compliant model and run its inference on CIFAR100 test set.
  * [x2_superresolution.py](python/examples/x2_superresolution.py) and [x2_superresolution_video.py](python/examples/x2_superresolution_video.py) showcase applying x2 upsampling neural net to an image and a video.
 
-Unit tests in Python are available in [python/test.py](python/test.py) and [python/test_nnets.py](python/test_nnets.py).
+Unit tests in Python are available in [python/tests/test.py](python/tests/test.py) and [python/tests/test_nnets.py](python/tests/test_nnets.py).
 
 ## Java (Android)
 An Android test app is available in [android/app](android/app) folder. It consists of independent examples showing how to use Beatmup in Android.
