@@ -229,7 +229,7 @@ int mainThatThrowsExceptions(int argc, char* argv[]) {
 
             // Print out things
             std::cout << '\r' << "[" << std::setw(5) << numImages << "] ";
-            std::cout << std::setprecision(2) << std::setw(8) << 1000 / averageTime() << " FPS ";
+            std::cout << std::setprecision(2) << std::setw(8) << averageTime() << " ms ";
             if (meterAccuracy)
                 std::cout << std::setprecision(3) << std::setw(8) << 100.0f * score / (numImages + 1) << "%  ";
             static const int MAX_LEN = 50;

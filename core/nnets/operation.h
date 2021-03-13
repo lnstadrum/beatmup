@@ -395,7 +395,8 @@ namespace Beatmup {
         */
         enum class ActivationFunction {
             DEFAULT,        //!< default activation: 0..1 bounded ReLU (identity clipped to 0..1 range)
-            BRELU6          //!< 0.167 times identity clipped to 0..1 range
+            BRELU6,         //!< 0.167 times identity clipped to 0..1 range
+            SIGMOID_LIKE    //!< piecewise-linear sigmoid approximation
         };
 
 
