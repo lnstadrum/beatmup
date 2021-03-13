@@ -44,6 +44,15 @@ def brelu6(x):
     return tf.keras.backend.clip(x * 0.167, 0, 1)
 
 
+def sigmoid_like(x):
+    """ Activation function approximating sigmoid in a piecewise-linear fashion.
+    Corresponds to :attr:`SIGMOID_LIKE <beatmup.nnets.ActivationFunction>` activation function.
+    """
+    from tensorflow.keras import backend as kb
+    y = kb.clip(0.2*x, -0.2, 0.2)
+    return kb.clip(y + 0.1*x, -0.5, 0.5) + 0.5
+
+
 class Shuffle(tf.keras.layers.Layer):
     """ Shuffling layer implementation.
 
@@ -64,6 +73,7 @@ class Shuffle(tf.keras.layers.Layer):
         super().__init__(**kwargs)
 
     def call(self, tensor):
+        assert tensor.shape[3] % (self.step * 4) == 0, "Shuffling step *4 must be a divider of the storage depth"
         d = tensor.shape[3] // 4
         tex_ids = [(_ * self.step) % d + (_ * self.step) // d for _ in range(0, d)]
         p = []
@@ -81,6 +91,7 @@ class Shuffle(tf.keras.layers.Layer):
 tf.keras.utils.get_custom_objects().update({
     'brelu1': brelu1,
     'brelu6': brelu6,
+    'sigmoid_like': sigmoid_like,
     'Shuffle': Shuffle
 })
 
@@ -163,6 +174,8 @@ def export_model(model, context, model_data=None, prefix=""):
                     conv2d_activation_func = bnn.ActivationFunction.DEFAULT
                 elif layer.activation == brelu6:
                     conv2d_activation_func = bnn.ActivationFunction.BRELU6
+                elif layer.activation == sigmoid_like:
+                    conv2d_activation_func = bnn.ActivationFunction.SIGMOID_LIKE
                 else:
                     CannotExport.check(False, layer, 'unsupported activation function')
 

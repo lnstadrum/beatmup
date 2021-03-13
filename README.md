@@ -66,7 +66,7 @@ An early version of Beatmup is used in [PictureJam Collage Maker Android app](ht
 There is a number of test apps showcasing the use of Beatmup with additional explanations in [apps](apps) folder. The code is in C++, but can be universally helpful. Few examples:
  * [apps/shaderer](apps/shaderer/app.cpp) processes images with a custom GLSL fragment shader read from the standard input.
  * [apps/x2](apps/x2/app.cpp) is a test app for the *x2* neural net.
- * [apps/classify](apps/classify/app.cpp) is a dog image classifier, a variant of ResNeXt trained on a subset of ImageNet containing 120 classes of dogs and cats images. The inference is implemented with OpenGL shaders. Top-1 validation accuracy on Raspberry Pi Zero W is about 64% (work in progress).
+ * [apps/classify](apps/classify/app.cpp) is a dog image classifier, a variant of ResNeXt trained on a subset of ImageNet containing 120 classes of dogs and cats images. The inference is implemented with OpenGL shaders. Top-1 validation accuracy achieved on Raspberry Pi Zero W is 68.62%. Classifying a 385*385 image takes ~582 ms there.
 
 ## Python
 [python/examples](python/examples) folder contains detailed examples of scripts using Beatmup in Python.

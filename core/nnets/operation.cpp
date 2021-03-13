@@ -287,6 +287,9 @@ void ActivationFunctionMixin::apply(StringBuilder& code, const char* inputVariab
         case ActivationFunction::BRELU6:
             code.printf("gl_FragColor = 0.167 * %s;", inputVariable);
             return;
+        case ActivationFunction::SIGMOID_LIKE:
+            code.printf("gl_FragColor = clamp(0.2*(%s), -0.2, 0.2) + 0.1*(%s) + 0.5;", inputVariable, inputVariable);
+            return;
         default: Insanity::insanity("Invalid activation function");
     }
 }
@@ -329,6 +332,8 @@ ActivationFunction NNets::activationFunctionFromString(const std::string& str) {
         return ActivationFunction::DEFAULT;
     if (lc == "brelu6")
         return ActivationFunction::BRELU6;
+    if (lc == "sigmoid_like")
+        return ActivationFunction::SIGMOID_LIKE;
     throw InvalidArgument("Invalid activation function: " + str);
     return ActivationFunction::DEFAULT;
 }
@@ -337,12 +342,14 @@ ActivationFunction NNets::activationFunctionFromString(const std::string& str) {
 std::string std::to_string(ActivationFunction function) {
     /** \page NNetsActivationFunctionsSerialization Activation functions serialization
         In the serialized representation, activation functions are specified with a single keyword.
-         - `default`: identity clipped to 0..1 range.
-         - `brelu6`: 0.167 times identity clipped to 0..1 range.
+         - `default`: identity clipped to 0..1 range
+         - `brelu6`: 0.167 times identity clipped to 0..1 range
+         - `sigmoid_like`: a piecewise-linear sigmoid function approximation
     */
     switch (function) {
         case ActivationFunction::DEFAULT: return "default";
         case ActivationFunction::BRELU6: return "brelu6";
+        case ActivationFunction::SIGMOID_LIKE: return "sigmoid_like";
     }
     Insanity::insanity("Invalid activation function");
     return "";
