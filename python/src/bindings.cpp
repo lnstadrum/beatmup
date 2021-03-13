@@ -1244,8 +1244,9 @@ PYBIND11_MODULE(beatmup, module) {
      * NNets::ActivationFunction
      */
     py::enum_<NNets::ActivationFunction>(nnets, "ActivationFunction", "Activation function specification")
-        .value("DEFAULT", NNets::ActivationFunction::DEFAULT, "default activation: 0..1 bounded ReLU (identity clipped to 0..1 range)")
-        .value("BRELU6",  NNets::ActivationFunction::BRELU6,  "0.167 times identity clipped to 0..1 range")
+        .value("DEFAULT",      NNets::ActivationFunction::DEFAULT,      "default activation: 0..1 bounded ReLU (identity clipped to 0..1 range)")
+        .value("BRELU6",       NNets::ActivationFunction::BRELU6,       "0.167 times identity clipped to 0..1 range")
+        .value("SIGMOID_LIKE", NNets::ActivationFunction::SIGMOID_LIKE, "a piecewise-linear sigmoid function approximation")
         .export_values();
 
     /**
