@@ -27,6 +27,7 @@
 #include <vector>
 #include <deque>
 #include <mutex>
+#include <string>
 
 #ifdef BEATMUP_GLES_ALLOW_DRM_FALLBACK
 #include <cstdlib>
@@ -70,8 +71,9 @@ private:
     bool isRectangularTextureCoordinates;   //!< if `true`, the texture coordinates is a rectangle
     GLuint hVertexAttribBuffer;				//!< buffer used when rendering
 
+    ImageResolution displayResolution;      //!< width and height of a display obtained when switching
 
-    ImageResolution displayResolution;    //!< width and height of a display obtained when switching
+    std::string glslVersionHeader;          //!< "#version ..." string, GLSL shader header
 
 #ifdef BEATMUP_OPENGLVERSION_GLES
     EGLDisplay eglDisplay;
@@ -254,6 +256,14 @@ public:
         if (!eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext))
             throw GpuOperationError("EGL: making current", eglGetError());
 
+#ifdef BEATMUP_OPENGLVERSION_GLES20
+        glslVersionHeader = "#version 100\n";
+#elif BEATMUP_OPENGLVERSION_GLES31
+        glslVersionHeader = "#version 300 es\n";
+#else
+#error GLES version is not set. Expected defined BEATMUP_OPENGLVERSION_GLES20 or BEATMUP_OPENGLVERSION_GLES31.
+#endif
+
 #elif BEATMUP_PLATFORM_WINDOWS
         PIXELFORMATDESCRIPTOR pfd;
         memset(&pfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
@@ -354,25 +364,45 @@ public:
         glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, glLimits.maxWorkGroupSize + 2);
         glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &glLimits.maxTotalWorkGroupSize);
         glGetIntegerv(GL_MAX_COMPUTE_SHARED_MEMORY_SIZE, (GLint*)&glLimits.maxSharedMemSize);
-#ifdef BEATMUP_DEBUG
-        const char
-            *vendor   = (char*)glGetString(GL_VENDOR),
-            *renderer = (char*)glGetString(GL_RENDERER);
-        BEATMUP_DEBUG_I("__________________________________________________________");
-        BEATMUP_DEBUG_I("Beatmup GL startup: %s / %s", renderer, vendor);
-        BEATMUP_DEBUG_I(" - Max workgroups: %d, %d, %d",
-            glLimits.maxWorkGroupCount[0], glLimits.maxWorkGroupCount[1], glLimits.maxWorkGroupCount[2]);
-        BEATMUP_DEBUG_I(" - Max local groups: %d, %d, %d / %d",
-            glLimits.maxWorkGroupSize[0], glLimits.maxWorkGroupSize[1], glLimits.maxWorkGroupSize[2], glLimits.maxTotalWorkGroupSize);
-        BEATMUP_DEBUG_I(" - Shared memory: %lu KB", (unsigned long)(glLimits.maxSharedMemSize / 1024));
-        BEATMUP_DEBUG_I("__________________________________________________________");
-#endif
 #else
         glLimits.maxWorkGroupCount[0] = glLimits.maxWorkGroupCount[1] = glLimits.maxWorkGroupCount[2] = 0;
         glLimits.maxWorkGroupSize[0] = glLimits.maxWorkGroupSize[1] = glLimits.maxWorkGroupSize[2] = 0;
         glLimits.maxTotalWorkGroupSize = 0;
         glLimits.maxSharedMemSize = 0;
 #endif
+
+#ifdef BEATMUP_DEBUG
+        const char
+            *vendor   = (char*)glGetString(GL_VENDOR),
+            *renderer = (char*)glGetString(GL_RENDERER),
+            *glslVersion = (char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
+        BEATMUP_DEBUG_I("__________________________________________________________");
+        BEATMUP_DEBUG_I("Beatmup GL startup: %s / %s, GLSL %s", renderer, vendor, glslVersion);
+#ifndef BEATMUP_OPENGLVERSION_GLES20
+        BEATMUP_DEBUG_I(" - Max workgroups: %d, %d, %d",
+            glLimits.maxWorkGroupCount[0], glLimits.maxWorkGroupCount[1], glLimits.maxWorkGroupCount[2]);
+        BEATMUP_DEBUG_I(" - Max local groups: %d, %d, %d / %d",
+            glLimits.maxWorkGroupSize[0], glLimits.maxWorkGroupSize[1], glLimits.maxWorkGroupSize[2], glLimits.maxTotalWorkGroupSize);
+        BEATMUP_DEBUG_I(" - Shared memory: %lu KB", (unsigned long)(glLimits.maxSharedMemSize / 1024));
+#endif
+        BEATMUP_DEBUG_I("__________________________________________________________");
+#endif
+
+        // get glsl version if not set
+        if (glslVersionHeader.empty()) {
+            std::string glslVersion((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+            auto spacePos = glslVersion.find(" ");
+            if (spacePos == std::string::npos)
+                throw GL::GLException("Cannot determine GLSL version from string '" + glslVersion + "'");
+            glslVersion = glslVersion.substr(0, spacePos);
+            auto dotPos = glslVersion.find(".");
+            if (dotPos == std::string::npos)
+                throw GL::GLException("Cannot determine GLSL version from string '" + glslVersion + "'");
+            int minorVersion;
+            if (sscanf(glslVersion.substr(dotPos + 1).c_str(), "%d", &minorVersion) != 1)
+                throw GL::GLException("Cannot determine GLSL version from string '" + glslVersion + "'");
+            this->glslVersionHeader = "#version " + glslVersion.substr(0, dotPos) + std::to_string(minorVersion) + "\n";
+        }
 
         // init buffers
         glGenFramebuffers(1, &hFrameBuffer);
@@ -800,6 +830,10 @@ public:
         GL::GLException::check("vertex attributes buffer setup");
 #endif
     }
+
+    const std::string& getGlslVersionHeader() const {
+        return glslVersionHeader;
+    }
 };
 
 
@@ -899,6 +933,11 @@ const char* GraphicPipeline::getGpuVendorString() const {
 
 const char* GraphicPipeline::getGpuRendererString() const {
     return (const char*)glGetString(GL_RENDERER);
+}
+
+
+const std::string& GraphicPipeline::getGlslVersionHeader() const {
+    return impl->getGlslVersionHeader();
 }
 
 

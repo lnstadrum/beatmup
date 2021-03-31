@@ -38,7 +38,7 @@ enum TextureUnits {
 
 
 static const char
-    *VERTEX_SHADER_BLEND = BEATMUP_SHADER_CODE_V(
+    *VERTEX_SHADER_BLEND = BEATMUP_SHADER_CODE(
         attribute vec2 inVertex;
         attribute vec2 inTexCoord;
         uniform mat3 modelview;
@@ -57,7 +57,7 @@ static const char
     ),
 
 
-    *VERTEX_SHADER_BLENDMASK = BEATMUP_SHADER_CODE_V(
+    *VERTEX_SHADER_BLENDMASK = BEATMUP_SHADER_CODE(
         attribute vec2 inVertex;
         attribute vec2 inTexCoord;
         uniform mat3 modelview;		// model plane in pixels -> output in pixels
@@ -182,12 +182,12 @@ static const char
     ),
 
 
-    *FRAGMENT_SHADER_HEADER_NORMAL = BEATMUP_SHADER_HEADER_VERSION BEATMUP_SHADER_CODE(
+    *FRAGMENT_SHADER_HEADER_NORMAL = BEATMUP_SHADER_CODE(
         uniform sampler2D image;
     ),
 
 
-    *FRAGMENT_SHADER_HEADER_EXT = BEATMUP_SHADER_HEADER_VERSION
+    *FRAGMENT_SHADER_HEADER_EXT =
         "#ifdef GL_ES\n"
         "#extension GL_OES_EGL_image_external : require\n"
         "uniform samplerExternalOES image;\n"
@@ -257,7 +257,7 @@ public:
 
 
 RenderingPrograms::RenderingPrograms(GraphicPipeline* gpu):
-    backend(new Backend()), currentGlProgram(nullptr), defaultVertexShader(*gpu, VERTEX_SHADER_BLEND)
+    backend(new Backend()), currentGlProgram(nullptr), defaultVertexShader(*gpu, gpu->getGlslVersionHeader() + VERTEX_SHADER_BLEND)
 {}
 
 
@@ -276,35 +276,35 @@ Program& RenderingPrograms::getProgram(const GraphicPipeline* gpu, Operation ope
     std::string fragmentCode;
     switch (operation) {
     case Operation::BLEND:
-        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_NORMAL) + std::string(FRAGMENT_SHADER_BLEND);
+        fragmentCode = gpu->getGlslVersionHeader() + FRAGMENT_SHADER_HEADER_NORMAL + FRAGMENT_SHADER_BLEND;
         break;
 
     case Operation::BLEND_EXT:
-        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_EXT) + std::string(FRAGMENT_SHADER_BLEND);
+        fragmentCode = gpu->getGlslVersionHeader() + FRAGMENT_SHADER_HEADER_EXT + FRAGMENT_SHADER_BLEND;
         break;
 
     case Operation::MASKED_BLEND:
-        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_NORMAL) + std::string(FRAGMENT_SHADER_BLENDMASK);
+        fragmentCode = gpu->getGlslVersionHeader() + FRAGMENT_SHADER_HEADER_NORMAL + FRAGMENT_SHADER_BLENDMASK;
         break;
 
     case Operation::MASKED_BLEND_EXT:
-        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_EXT) + std::string(FRAGMENT_SHADER_BLENDMASK);
+        fragmentCode = gpu->getGlslVersionHeader() + FRAGMENT_SHADER_HEADER_EXT + FRAGMENT_SHADER_BLENDMASK;
         break;
 
     case Operation::MASKED_8BIT_BLEND:
-        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_NORMAL) + std::string(FRAGMENT_SHADER_BLENDMASK_8BIT);
+        fragmentCode = gpu->getGlslVersionHeader() + FRAGMENT_SHADER_HEADER_NORMAL + FRAGMENT_SHADER_BLENDMASK_8BIT;
         break;
 
     case Operation::MASKED_8BIT_BLEND_EXT:
-        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_EXT) + std::string(FRAGMENT_SHADER_BLENDMASK_8BIT);
+        fragmentCode = gpu->getGlslVersionHeader() + FRAGMENT_SHADER_HEADER_EXT + FRAGMENT_SHADER_BLENDMASK_8BIT;
         break;
 
     case Operation::SHAPED_BLEND:
-        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_NORMAL) + std::string(FRAGMENT_SHADER_BLENDSHAPE);
+        fragmentCode = gpu->getGlslVersionHeader() + FRAGMENT_SHADER_HEADER_NORMAL + FRAGMENT_SHADER_BLENDSHAPE;
         break;
 
     case Operation::SHAPED_BLEND_EXT:
-        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_EXT) + std::string(FRAGMENT_SHADER_BLENDSHAPE);
+        fragmentCode = gpu->getGlslVersionHeader() + FRAGMENT_SHADER_HEADER_EXT + FRAGMENT_SHADER_BLENDSHAPE;
         break;
 
     default:
@@ -313,7 +313,7 @@ Program& RenderingPrograms::getProgram(const GraphicPipeline* gpu, Operation ope
 
     // instantiate shaders
     const bool useDefaultVertexShader = operation ==  Operation::BLEND || operation ==  Operation::BLEND_EXT;
-    VertexShader* vertexShader = useDefaultVertexShader ? &defaultVertexShader : new VertexShader(*gpu, VERTEX_SHADER_BLENDMASK);
+    VertexShader* vertexShader = useDefaultVertexShader ? &defaultVertexShader : new VertexShader(*gpu, gpu->getGlslVersionHeader() + VERTEX_SHADER_BLENDMASK);
     FragmentShader fragmentShader(*gpu, fragmentCode);
 
     // link program

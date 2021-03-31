@@ -103,11 +103,11 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, const
             case GL::TextureHandler::TextureFormat::Rx32f:
             case GL::TextureHandler::TextureFormat::RGBx32f:
             case GL::TextureHandler::TextureFormat::RGBAx32f:
-                code = BEATMUP_SHADER_HEADER_VERSION
+                code = gpu.getGlslVersionHeader() +
                     "#define " + INPUT_IMAGE_DECL_TYPE + " uniform sampler2D\n" + sourceCode;
                 break;
             case GL::TextureHandler::TextureFormat::OES_Ext:
-                code = BEATMUP_SHADER_HEADER_VERSION
+                code = gpu.getGlslVersionHeader() +
                     "#extension GL_OES_EGL_image_external : require\n"
                     "#define " + INPUT_IMAGE_DECL_TYPE + " uniform samplerExternalOES\n" + sourceCode;
                 break;
@@ -116,7 +116,7 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, const
             }
         }
         else {
-            code = BEATMUP_SHADER_HEADER_VERSION + sourceCode;
+            code = gpu.getGlslVersionHeader() + sourceCode;
         }
 
         // link program
@@ -174,7 +174,7 @@ void ImageShader::prepare(GraphicPipeline& gpu, AbstractBitmap* output) {
     // link program if not yet
     if (!program || !upToDate) {
         // link program
-        GL::FragmentShader fragmentShader(gpu, BEATMUP_SHADER_HEADER_VERSION + sourceCode);
+        GL::FragmentShader fragmentShader(gpu, gpu.getGlslVersionHeader() + sourceCode);
         if (!program) {
             program = new GL::RenderingProgram(gpu, fragmentShader);
         }

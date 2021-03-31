@@ -640,7 +640,7 @@ void LinearMapping::prepare(GraphicPipeline& gpu, TextureHandler& output, Textur
 
     // make multiplication stage program: this one multiplies small pieces of the matrix by small pieces of the input vector storing the results in a texture
     {
-        String code(BEATMUP_SHADER_CODE_V(
+        String code(gpu.getGlslVersionHeader() + BEATMUP_SHADER_CODE(
             varying highp vec2 texCoord;
         ));
 
@@ -818,7 +818,7 @@ void LinearMapping::prepare(GraphicPipeline& gpu, TextureHandler& output, Textur
 
     // make summation stage program
     {
-        String code(BEATMUP_SHADER_CODE_V(
+        String code(gpu.getGlslVersionHeader() + BEATMUP_SHADER_CODE(
             varying highp vec2 texCoord;
         ));
 
@@ -860,7 +860,7 @@ void LinearMapping::prepare(GraphicPipeline& gpu, TextureHandler& output, Textur
 
     // make last iteration summation stage program if needed
     if (fixedPointStorage || bias) {
-        String code(BEATMUP_SHADER_CODE_V(
+        String code(gpu.getGlslVersionHeader() + BEATMUP_SHADER_CODE(
             varying highp vec2 texCoord;
         ));
 

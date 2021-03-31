@@ -127,6 +127,7 @@ namespace Beatmup {
 
         const char* getGpuVendorString() const;
         const char* getGpuRendererString() const;
+        const std::string& getGlslVersionHeader() const;
 
         /**
             Specifies texture coordinates for the next rendering pass.

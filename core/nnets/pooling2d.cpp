@@ -50,7 +50,7 @@ void Pooling2D::prepare(GraphicPipeline& gpu, ChunkCollection& data, GL::Program
     if (program)
         bank.release(gpu, program);
 
-    String code(BEATMUP_SHADER_HEADER_VERSION);
+    String code(gpu.getGlslVersionHeader());
     code(GL::RenderingPrograms::DECLARE_TEXTURE_COORDINATES_IN_FRAG);
 
     code.printf("uniform sampler2D %s[1];", UNIFORM_INPUT);

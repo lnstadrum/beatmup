@@ -112,7 +112,7 @@ void ImageSampler::prepare(GraphicPipeline& gpu, ChunkCollection& data, GL::Prog
         bank.release(gpu, program);
 
     // begin the shader code
-    String code(BEATMUP_SHADER_HEADER_VERSION);
+    String code(gpu.getGlslVersionHeader());
 
     // add support for OES extension
     if (input->getTextureFormat() == GL::TextureHandler::TextureFormat::OES_Ext) {

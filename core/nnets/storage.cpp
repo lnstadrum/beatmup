@@ -317,14 +317,14 @@ InternalBitmap* Storage::getImage(Context& ctx, GraphicPipeline& gpu, int channe
 
     // prepare code
     String code;
-    code.printf(BEATMUP_SHADER_CODE_V(
+    code.printf("%s" BEATMUP_SHADER_CODE(
         uniform sampler2D image;
         varying highp vec2 texCoord;
         void main() {
             lowp float v = texture2D(image, texCoord)[%d];
             gl_FragColor = vec4(v, v, v, 1.0);
         }
-    ), channel % 4);
+    ), gpu.getGlslVersionHeader().c_str(), channel % 4);
 
     // init bitmap, set as output
     InternalBitmap* bitmap = new InternalBitmap(ctx, PixelFormat::QuadByte,

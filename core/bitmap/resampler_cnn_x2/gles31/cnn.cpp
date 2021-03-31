@@ -31,7 +31,7 @@ using namespace Beatmup;
 
 void Beatmup::GLES31X2UpsamplingNetwork::Layer::prepare(GraphicPipeline& gpu, GL::TextureHandler* input) {
     if (!prepared || (input && inputFormat != input->getTextureFormat())) {
-        std::string code = BEATMUP_SHADER_HEADER_VERSION
+        std::string code = gpu.getGlslVersionHeader() +
             "layout(local_size_x = " + std::to_string(wgSize[0]) + ", local_size_y = " + std::to_string(wgSize[1]) + ", local_size_z = " + std::to_string(wgSize[2]) + ") in;\n";
 
         if (input) {

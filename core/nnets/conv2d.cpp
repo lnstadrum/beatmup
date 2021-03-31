@@ -131,7 +131,7 @@ void Conv2D::prepare(GraphicPipeline& gpu, ChunkCollection& data, GL::ProgramBan
         const int lastInputChannel  = firstInputChannel + (isDepthwise ? 4 : kernelSize.getDepth());
 
         // set up GLSL code
-        String code(BEATMUP_SHADER_HEADER_VERSION);
+        String code(gpu.getGlslVersionHeader());
         code(GL::RenderingPrograms::DECLARE_TEXTURE_COORDINATES_IN_FRAG);
 
 #ifdef BEATMUP_DEBUG

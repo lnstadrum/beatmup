@@ -23,16 +23,7 @@
 #include "storage_buffer.h"
 #include <map>
 
-#ifdef BEATMUP_OPENGLVERSION_GLES20
-#define BEATMUP_SHADER_HEADER_VERSION "#version 100\n"
-#elif BEATMUP_OPENGLVERSION_GLES31
-#define BEATMUP_SHADER_HEADER_VERSION ""
-#else
-#define BEATMUP_SHADER_HEADER_VERSION "#version 100\n"
-#endif
-
 #define BEATMUP_SHADER_CODE(...) #__VA_ARGS__
-#define BEATMUP_SHADER_CODE_V(...) BEATMUP_SHADER_HEADER_VERSION BEATMUP_SHADER_CODE(__VA_ARGS__)
 
 namespace Beatmup {
     namespace GL {
