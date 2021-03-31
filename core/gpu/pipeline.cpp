@@ -302,8 +302,8 @@ public:
             0);       /* background */
 
         // setup a bootstrap context to load glew
-        static int dummy_visual_attribs[] = { GLX_RGBA, None };
-        XVisualInfo* vi = glXChooseVisual(xDisplay, 0, dummy_visual_attribs);
+        static int bootstapVisualAttrs[] = { GLX_RGBA, None };
+        XVisualInfo* vi = glXChooseVisual(xDisplay, 0, bootstapVisualAttrs);
         glxContext = glXCreateContext(xDisplay, vi, nullptr, GL_TRUE);
         glXMakeCurrent(xDisplay, xWindow, glxContext);
 
@@ -316,24 +316,24 @@ public:
         // destroying the bootstrap context
         glXDestroyContext(xDisplay, glxContext);
 
-        static int visual_attribs[] = {
-                /*GLX_DRAWABLE_TYPE, GLX_PBUFFER_BIT,
-                GLX_RENDER_TYPE, GLX_RGBA_BIT,*/
-                GLX_DOUBLEBUFFER, true,
+        static int visualAttrs[] = {
+                GLX_DOUBLEBUFFER, false,
                 None
         };
-        int num_fbc = 0;
+        int numFbc = 0;
         GLXFBConfig *config = glXChooseFBConfig(xDisplay, DefaultScreen(xDisplay),
-            visual_attribs, &num_fbc);
+            visualAttrs, &numFbc);
         if (!config)
             throw GpuOperationError("Choosing framebuffer configuration failed");
 
         // create pbuffer
-        static int pbuffer_attribs[] = {
+        static int pbufferAttrs[] = {
+                GLX_PBUFFER_WIDTH, 1,
+                GLX_PBUFFER_HEIGHT, 1,
                 GLX_LARGEST_PBUFFER,
                 None
         };
-        glxPbuffer = glXCreatePbuffer(xDisplay, config[0], pbuffer_attribs);
+        glxPbuffer = glXCreatePbuffer(xDisplay, config[0], pbufferAttrs);
 
         // create main context
         vi = glXGetVisualFromFBConfig(xDisplay, config[0]);
