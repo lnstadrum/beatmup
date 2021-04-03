@@ -20,15 +20,21 @@
 #include "../bitmap/converter.h"
 #include "../bitmap/internal_bitmap.h"
 #include "../debug.h"
-
-
-#include "bgl.h"
 #include "program.h"
+
 #include <algorithm>
 #include <map>
 #include <vector>
 #include <deque>
 #include <mutex>
+
+#ifdef BEATMUP_GLES_ALLOW_DRM_FALLBACK
+#include <cstdlib>
+#include "drm.hpp"
+#endif
+
+#include "bgl.h"
+
 
 using namespace Beatmup;
 
@@ -74,6 +80,13 @@ private:
         eglDefaultSurface;    //!< default internally managed surface
     EGLContext eglContext;
     EGLConfig eglConfig;
+#ifdef BEATMUP_GLES_ALLOW_DRM_FALLBACK
+    DRM::Device drmDevice;
+    DRM::ModeConnector drmConnector;
+    DRM::ModeCrtc drmCrtc;
+    DRM::GBMDevice gbmDevice;
+    DRM::GBMSurface gbmSurface;
+#endif
 #elif BEATMUP_PLATFORM_WINDOWS
     HWND hwnd;
     HGLRC hglrc;
@@ -93,9 +106,9 @@ private:
         msize maxSharedMemSize;
     } glLimits;
 
-
 public:
     Impl(GraphicPipeline& front) : front(front) {
+
 #ifdef BEATMUP_OPENGLVERSION_GLES
         // Step 1 - Get the default display.
         if ((eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY)) == EGL_NO_DISPLAY)
@@ -103,39 +116,103 @@ public:
 
         // Step 2 - Initialize EGL.
         if (!eglInitialize(eglDisplay, 0, 0)) {
+
+#ifdef BEATMUP_GLES_ALLOW_DRM_FALLBACK
+            BEATMUP_DEBUG_I("DRM fallback");
+
+            // set up DRM and GBM resources
+            const char* DRI_DEVICE = std::getenv("BEATMUP_DRI_DEVICE");
+            static const char* DEFAULT_DRI_DEVICE = "/dev/dri/card1";
+            DRM::Device device(DRI_DEVICE ? DRI_DEVICE : DEFAULT_DRI_DEVICE);
+            DRM::ModeResources resources(device);
+            DRM::ModeConnector connector(device, resources);
+            DRM::ModeEncoder encoder(device, connector);
+            DRM::ModeCrtc crtc(device, encoder, connector);
+            DRM::GBMDevice gbmDevice(device, connector);
+            DRM::GBMSurface gbmSurface(gbmDevice, connector);
+
+            // get display again
+            eglDisplay = eglGetDisplay(gbmDevice.getPointer());
+
+            if (!eglDisplay) {
+                throw GpuOperationError("EGL/DRM: cannot get display");
+            }
+
+            if (!eglInitialize(eglDisplay, 0, 0)) {
+                throw GpuOperationError("EGL/DRM: cannot initialize display");
+            }
+
+            // keep DRM and GBM persistent resources
+            this->drmDevice = std::move(device);
+            this->drmConnector = std::move(connector);
+            this->drmCrtc = std::move(crtc);
+            this->gbmDevice = std::move(gbmDevice);
+            this->gbmSurface = std::move(gbmSurface);
+#else
             auto err = eglGetError();
             if (err == EGL_NOT_INITIALIZED)
                 throw GpuOperationError("EGL: display not initialized", err);
             else
                 throw GpuOperationError("EGL: initialization failed", err);
+#endif
         }
 
         // Step 3 - Make OpenGL ES the current API.
         eglBindAPI(EGL_OPENGL_ES_API);
 
         // Step 4 - Specify the required configuration attributes.
-        EGLint configAttributes[] = {
-            EGL_SURFACE_TYPE,			EGL_PBUFFER_BIT,
+        static const int CONFIG_ATTRIBUTES_LEN = 5;
+        EGLint configAttributes[CONFIG_ATTRIBUTES_LEN] = {
 #ifdef BEATMUP_OPENGLVERSION_GLES20
             EGL_RENDERABLE_TYPE,		EGL_OPENGL_ES2_BIT,
 #elif defined BEATMUP_OPENGLVERSION_GLES31
             EGL_RENDERABLE_TYPE,		EGL_OPENGL_ES3_BIT_KHR,
 #endif
-            /*EGL_CONFORMANT,				EGL_OPENGL_ES2_BIT,
-            EGL_COLOR_BUFFER_TYPE,		EGL_RGB_BUFFER,
-            EGL_BIND_TO_TEXTURE_RGBA,	EGL_TRUE,
-            EGL_RED_SIZE, 8,
-            EGL_GREEN_SIZE, 8,
-            EGL_BLUE_SIZE, 8,
-            EGL_ALPHA_SIZE, 8,
-            EGL_DEPTH_SIZE, 0,
-            EGL_STENCIL_SIZE, 0,*/
+            EGL_SURFACE_TYPE,			EGL_PBUFFER_BIT,
             EGL_NONE
         };
+
+#ifdef BEATMUP_GLES_ALLOW_DRM_FALLBACK
+        if (drmDevice) {
+            // using DRM: shrinking config attributes at EGL_SURFACE_TYPE
+            configAttributes[CONFIG_ATTRIBUTES_LEN - 3] = EGL_NONE;
+        }
+#endif
+
+        // get number of configs
+        int totalConfigCount;
+        eglGetConfigs(eglDisplay, nullptr, 0, &totalConfigCount);
+        std::vector<EGLConfig> configs;
+        configs.resize(totalConfigCount);
+
+        // get configs themselves
         int numConfigs;
-        if (!eglChooseConfig(eglDisplay, configAttributes, &eglConfig, 1, &numConfigs))
+        if (!eglChooseConfig(eglDisplay, configAttributes, configs.data(), totalConfigCount, &numConfigs))
             throw GpuOperationError("EGL: bad configuration", eglGetError());
         BEATMUP_DEBUG_I("Number of EGL configs got: %d", numConfigs);
+
+#ifdef BEATMUP_GLES_ALLOW_DRM_FALLBACK
+        if (drmDevice) {
+            // find one matching the GBM format
+            bool found = false;
+            for (int i = 0; i < totalConfigCount && !found; ++i) {
+                EGLint id;
+                if (!eglGetConfigAttrib(eglDisplay, configs[i], EGL_NATIVE_VISUAL_ID, &id))
+                    continue;
+                if (id == DRM::GBMSurface::FORMAT) {
+                    eglConfig = configs[i];
+                    found = true;
+                }
+            }
+            if (!found)
+                throw GpuOperationError("EGL/DRM: no config matching the required surface format");
+        }
+        else
+#endif
+        {
+            eglConfig = configs[0];
+        }
+
 
         // Step 6 - Create a context.
         EGLint contextAttributes[] = {
@@ -154,13 +231,22 @@ public:
         eglDefaultSurface = eglSurface = EGL_NO_SURFACE;
 
         // Step 5 - Create a surface to draw to.
-        EGLint surfaceAttributes[] = {
-            EGL_WIDTH, 2,		// eglMakeCurrent fails sometimes with zero sizes
-            EGL_HEIGHT, 2,
-            EGL_NONE
-        };
+#ifdef BEATMUP_GLES_ALLOW_DRM_FALLBACK
+        if (drmDevice) {
+            eglDefaultSurface = eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, gbmSurface.getPointer(), nullptr);
+        }
+        else
+#endif
+        {
+            EGLint surfaceAttributes[] = {
+                EGL_WIDTH, 2,		// eglMakeCurrent fails sometimes with zero sizes
+                EGL_HEIGHT, 2,
+                EGL_NONE
+            };
 
-        eglDefaultSurface = eglSurface = eglCreatePbufferSurface(eglDisplay, eglConfig, surfaceAttributes);
+            eglDefaultSurface = eglSurface = eglCreatePbufferSurface(eglDisplay, eglConfig, surfaceAttributes);
+        }
+
         if (eglSurface == EGL_NO_SURFACE)
             throw GpuOperationError("EGL: window surface creation failed when init", eglGetError());
 
