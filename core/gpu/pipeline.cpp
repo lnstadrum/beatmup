@@ -198,13 +198,17 @@ public:
             // find one matching the GBM format
             bool found = false;
             for (int i = 0; i < totalConfigCount && !found; ++i) {
-                EGLint id;
-                if (!eglGetConfigAttrib(eglDisplay, configs[i], EGL_NATIVE_VISUAL_ID, &id))
+                EGLint val;
+                if (EGL_TRUE != eglGetConfigAttrib(eglDisplay, configs[i], EGL_RED_SIZE, &val) || val != 8)
                     continue;
-                if (id == DRM::GBMSurface::FORMAT) {
-                    eglConfig = configs[i];
-                    found = true;
-                }
+                if (EGL_TRUE != eglGetConfigAttrib(eglDisplay, configs[i], EGL_GREEN_SIZE, &val) || val != 8)
+                    continue;
+                if (EGL_TRUE != eglGetConfigAttrib(eglDisplay, configs[i], EGL_BLUE_SIZE, &val) || val != 8)
+                    continue;
+                if (EGL_TRUE != eglGetConfigAttrib(eglDisplay, configs[i], EGL_ALPHA_SIZE, &val) || val != 8)
+                    continue;
+                eglConfig = configs[i];
+                found = true;
             }
             if (!found)
                 throw GpuOperationError("EGL/DRM: no config matching the required surface format");
@@ -216,7 +220,7 @@ public:
         }
 
 
-        // Step 6 - Create a context.
+        // Step 5 - Create a context.
         EGLint contextAttributes[] = {
             EGL_CONTEXT_CLIENT_VERSION,
 #ifdef BEATMUP_OPENGLVERSION_GLES20
@@ -230,9 +234,9 @@ public:
         if (eglContext == EGL_NO_CONTEXT)
             throw GpuOperationError("EGL: context initialization failed", eglGetError());
 
-        eglDefaultSurface = eglSurface = EGL_NO_SURFACE;
 
-        // Step 5 - Create a surface to draw to.
+        // Step 6 - Create a surface to draw to.
+        eglDefaultSurface = eglSurface = EGL_NO_SURFACE;
 #ifdef BEATMUP_GLES_ALLOW_DRM_FALLBACK
         if (drmDevice) {
             eglDefaultSurface = eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, gbmSurface.getPointer(), nullptr);
@@ -259,7 +263,7 @@ public:
 #ifdef BEATMUP_OPENGLVERSION_GLES20
         glslVersionHeader = "#version 100\n";
 #elif BEATMUP_OPENGLVERSION_GLES31
-        glslVersionHeader = "#version 300 es\n";
+        glslVersionHeader = "\n";
 #else
 #error GLES version is not set. Expected defined BEATMUP_OPENGLVERSION_GLES20 or BEATMUP_OPENGLVERSION_GLES31.
 #endif
@@ -377,7 +381,7 @@ public:
             *renderer = (char*)glGetString(GL_RENDERER),
             *glslVersion = (char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
         BEATMUP_DEBUG_I("__________________________________________________________");
-        BEATMUP_DEBUG_I("Beatmup GL startup: %s / %s, GLSL %s", renderer, vendor, glslVersion);
+        BEATMUP_DEBUG_I("Beatmup GL startup: %s / %s, %s", renderer, vendor, glslVersion);
 #ifndef BEATMUP_OPENGLVERSION_GLES20
         BEATMUP_DEBUG_I(" - Max workgroups: %d, %d, %d",
             glLimits.maxWorkGroupCount[0], glLimits.maxWorkGroupCount[1], glLimits.maxWorkGroupCount[2]);
@@ -438,6 +442,7 @@ public:
         glDeleteFramebuffers(1, &hFrameBuffer);
 
 #ifdef BEATMUP_OPENGLVERSION_GLES
+        eglMakeCurrent(eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
         if (eglSurface != EGL_NO_SURFACE && eglSurface != eglDefaultSurface)
             eglDestroySurface(eglDisplay, eglSurface);
         eglDestroySurface(eglDisplay, eglDefaultSurface);
