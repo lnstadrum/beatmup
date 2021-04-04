@@ -23,9 +23,15 @@ STRINGIFY(
         void main() {
             
         lowp vec4 f[8];
-        for (int i = 0; i < 8; ++i)
-            f[i] = texture2D(images[i], texCoord);
-    
+        f[0] = texture2D(images[0], texCoord);
+        f[1] = texture2D(images[1], texCoord);
+        f[2] = texture2D(images[2], texCoord);
+        f[3] = texture2D(images[3], texCoord);
+        f[4] = texture2D(images[4], texCoord);
+        f[5] = texture2D(images[5], texCoord);
+        f[6] = texture2D(images[6], texCoord);
+        f[7] = texture2D(images[7], texCoord);
+
         gl_FragColor = vec4(
             dot(vec4(-0.375087, -0.472107, -0.028681, -0.037674), f[0])
                 + dot(vec4(0.180004, -0.018353, -0.300071, 0.541296), f[1])
