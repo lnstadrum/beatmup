@@ -98,9 +98,18 @@ Building **X2** app upscaling an image using a neural net inferred with OpenGL:
     cmake -DUSE_GLX=ON ..
     make X2
 
-Use *-DUSE_OPENGL=ON* instead *-DUSE_GLX=ON* if you run into trouble. On **Raspberry Pi** replace it with *-DUSE_EGL=ON*.
+ * Try to use `-DUSE_OPENGL=ON` instead `-DUSE_GLX=ON` starting from a clean build folder if you run into trouble.
+ * On **Raspberry Pi prior to series 4** use the EGL backend with following CMake command:
 
-You can then feed the app with an image of your choice and get the upscaled result as follows:
+    `cmake -DUSE_EGL=ON -DUSE_BRCM_LIBS=ON -DGLES_VERSION=20 ..`
+
+ * On **Raspberry Pi 4** rather use the following CMake command:
+
+    `cmake -DUSE_EGL_DRM=ON -DGLES_VERSION=20 ..`
+
+More details on Raspberry Pi setup [here](https://github.com/lnstadrum/beatmup/issues/12#issuecomment-813092876).
+
+Once the app is built, you can feed it with an image of your choice and get the upscaled result as follows:
 
     ./X2 <your-image>.bmp x2-result.bmp
 
