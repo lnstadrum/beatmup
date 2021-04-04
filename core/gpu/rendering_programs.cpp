@@ -43,7 +43,7 @@ static const char
         attribute vec2 inTexCoord;
         uniform mat3 modelview;
         uniform bool flipVertically;
-        varying vec2 texCoord;
+        vertex_out vec2 texCoord;
         void main()
         {
             gl_Position = vec4(modelview * vec3(inVertex, 1), 1);
@@ -64,8 +64,8 @@ static const char
         uniform bool flipVertically;
         uniform mat3 maskMapping;
         uniform mat3 invImgMapping;
-        varying vec2 texCoord;
-        varying vec2 maskCoord;
+        vertex_out vec2 texCoord;
+        vertex_out vec2 maskCoord;
         void main()
         {
             gl_Position = vec4(modelview * maskMapping * vec3(inVertex, 1), 1);

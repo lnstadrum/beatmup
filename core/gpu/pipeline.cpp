@@ -37,6 +37,27 @@
 #include "bgl.h"
 
 
+/**
+ * "Modern GLSL dialect": a set of preprocessor directives to add to Beatmup shaders to make them compliant to newer GLSL standards, namely starting from ES 3.1
+ */
+static const char* MODERN_GLSL_DIALECT_HEADER =  R"(
+    #define attribute in
+    #define varying in
+    #define vertex_out out
+    #define gl_FragColor fragColor
+    out mediump vec4 fragColor;
+    #line 0
+)";
+
+
+/**
+ * ES 2.0 "GLSL dialect": a set of preprocessor directives to add to Beatmup shaders to make them compliant OpenGL ES 2.0 GLSL standard
+ */
+static const char* ES20_GLSL_DIALECT_HEADER =  R"(
+    #define vertex_out varying
+    #line 0
+)";
+
 using namespace Beatmup;
 
 /**
@@ -73,7 +94,7 @@ private:
 
     ImageResolution displayResolution;      //!< width and height of a display obtained when switching
 
-    std::string glslVersionHeader;          //!< "#version ..." string, GLSL shader header
+    std::string glslHeader;                 //!< GLSL shader header containing "#version ..." and dialect mapping
 
 #ifdef BEATMUP_OPENGLVERSION_GLES
     EGLDisplay eglDisplay;
@@ -261,11 +282,8 @@ public:
             throw GpuOperationError("EGL: making current", eglGetError());
 
 #ifdef BEATMUP_OPENGLVERSION_GLES20
-        glslVersionHeader = "#version 100\n";
-#elif BEATMUP_OPENGLVERSION_GLES31
-        glslVersionHeader = "\n";
-#else
-#error GLES version is not set. Expected defined BEATMUP_OPENGLVERSION_GLES20 or BEATMUP_OPENGLVERSION_GLES31.
+        // if ES 2.0, forcing GLSL version; otherwise it is queried later on
+        glslHeader = std::string("#version 100") + ES20_GLSL_DIALECT_HEADER;
 #endif
 
 #elif BEATMUP_PLATFORM_WINDOWS
@@ -393,19 +411,48 @@ public:
 #endif
 
         // get glsl version if not set
-        if (glslVersionHeader.empty()) {
-            std::string glslVersion((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+        if (glslHeader.empty()) {
+            // GLSL version can be forced with an environmental variable
+            const char* FORCED_GLSL_VERSION = std::getenv("BEATMUP_GLSL_VERSION");
+            std::string glslVersion(FORCED_GLSL_VERSION ? FORCED_GLSL_VERSION : (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+
+            // check if running OpenGL ES
+            static const std::string ES_PREFIX = "OpenGL ES GLSL ES ";
+                // according to the standard docs, for GL ES GL_SHADING_LANGUAGE_VERSION starts with this prefix
+            bool isOpengEs = glslVersion.substr(0, ES_PREFIX.length()) == ES_PREFIX;
+            if (isOpengEs)
+                glslVersion = glslVersion.substr(ES_PREFIX.length());
+
+            // getting major and minor version numbers
             auto spacePos = glslVersion.find(" ");
             if (spacePos == std::string::npos)
-                throw GL::GLException("Cannot determine GLSL version from string '" + glslVersion + "'");
+                spacePos = glslVersion.length();
             glslVersion = glslVersion.substr(0, spacePos);
             auto dotPos = glslVersion.find(".");
             if (dotPos == std::string::npos)
                 throw GL::GLException("Cannot determine GLSL version from string '" + glslVersion + "'");
-            int minorVersion;
-            if (sscanf(glslVersion.substr(dotPos + 1).c_str(), "%d", &minorVersion) != 1)
-                throw GL::GLException("Cannot determine GLSL version from string '" + glslVersion + "'");
-            this->glslVersionHeader = "#version " + glslVersion.substr(0, dotPos) + std::to_string(minorVersion) + "\n";
+            const std::string majVer = glslVersion.substr(0, dotPos);
+            std::string minVer = glslVersion.substr(dotPos + 1);
+
+            // GLSL prior to 1.30 is not supported
+            // If not GL ES and GLSL is said to be 1.xx <= 1.20, the GPU is very likely capable of GLES 2.0. Falling back to ES 2.0...
+            if (!isOpengEs && majVer == "1" && std::stoi(minVer) <= 20) {
+                isOpengEs = true;
+                minVer = "00";
+            }
+
+            // putting together
+            std::string suffix;
+            if (isOpengEs && majVer != "1")
+                suffix = " es";
+                // for ES 2.0 should be "#version 100", otherwise "es" is added at the end
+            this->glslHeader = "#version " + majVer + minVer + suffix;
+
+            // adding a dialect header
+            if (isOpengEs && majVer != "1")
+                this->glslHeader += MODERN_GLSL_DIALECT_HEADER;
+            else
+                this->glslHeader += ES20_GLSL_DIALECT_HEADER;
         }
 
         // init buffers
@@ -837,7 +884,7 @@ public:
     }
 
     const std::string& getGlslVersionHeader() const {
-        return glslVersionHeader;
+        return glslHeader;
     }
 };
 
