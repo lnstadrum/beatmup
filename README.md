@@ -105,11 +105,13 @@ Building **X2** app upscaling an image using a neural net inferred with OpenGL:
 
     `cmake -DUSE_EGL=ON -DUSE_BRCM_LIBS=ON -DGLES_VERSION=20 ..`
 
+More details on Raspberry Pi setup [here](https://github.com/lnstadrum/beatmup/wiki/Compiling-Beatmup-on-Raspberry-Pi-prior-to-4).
+
  * On **Raspberry Pi 4** rather use the following CMake command:
 
     `cmake -DUSE_EGL_DRM=ON -DGLES_VERSION=20 ..`
 
-More details on Raspberry Pi setup [here](https://github.com/lnstadrum/beatmup/issues/12#issuecomment-813092876).
+More details on Raspberry Pi 4 setup [here](https://github.com/lnstadrum/beatmup/wiki/Compiling-Beatmup-on-Raspberry-Pi-4).
 
 Once the app is built, you can feed it with an image of your choice and get the upscaled result as follows:
 
