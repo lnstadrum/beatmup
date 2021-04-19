@@ -26,10 +26,10 @@ using namespace Beatmup;
 
 
 const std::string
-    ImageShader::INPUT_IMAGE_DECL_TYPE = "beatmupInputImage",
+    ImageShader::INPUT_IMAGE_DECL_TYPE = GL::FragmentShader::DIALECT_SAMPLER_DECL_TYPE,
     ImageShader::INPUT_IMAGE_ID        = "image",
     ImageShader::CODE_HEADER =
-        INPUT_IMAGE_DECL_TYPE + " " + INPUT_IMAGE_ID +";\n" +
+        "uniform " + INPUT_IMAGE_DECL_TYPE + " " + INPUT_IMAGE_ID +";\n" +
         GL::RenderingPrograms::DECLARE_TEXTURE_COORDINATES_IN_FRAG;
 
 
@@ -92,35 +92,14 @@ void ImageShader::prepare(GraphicPipeline& gpu, GL::TextureHandler* input, const
     if (input && input->getTextureFormat() != inputFormat)
         upToDate = false;
 
+
     // make program ready if not yet or if not up to date
     if (!program || !upToDate) {
-        std::string code;
-        if (input) {
-            switch (inputFormat = input->getTextureFormat()) {
-            case GL::TextureHandler::TextureFormat::Rx8:
-            case GL::TextureHandler::TextureFormat::RGBx8:
-            case GL::TextureHandler::TextureFormat::RGBAx8:
-            case GL::TextureHandler::TextureFormat::Rx32f:
-            case GL::TextureHandler::TextureFormat::RGBx32f:
-            case GL::TextureHandler::TextureFormat::RGBAx32f:
-                code = BEATMUP_SHADER_HEADER_VERSION
-                    "#define " + INPUT_IMAGE_DECL_TYPE + " uniform sampler2D\n" + sourceCode;
-                break;
-            case GL::TextureHandler::TextureFormat::OES_Ext:
-                code = BEATMUP_SHADER_HEADER_VERSION
-                    "#extension GL_OES_EGL_image_external : require\n"
-                    "#define " + INPUT_IMAGE_DECL_TYPE + " uniform samplerExternalOES\n" + sourceCode;
-                break;
-            default:
-                throw UnsupportedTextureFormat(inputFormat);
-            }
-        }
-        else {
-            code = BEATMUP_SHADER_HEADER_VERSION + sourceCode;
-        }
+        inputFormat = input ? input->getTextureFormat() : GL::TextureHandler::TextureFormat::RGBx8;
 
         // link program
-        GL::FragmentShader fragmentShader(gpu, code);
+        GL::Extensions textureExtension = inputFormat == GL::TextureHandler::TextureFormat::OES_Ext ? GL::Extensions::EXTERNAL_TEXTURE : GL::Extensions::NONE;
+        GL::FragmentShader fragmentShader(gpu, sourceCode, GL::Extensions::BEATMUP_DIALECT + textureExtension);
         if (!program) {
             program = new GL::RenderingProgram(gpu, fragmentShader);
         }
@@ -174,7 +153,7 @@ void ImageShader::prepare(GraphicPipeline& gpu, AbstractBitmap* output) {
     // link program if not yet
     if (!program || !upToDate) {
         // link program
-        GL::FragmentShader fragmentShader(gpu, BEATMUP_SHADER_HEADER_VERSION + sourceCode);
+        GL::FragmentShader fragmentShader(gpu, sourceCode, GL::Extensions::BEATMUP_DIALECT);
         if (!program) {
             program = new GL::RenderingProgram(gpu, fragmentShader);
         }

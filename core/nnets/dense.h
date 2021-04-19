@@ -89,10 +89,8 @@ namespace Beatmup {
             std::map<std::string, std::string> serialize() const;
             void disconnect();
 
-            inline unsigned long countMultiplyAdds() const {
-                const int numInputDims = inputVector ? inputVector->getSize() : inputStorage.getSize().volume();
-                return numInputDims * numOutputDims;
-            }
+            unsigned long countMultiplyAdds() const;
+            unsigned long countTexelFetches() const;
 
             /**
                 Sets up deserialization of the operation.

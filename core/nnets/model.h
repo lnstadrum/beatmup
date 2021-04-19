@@ -53,7 +53,7 @@ namespace Beatmup {
         easily the same model on various hardware, including inexpensive single-board computers, %Android GPUs, integrated and discrete desktop GPUs
         from any vendor.
 
-        However, NNets module is still quite young and comes with a set of constraints.
+        However, NNets module is still quite young and comes with a set of limitations.
          - The set of implemented features is limited. So far it is oriented to image classification and feature extraction exclusively. See
            NNets::AbstractOperation subclasses for the list of implemented neural network operations.
          - Not any model can be transformed into a %Beatmup-compliant model. Most likely, a model needs to be designed and trained from scratch to be
@@ -319,6 +319,11 @@ namespace Beatmup {
                 Queries the number of multiply-adds of every operation of the model and sums them up.
             */
             unsigned long countMultiplyAdds() const;
+
+            /**
+                Provides an estimation of the total number of texels fetched by all the operations in the model per image.
+            */
+            unsigned long countTexelFetches() const;
 
             /**
                 Returns the amount of texture memory in bytes currently allocated by the model to run the inference.

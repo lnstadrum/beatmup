@@ -242,7 +242,7 @@ class Conv2DTests(unittest.TestCase):
         """ Runs the single convolution layer test on a grid of parameters
         """
         if VERBOSE: print('---- Single Conv2D...')
-        activation_functions = [beatmup_keras.brelu1, beatmup_keras.brelu6]
+        activation_functions = [beatmup_keras.brelu1, beatmup_keras.brelu6, beatmup_keras.sigmoid_like]
         for kernel_size in [1, 2, 3, 5]:
             for channels in [4, 32]:
                 for stride in [1, 2, 5]:
@@ -638,7 +638,7 @@ class SerializationTest(unittest.TestCase):
                     kernel_initializer='random_normal',
                     bias_initializer='random_normal',
                     use_bias=True)(x)
-        x = tf.keras.layers.Activation(beatmup_keras.brelu1)(x)
+        x = tf.keras.layers.ReLU(max_value=2.0)(x)
         x = residual = beatmup_keras.Shuffle(2)(x)
 
         x = tf.keras.layers.DepthwiseConv2D(3,
@@ -656,7 +656,7 @@ class SerializationTest(unittest.TestCase):
                     bias_initializer='random_normal',
                     use_bias=True)(x)
         x = tf.keras.layers.Add(name="add_residual_2")([x, residual])
-        x = tf.keras.layers.Activation(beatmup_keras.brelu1)(x)
+        x = tf.keras.layers.ReLU(max_value=2.0)(x)
 
         x = tf.keras.layers.GlobalAveragePooling2D()(x)
         x = tf.keras.layers.Dense(40)(x)
@@ -798,6 +798,126 @@ class ImageSamplerTest(unittest.TestCase):
             ctx.perform_task(inference)
             test_output = model.get_output_data(model.get_last_operation())
             self.assertTrue(numpy.all(ref_output == numpy.rot90(test_output, i)))
+
+
+class ReLUTests(unittest.TestCase):
+    @test_model(0.0028)
+    def basic_relu_test(self, max_value):
+        """ Basic ReLU test
+        """
+        # generate input image
+        input_image = make_random_image((3, 3))
+
+        # set up a test model
+        model = tf.keras.models.Sequential([
+            tf.keras.layers.Conv2D(8, 3,
+                        name='conv',
+                        kernel_initializer='random_normal',
+                        bias_initializer='random_normal',
+                        use_bias=False),
+            tf.keras.layers.BatchNormalization(
+                        beta_initializer='random_normal',
+                        gamma_initializer='random_normal',
+                        moving_mean_initializer='random_normal',
+                        moving_variance_initializer=tf.keras.initializers.RandomUniform(0, 100)),
+            tf.keras.layers.ReLU(max_value=max_value),
+            tf.keras.layers.Flatten(),
+            tf.keras.layers.Dense(8,
+                        name='dense',
+                        kernel_initializer='random_normal',
+                        bias_initializer='random_normal',
+                        use_bias=True)
+        ])
+        return input_image, model
+
+    def test_two_conv2d_layers(self):
+        """ Runs few basic ReLU tests
+        """
+        if VERBOSE: print('---- Basic ReLU test...')
+        self.basic_relu_test(0.5)
+        self.basic_relu_test(2.0)
+        self.basic_relu_test(10.0)
+
+
+    @test_model(0.009)
+    def residual_connection_test(self, image_size, max_value):
+        """ Residual connection test
+        """
+        # generate input image
+        input_image = make_random_image(image_size)
+
+        # set up a test model
+        input = tf.keras.layers.Input(input_image.shape)
+        x = tf.keras.layers.Conv2D(16, 3,
+                    name='conv',
+                    strides=2,
+                    kernel_initializer='random_normal',
+                    bias_initializer='random_normal',
+                    use_bias=False)(input)
+        x = residual = tf.keras.layers.ReLU(max_value=max_value)(x)
+        x = tf.keras.layers.DepthwiseConv2D(3,
+                    name='depthwise_conv',
+                    strides=1,
+                    kernel_initializer='random_normal',
+                    bias_initializer='random_normal',
+                    padding='same',
+                    use_bias=True)(x)
+        x = tf.keras.layers.ReLU(max_value=max_value)(x)
+        x = tf.keras.layers.Conv2D(16, 1,
+                    name='pointwise_conv',
+                    strides=1,
+                    kernel_initializer='random_normal',
+                    bias_initializer='random_normal',
+                    use_bias=True)(x)
+        x = tf.keras.layers.Add(name="add_residual")([x, residual])
+        x = tf.keras.layers.ReLU(max_value=max_value)(x)
+        x = tf.keras.layers.Conv2D(32, 1,
+                    name='pointwise_conv_2',
+                    strides=1,
+                    kernel_initializer='random_normal',
+                    bias_initializer='random_normal',
+                    use_bias=True)(x)
+        x = tf.keras.layers.ReLU(max_value=1.0)(x)
+        return input_image, tf.keras.models.Model(inputs=input, outputs=x)
+
+
+    def test_residual_connection(self):
+        """ Runs residual connection tests
+        """
+        if VERBOSE: print('---- Residual connection tests...')
+        self.residual_connection_test((112, 112), 0.5)
+        self.residual_connection_test((56, 56), 2.0)
+        self.residual_connection_test((14, 14), 6.0)
+
+
+class ModelStatsTest(unittest.TestCase):
+    def test_multiply_adds_and_texel_fetches(self):
+        """ Tests multiply-adds and texel fetches counting
+        """
+        # generate input image
+        input_image = make_random_image((32, 32))
+
+        # set up a test model
+        model = tf.keras.models.Sequential([
+            tf.keras.layers.Input((32, 32, 3)),
+            tf.keras.layers.Conv2D(16, kernel_size=3, use_bias=False),
+            tf.keras.layers.Activation(beatmup_keras.brelu6),
+            tf.keras.layers.Conv2D(32, kernel_size=3, groups=4, use_bias=False),
+            tf.keras.layers.Activation(beatmup_keras.brelu6),
+            tf.keras.layers.MaxPooling2D(3, strides=1)
+        ])
+
+        # prepare model
+        ctx = beatmup.Context()
+        test_model, test_data = beatmup_keras.export_model(model, ctx)
+        inference = beatmup.nnets.InferenceTask(test_model, test_data)
+        inference.connect(beatmup.Bitmap(ctx, input_image), test_model.get_first_operation())
+        test_model.add_output(test_model.get_last_operation())
+        ctx.perform_task(inference)
+
+        # check
+        self.assertEqual(test_model.count_multiply_adds(), 30*30*16*3*3*3 + 28*28*32*3*3*4 + 0)
+        self.assertEqual(test_model.count_texel_fetches(), 30*30*16*3*3//4 + 28*28*32*3*3//4 + 26*26*32*3*3//4)
 
 
 if __name__ == '__main__':

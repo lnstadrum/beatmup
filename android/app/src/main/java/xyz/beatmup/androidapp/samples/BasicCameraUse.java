@@ -57,12 +57,12 @@ public class BasicCameraUse extends TestSample {
         layer2.getShader().setColorMatrix("transform", new ColorMatrix(Color.GREEN, 1.0f, 1.0f));
 
         layer2.getShader().setSourceCode(
-                "beatmupInputImage image;" +
+                "uniform beatmupSampler image;" +
                 "varying mediump vec2 texCoord;" +
                 "uniform mediump mat4 transform;" +
                 "void main() {" +
                 "   highp vec2 xy = vec2(texCoord.x * texCoord.x, texCoord.y);" +
-                "   gl_FragColor.rgba = transform * texture2D(image, xy).rgba;" +
+                "   gl_FragColor.rgba = transform * beatmupTexture(image, xy).rgba;" +
                 "}"
         );
         return scene;

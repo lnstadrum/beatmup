@@ -118,6 +118,29 @@ void Dense::disconnect() {
 }
 
 
+unsigned long Dense::countMultiplyAdds() const {
+    const int numInputDims = inputVector ? inputVector->getSize() : inputStorage.getSize().volume();
+    return numInputDims * numOutputDims;
+}
+
+
+unsigned long Dense::countTexelFetches() const {
+    const unsigned long numInputDims = inputVector ? inputVector->getSize() : inputStorage.getSize().volume();
+    // sampling the matrix
+    unsigned long count = numInputDims * numOutputDims / 4;
+    // sampling the bias
+    if (useBias)
+        count += numOutputDims / 4;
+#ifdef BEATMUP_OPENGLVERSION_GLES20
+    // using 16 bit fixed point format
+    count *= 2;
+#endif
+    // sampling the input vector
+    count += inputVector ? inputVector->getHeight() : (inputStorage.getSize().volume() / 4);
+    return count;
+}
+
+
 void Dense::prepare(GraphicPipeline& gpu, ChunkCollection& data, GL::ProgramBank& bank) {
     RuntimeError::check(inputVector || inputStorage, "Input is not provided to Dense operation " + getName());
     RuntimeError::check(outputVector, "Output is not provided to Dense operation " + getName());

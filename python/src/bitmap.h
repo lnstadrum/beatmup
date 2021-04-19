@@ -25,7 +25,7 @@
 
 namespace Beatmup {
     /**
-        Classes and utilities for Python binding
+        %Python binding utilities
     */
     namespace Python {
 

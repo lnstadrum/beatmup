@@ -41,9 +41,7 @@ namespace Beatmup {
                 - Strides are equal along X and Y.
                 - Dilations are equal to 1.
                 - If an image is given on input (3 input feature maps), only valid padding is supported.
-                - Activation function is always applied:
-                    - ReLU bounded to [0, 1] range ("default"),
-                    - a piecewise linear approximation of the sigmoid function.
+                - An activation function is always applied on output.
 
             Raspberry Pi-related constraints:
                 - Pi cannot sample more than 256 channels to compute a single output value. Actual practical limit is
@@ -123,6 +121,8 @@ namespace Beatmup {
                 const ActivationFunction activation = ActivationFunction::DEFAULT
             );
 
+            inline bool isBiasUsed() const { return useBias; }
+
             inline int getInputCount()  const { return 2; }
             inline int getOutputCount() const { return 1; }
 
@@ -151,6 +151,7 @@ namespace Beatmup {
             inline void setResidualInput(Storage::View&& storage) { setInput(std::move(storage), 1); }
 
             unsigned long countMultiplyAdds() const;
+            unsigned long countTexelFetches() const;
 
             /**
                 Sets up deserialization of the operation.

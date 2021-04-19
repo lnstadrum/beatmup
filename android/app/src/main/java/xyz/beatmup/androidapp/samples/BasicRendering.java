@@ -56,7 +56,7 @@ public class BasicRendering extends TestSample {
         // setting up a radial image distortion shader
         ImageShader distortShader = new ImageShader(context);
         distortShader.setSourceCode(
-                "beatmupInputImage image;\n" +
+                "uniform beatmupSampler image;\n" +
                 "varying highp vec2 texCoord;\n" +
                 "highp vec2 distort(highp vec2 xy) {\n" +
                 "  highp vec2 r = xy - vec2(0.5, 0.5);\n" +
@@ -64,17 +64,17 @@ public class BasicRendering extends TestSample {
                 "  return (-0.5 * t * t + 0.9) * r + vec2(0.5, 0.5);\n" +
                 "}\n" +
                 "void main() {\n" +
-                "  gl_FragColor = texture2D(image, distort(texCoord));\n" +
+                "  gl_FragColor = beatmupTexture(image, distort(texCoord));\n" +
                 "}"
         );
 
         // setting up a color channel shifting shader
         ImageShader grayShiftShader = new ImageShader(context);
         grayShiftShader.setSourceCode(
-                "beatmupInputImage image;\n" +
+                "uniform beatmupSampler image;\n" +
                 "varying highp vec2 texCoord;\n" +
                 "highp float gray(highp vec2 pos) {\n" +
-                "  highp vec4 clr = texture2D(image, pos);\n" +
+                "  highp vec4 clr = beatmupTexture(image, pos);\n" +
                 "  return 0.333 * (clr.r + clr.g + clr.b);\n" +
                 "}\n" +
                 "void main() {\n" +

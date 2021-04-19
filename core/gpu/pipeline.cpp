@@ -20,27 +20,36 @@
 #include "../bitmap/converter.h"
 #include "../bitmap/internal_bitmap.h"
 #include "../debug.h"
-
-
-#include "bgl.h"
 #include "program.h"
+
 #include <algorithm>
 #include <map>
 #include <vector>
 #include <deque>
 #include <mutex>
+#include <string>
+
+#ifdef BEATMUP_GLES_ALLOW_DRM_FALLBACK
+#include <cstdlib>
+#include "drm.hpp"
+#endif
+
+#include "bgl.h"
+
 
 using namespace Beatmup;
 
-/**
-    \internal
-    Exception reporting issues occurred during initial GPU setup
-*/
-class GpuOperationError : public Beatmup::Exception {
-public:
-    GpuOperationError(const char* info) : Exception(info) {}
-    GpuOperationError(const char* info, int code) : Exception("%s (error %x)", info, code) {}
-};
+namespace Beatmup {
+    /**
+        \internal
+        Exception reporting issues occurred during initial GPU setup
+    */
+    class GpuOperationError : public Beatmup::Exception {
+    public:
+        GpuOperationError(const char* info) : Exception(info) {}
+        GpuOperationError(const char* info, int code) : Exception("%s (error %x)", info, code) {}
+    };
+}
 
 
 /**
@@ -64,8 +73,10 @@ private:
     bool isRectangularTextureCoordinates;   //!< if `true`, the texture coordinates is a rectangle
     GLuint hVertexAttribBuffer;				//!< buffer used when rendering
 
+    ImageResolution displayResolution;      //!< width and height of a display obtained when switching
 
-    ImageResolution displayResolution;    //!< width and height of a display obtained when switching
+    bool isGlEs;                            //!< if `true`, the use OpenGL context is GL ES-compliant
+    int glslVersion;                        //!< GLSL language version to put into shaders code, e.g. 100 for 1.00
 
 #ifdef BEATMUP_OPENGLVERSION_GLES
     EGLDisplay eglDisplay;
@@ -74,6 +85,13 @@ private:
         eglDefaultSurface;    //!< default internally managed surface
     EGLContext eglContext;
     EGLConfig eglConfig;
+#ifdef BEATMUP_GLES_ALLOW_DRM_FALLBACK
+    DRM::Device drmDevice;
+    DRM::ModeConnector drmConnector;
+    DRM::ModeCrtc drmCrtc;
+    DRM::GBMDevice gbmDevice;
+    DRM::GBMSurface gbmSurface;
+#endif
 #elif BEATMUP_PLATFORM_WINDOWS
     HWND hwnd;
     HGLRC hglrc;
@@ -93,9 +111,9 @@ private:
         msize maxSharedMemSize;
     } glLimits;
 
-
 public:
-    Impl(GraphicPipeline& front) : front(front) {
+    Impl(GraphicPipeline& front) : front(front), glslVersion(0) {
+
 #ifdef BEATMUP_OPENGLVERSION_GLES
         // Step 1 - Get the default display.
         if ((eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY)) == EGL_NO_DISPLAY)
@@ -103,41 +121,109 @@ public:
 
         // Step 2 - Initialize EGL.
         if (!eglInitialize(eglDisplay, 0, 0)) {
+
+#ifdef BEATMUP_GLES_ALLOW_DRM_FALLBACK
+            BEATMUP_DEBUG_I("DRM fallback");
+
+            // set up DRM and GBM resources
+            const char* DRI_DEVICE = std::getenv("BEATMUP_DRI_DEVICE");
+            static const char* DEFAULT_DRI_DEVICE = "/dev/dri/card1";
+            DRM::Device device(DRI_DEVICE ? DRI_DEVICE : DEFAULT_DRI_DEVICE);
+            DRM::ModeResources resources(device);
+            DRM::ModeConnector connector(device, resources);
+            DRM::ModeEncoder encoder(device, connector);
+            DRM::ModeCrtc crtc(device, encoder, connector);
+            DRM::GBMDevice gbmDevice(device, connector);
+            DRM::GBMSurface gbmSurface(gbmDevice, connector);
+
+            // get display again
+            eglDisplay = eglGetDisplay(gbmDevice.getPointer());
+
+            if (!eglDisplay) {
+                throw GpuOperationError("EGL/DRM: cannot get display");
+            }
+
+            if (!eglInitialize(eglDisplay, 0, 0)) {
+                throw GpuOperationError("EGL/DRM: cannot initialize display");
+            }
+
+            // keep DRM and GBM persistent resources
+            this->drmDevice = std::move(device);
+            this->drmConnector = std::move(connector);
+            this->drmCrtc = std::move(crtc);
+            this->gbmDevice = std::move(gbmDevice);
+            this->gbmSurface = std::move(gbmSurface);
+#else
             auto err = eglGetError();
             if (err == EGL_NOT_INITIALIZED)
                 throw GpuOperationError("EGL: display not initialized", err);
             else
                 throw GpuOperationError("EGL: initialization failed", err);
+#endif
         }
 
         // Step 3 - Make OpenGL ES the current API.
         eglBindAPI(EGL_OPENGL_ES_API);
 
         // Step 4 - Specify the required configuration attributes.
-        EGLint configAttributes[] = {
-            EGL_SURFACE_TYPE,			EGL_PBUFFER_BIT,
+        static const int CONFIG_ATTRIBUTES_LEN = 5;
+        EGLint configAttributes[CONFIG_ATTRIBUTES_LEN] = {
 #ifdef BEATMUP_OPENGLVERSION_GLES20
             EGL_RENDERABLE_TYPE,		EGL_OPENGL_ES2_BIT,
 #elif defined BEATMUP_OPENGLVERSION_GLES31
             EGL_RENDERABLE_TYPE,		EGL_OPENGL_ES3_BIT_KHR,
 #endif
-            /*EGL_CONFORMANT,				EGL_OPENGL_ES2_BIT,
-            EGL_COLOR_BUFFER_TYPE,		EGL_RGB_BUFFER,
-            EGL_BIND_TO_TEXTURE_RGBA,	EGL_TRUE,
-            EGL_RED_SIZE, 8,
-            EGL_GREEN_SIZE, 8,
-            EGL_BLUE_SIZE, 8,
-            EGL_ALPHA_SIZE, 8,
-            EGL_DEPTH_SIZE, 0,
-            EGL_STENCIL_SIZE, 0,*/
+            EGL_SURFACE_TYPE,			EGL_PBUFFER_BIT,
             EGL_NONE
         };
+
+#ifdef BEATMUP_GLES_ALLOW_DRM_FALLBACK
+        if (drmDevice) {
+            // using DRM: shrinking config attributes at EGL_SURFACE_TYPE
+            configAttributes[CONFIG_ATTRIBUTES_LEN - 3] = EGL_NONE;
+        }
+#endif
+
+        // get number of configs
+        int totalConfigCount;
+        eglGetConfigs(eglDisplay, nullptr, 0, &totalConfigCount);
+        std::vector<EGLConfig> configs;
+        configs.resize(totalConfigCount);
+
+        // get configs themselves
         int numConfigs;
-        if (!eglChooseConfig(eglDisplay, configAttributes, &eglConfig, 1, &numConfigs))
+        if (!eglChooseConfig(eglDisplay, configAttributes, configs.data(), totalConfigCount, &numConfigs))
             throw GpuOperationError("EGL: bad configuration", eglGetError());
         BEATMUP_DEBUG_I("Number of EGL configs got: %d", numConfigs);
 
-        // Step 6 - Create a context.
+#ifdef BEATMUP_GLES_ALLOW_DRM_FALLBACK
+        if (drmDevice) {
+            // find one matching the GBM format
+            bool found = false;
+            for (int i = 0; i < totalConfigCount && !found; ++i) {
+                EGLint val;
+                if (EGL_TRUE != eglGetConfigAttrib(eglDisplay, configs[i], EGL_RED_SIZE, &val) || val != 8)
+                    continue;
+                if (EGL_TRUE != eglGetConfigAttrib(eglDisplay, configs[i], EGL_GREEN_SIZE, &val) || val != 8)
+                    continue;
+                if (EGL_TRUE != eglGetConfigAttrib(eglDisplay, configs[i], EGL_BLUE_SIZE, &val) || val != 8)
+                    continue;
+                if (EGL_TRUE != eglGetConfigAttrib(eglDisplay, configs[i], EGL_ALPHA_SIZE, &val) || val != 8)
+                    continue;
+                eglConfig = configs[i];
+                found = true;
+            }
+            if (!found)
+                throw GpuOperationError("EGL/DRM: no config matching the required surface format");
+        }
+        else
+#endif
+        {
+            eglConfig = configs[0];
+        }
+
+
+        // Step 5 - Create a context.
         EGLint contextAttributes[] = {
             EGL_CONTEXT_CLIENT_VERSION,
 #ifdef BEATMUP_OPENGLVERSION_GLES20
@@ -151,22 +237,37 @@ public:
         if (eglContext == EGL_NO_CONTEXT)
             throw GpuOperationError("EGL: context initialization failed", eglGetError());
 
+
+        // Step 6 - Create a surface to draw to.
         eglDefaultSurface = eglSurface = EGL_NO_SURFACE;
+#ifdef BEATMUP_GLES_ALLOW_DRM_FALLBACK
+        if (drmDevice) {
+            eglDefaultSurface = eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, gbmSurface.getPointer(), nullptr);
+        }
+        else
+#endif
+        {
+            EGLint surfaceAttributes[] = {
+                EGL_WIDTH, 2,		// eglMakeCurrent fails sometimes with zero sizes
+                EGL_HEIGHT, 2,
+                EGL_NONE
+            };
 
-        // Step 5 - Create a surface to draw to.
-        EGLint surfaceAttributes[] = {
-            EGL_WIDTH, 2,		// eglMakeCurrent fails sometimes with zero sizes
-            EGL_HEIGHT, 2,
-            EGL_NONE
-        };
+            eglDefaultSurface = eglSurface = eglCreatePbufferSurface(eglDisplay, eglConfig, surfaceAttributes);
+        }
 
-        eglDefaultSurface = eglSurface = eglCreatePbufferSurface(eglDisplay, eglConfig, surfaceAttributes);
         if (eglSurface == EGL_NO_SURFACE)
             throw GpuOperationError("EGL: window surface creation failed when init", eglGetError());
 
         // Step 7 - Bind the context to the current thread
         if (!eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext))
             throw GpuOperationError("EGL: making current", eglGetError());
+
+#ifdef BEATMUP_OPENGLVERSION_GLES20
+        // if ES 2.0, forcing GLSL version; otherwise it is queried later on
+        glslVersion = 100;
+        isGlEs = true;
+#endif
 
 #elif BEATMUP_PLATFORM_WINDOWS
         PIXELFORMATDESCRIPTOR pfd;
@@ -216,8 +317,8 @@ public:
             0);       /* background */
 
         // setup a bootstrap context to load glew
-        static int dummy_visual_attribs[] = { GLX_RGBA, None };
-        XVisualInfo* vi = glXChooseVisual(xDisplay, 0, dummy_visual_attribs);
+        static int bootstapVisualAttrs[] = { GLX_RGBA, None };
+        XVisualInfo* vi = glXChooseVisual(xDisplay, 0, bootstapVisualAttrs);
         glxContext = glXCreateContext(xDisplay, vi, nullptr, GL_TRUE);
         glXMakeCurrent(xDisplay, xWindow, glxContext);
 
@@ -230,24 +331,24 @@ public:
         // destroying the bootstrap context
         glXDestroyContext(xDisplay, glxContext);
 
-        static int visual_attribs[] = {
-                /*GLX_DRAWABLE_TYPE, GLX_PBUFFER_BIT,
-                GLX_RENDER_TYPE, GLX_RGBA_BIT,*/
-                GLX_DOUBLEBUFFER, true,
+        static int visualAttrs[] = {
+                GLX_DOUBLEBUFFER, false,
                 None
         };
-        int num_fbc = 0;
+        int numFbc = 0;
         GLXFBConfig *config = glXChooseFBConfig(xDisplay, DefaultScreen(xDisplay),
-            visual_attribs, &num_fbc);
+            visualAttrs, &numFbc);
         if (!config)
             throw GpuOperationError("Choosing framebuffer configuration failed");
 
         // create pbuffer
-        static int pbuffer_attribs[] = {
+        static int pbufferAttrs[] = {
+                GLX_PBUFFER_WIDTH, 1,
+                GLX_PBUFFER_HEIGHT, 1,
                 GLX_LARGEST_PBUFFER,
                 None
         };
-        glxPbuffer = glXCreatePbuffer(xDisplay, config[0], pbuffer_attribs);
+        glxPbuffer = glXCreatePbuffer(xDisplay, config[0], pbufferAttrs);
 
         // create main context
         vi = glXGetVisualFromFBConfig(xDisplay, config[0]);
@@ -259,7 +360,7 @@ public:
         // query GL limits
         glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &glLimits.maxTextureImageUnits);
         glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS, &glLimits.maxFragmentUniformVectors);
-#if defined(BEATMUP_OPENGLVERSION_GLES31) || defined(BEATMUP_PLATFORM_WINDOWS)
+#ifndef BEATMUP_OPENGLVERSION_GLES20
         glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, glLimits.maxWorkGroupCount + 0);
         glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, glLimits.maxWorkGroupCount + 1);
         glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, glLimits.maxWorkGroupCount + 2);
@@ -268,25 +369,57 @@ public:
         glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, glLimits.maxWorkGroupSize + 2);
         glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &glLimits.maxTotalWorkGroupSize);
         glGetIntegerv(GL_MAX_COMPUTE_SHARED_MEMORY_SIZE, (GLint*)&glLimits.maxSharedMemSize);
-#ifdef BEATMUP_DEBUG
-        const char
-            *vendor   = (char*)glGetString(GL_VENDOR),
-            *renderer = (char*)glGetString(GL_RENDERER);
-        BEATMUP_DEBUG_I("__________________________________________________________");
-        BEATMUP_DEBUG_I("Beatmup GL startup: %s / %s", renderer, vendor);
-        BEATMUP_DEBUG_I(" - Max workgroups: %d, %d, %d",
-            glLimits.maxWorkGroupCount[0], glLimits.maxWorkGroupCount[1], glLimits.maxWorkGroupCount[2]);
-        BEATMUP_DEBUG_I(" - Max local groups: %d, %d, %d / %d",
-            glLimits.maxWorkGroupSize[0], glLimits.maxWorkGroupSize[1], glLimits.maxWorkGroupSize[2], glLimits.maxTotalWorkGroupSize);
-        BEATMUP_DEBUG_I(" - Shared memory: %lu KB", (unsigned long)(glLimits.maxSharedMemSize / 1024));
-        BEATMUP_DEBUG_I("__________________________________________________________");
-#endif
 #else
         glLimits.maxWorkGroupCount[0] = glLimits.maxWorkGroupCount[1] = glLimits.maxWorkGroupCount[2] = 0;
         glLimits.maxWorkGroupSize[0] = glLimits.maxWorkGroupSize[1] = glLimits.maxWorkGroupSize[2] = 0;
         glLimits.maxTotalWorkGroupSize = 0;
         glLimits.maxSharedMemSize = 0;
 #endif
+
+#ifdef BEATMUP_DEBUG
+        {
+            const char
+                *vendor   = (char*)glGetString(GL_VENDOR),
+                *renderer = (char*)glGetString(GL_RENDERER),
+                *glslVersionStr = (char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
+            BEATMUP_DEBUG_I("__________________________________________________________");
+            BEATMUP_DEBUG_I("Beatmup GL startup: %s / %s, %s", renderer, vendor, glslVersionStr);
+#ifndef BEATMUP_OPENGLVERSION_GLES20
+            BEATMUP_DEBUG_I(" - Max workgroups: %d, %d, %d",
+                glLimits.maxWorkGroupCount[0], glLimits.maxWorkGroupCount[1], glLimits.maxWorkGroupCount[2]);
+            BEATMUP_DEBUG_I(" - Max local groups: %d, %d, %d / %d",
+                glLimits.maxWorkGroupSize[0], glLimits.maxWorkGroupSize[1], glLimits.maxWorkGroupSize[2], glLimits.maxTotalWorkGroupSize);
+            BEATMUP_DEBUG_I(" - Shared memory: %lu KB", (unsigned long)(glLimits.maxSharedMemSize / 1024));
+#endif
+            BEATMUP_DEBUG_I("__________________________________________________________");
+        }
+#endif
+
+        // get glsl version if not set
+        if (glslVersion == 0) {
+            // GLSL version can be forced with an environmental variable
+            const char* FORCED_GLSL_VERSION = std::getenv("BEATMUP_GLSL_VERSION");
+            std::string versionStr(FORCED_GLSL_VERSION ? FORCED_GLSL_VERSION : (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+
+            // check if running OpenGL ES
+            static const std::string ES_PREFIX = "OpenGL ES GLSL ES ";
+                // according to the standard docs, for GL ES GL_SHADING_LANGUAGE_VERSION starts with this prefix
+            isGlEs = versionStr.substr(0, ES_PREFIX.length()) == ES_PREFIX;
+            if (isGlEs)
+                versionStr = versionStr.substr(ES_PREFIX.length());
+
+            // getting major and minor version numbers
+            auto spacePos = versionStr.find(" ");
+            if (spacePos == std::string::npos)
+                spacePos = versionStr.length();
+            versionStr = versionStr.substr(0, spacePos);
+            auto dotPos = versionStr.find(".");
+            if (dotPos == std::string::npos)
+                throw GL::GLException("Cannot determine GLSL version from string '" + versionStr + "'");
+            const int majVer = std::stoi(versionStr.substr(0, dotPos));
+            const int minVer = std::stoi(versionStr.substr(dotPos + 1));
+            glslVersion = 100 * majVer + minVer;
+        }
 
         // init buffers
         glGenFramebuffers(1, &hFrameBuffer);
@@ -322,6 +455,7 @@ public:
         glDeleteFramebuffers(1, &hFrameBuffer);
 
 #ifdef BEATMUP_OPENGLVERSION_GLES
+        eglMakeCurrent(eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
         if (eglSurface != EGL_NO_SURFACE && eglSurface != eglDefaultSurface)
             eglDestroySurface(eglDisplay, eglSurface);
         eglDestroySurface(eglDisplay, eglDefaultSurface);
@@ -714,6 +848,9 @@ public:
         GL::GLException::check("vertex attributes buffer setup");
 #endif
     }
+
+    int getGlslVersion() const { return glslVersion; }
+    bool isGlEsCompliant() const { return isGlEs; }
 };
 
 
@@ -813,6 +950,16 @@ const char* GraphicPipeline::getGpuVendorString() const {
 
 const char* GraphicPipeline::getGpuRendererString() const {
     return (const char*)glGetString(GL_RENDERER);
+}
+
+
+int GraphicPipeline::getGlslVersion() const {
+    return impl->getGlslVersion();
+}
+
+
+bool GraphicPipeline::isGlEsCompliant() const {
+    return impl->isGlEsCompliant();
 }
 
 

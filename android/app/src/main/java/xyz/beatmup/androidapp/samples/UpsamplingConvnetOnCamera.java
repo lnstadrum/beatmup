@@ -70,10 +70,10 @@ public class UpsamplingConvnetOnCamera extends TestSample {
         textureCopy.setOutput(input);
         textureCopy.setShader(new ImageShader(context));
         textureCopy.getShader().setSourceCode(
-                "beatmupInputImage image;" +
+                "uniform beatmupSampler image;" +
                 "varying highp vec2 texCoord;" +
                 "void main() {" +
-                        " gl_FragColor = texture2D(image, texCoord);" +
+                        " gl_FragColor = beatmupTexture(image, texCoord);" +
                 "}"
         );
 

@@ -57,6 +57,7 @@ namespace Beatmup {
         public:
             GLException(const char* info, int errCode) : Exception("GL error %x: %s", errCode, info) {}
             GLException(const char* info) : Exception("GL error %x: %s", glGetError(), info) {}
+            GLException(const std::string& info) : GLException(info.c_str()) {}
 
             static inline void check(const std::string& info) {
                 GLuint err = glGetError();

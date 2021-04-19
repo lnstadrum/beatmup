@@ -148,7 +148,7 @@ public:
         std::cout << "Iterations done: " << numIter << std::endl;
         std::cout << "Average time per run: " << avg << " us (" << stdev << " us std)" << std::endl;
         std::cout << "Slowest run:          " << timeMax << " us" << std::endl;
-        std::cout << "Fastest run:           " << timeMin << " us" << std::endl << std::endl;
+        std::cout << "Fastest run:          " << timeMin << " us" << std::endl << std::endl;
 
         const int multiplyAdds = width * height;
         std::cout << std::fixed << std::setprecision(2);

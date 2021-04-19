@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
     // Setting up a radial image distortion shader: it stretches the image pulling its corners away of the center.
     Beatmup::ImageShader distortShader(ctx);
     distortShader.setSourceCode(BEATMUP_SHADER_CODE(
-        beatmupInputImage image;
+        uniform beatmupSampler image;
         varying highp vec2 texCoord;
         vec2 distort(vec2 xy) {
             vec2 r = xy - vec2(0.5, 0.5);
@@ -77,17 +77,17 @@ int main(int argc, char* argv[]) {
             return (-0.5 * t * t + 0.9) * r + vec2(0.5, 0.5);
         }
         void main() {
-            gl_FragColor = texture2D(image, distort(texCoord));
+            gl_FragColor = beatmupTexture(image, distort(texCoord));
         }
     ));
 
     // Setting up a color channel shifting shader
     Beatmup::ImageShader grayShiftShader(ctx);
     grayShiftShader.setSourceCode(BEATMUP_SHADER_CODE(
-        beatmupInputImage image;
+        uniform beatmupSampler image;
         varying highp vec2 texCoord;
         float gray(vec2 pos) {
-            vec4 clr = texture2D(image, pos);
+            vec4 clr = beatmupTexture(image, pos);
             return 0.333 * (clr.r + clr.g + clr.b);
         }
         void main() {

@@ -1289,26 +1289,24 @@ PYBIND11_MODULE(beatmup, module) {
                 * Number of input feature maps is 3 or a multiple of 4.
                 * Number of output feature maps is a multiple of 4.
                 * For group convolutions, each group contains a multiple of 4 input channels and a multiple of 4 output
-                    channels, or exactly 1 input and 1 output channel (i.e., depthwise).
+                  channels, or exactly 1 input and 1 output channel (i.e., depthwise).
                 * Kernels are of square shape.
                 * Strides are equal along X and Y.
                 * Dilations are equal to 1.
                 * If an image is given on input (3 input feature maps), only valid padding is supported.
-                * Activation function is always applied:
-                    * ReLU bounded to [0, 1] range ("default"),
-                    * a piecewise linear approximation of the sigmoid function.
+                * An activation function is always applied on output.
 
             Raspberry Pi-related constraints:
 
                 * Pi cannot sample more than 256 channels to compute a single output value. Actual practical limit is
-                    yet lower: something about 128 channels for pointwise convolutions and less than 100 channels for
-                    bigger kernels. When the limit is reached, Pi OpenGL driver reports an out of memory error (0x505).
+                  yet lower: something about 128 channels for pointwise convolutions and less than 100 channels for
+                  bigger kernels. When the limit is reached, Pi OpenGL driver reports an out of memory error (0x505).
 
             Features:
 
                 * Bias addition integrated.
                 * An optional residual input is available: a tensor of output shape added to the convolution result
-                    before applying the activation function.
+                  before applying the activation function.
         )doc")
 
         .def(py::init<const std::string&, const int, const int, const int, const int, const NNets::Size::Padding, const bool, const int, const NNets::ActivationFunction>(),
@@ -1331,6 +1329,8 @@ PYBIND11_MODULE(beatmup, module) {
                 :param num_groups:            number of convolution groups to get a group/depthwise convolution.
                 :param activation:            activation function applied to the operation output.
             )doc")
+
+        .def_property_readonly("use_bias", &NNets::Conv2D::isBiasUsed, "Returns `true` if bias addition is enabled")
 
         .def_property_readonly_static("filters_chunk_suffix", [](py::object){ return NNets::Conv2D::FILTERS_CHUNK_SUFFIX; },
             "Suffix added to the op name to get the filters chunk id in the model data")
@@ -1550,7 +1550,11 @@ PYBIND11_MODULE(beatmup, module) {
             py::return_value_policy::reference,
             "Returns the last operation in the model")
 
-        .def("serialize", &NNets::Model::serializeToString, "Returns serialized representation of the model as a string.");
+        .def("serialize", &NNets::Model::serializeToString, "Returns serialized representation of the model as a string.")
+
+        .def("count_multiply_adds", &NNets::Model::countMultiplyAdds, "Provides an estimation of the number of multiply-adds characterizing the model complexity.")
+
+        .def("count_texel_fetches", &NNets::Model::countTexelFetches, "Provides an estimation of the total number of texels fetched by all the operations in the model per image.");
 
     /**
      * NNets::DeserializedModel
@@ -1575,7 +1579,7 @@ PYBIND11_MODULE(beatmup, module) {
 
         .def("connect", (void (NNets::InferenceTask::*)(AbstractBitmap&, const std::string&, int))&NNets::InferenceTask::connect,
             py::arg("image"), py::arg("op_name"), py::arg("input_index") = 0,
-            py::keep_alive<1, 2>(),     // task alive => image alive
+            py::keep_alive<1, 2, 1>(),     // task alive => image alive
             R"doc(
                 Connects an image to a specific operation input.
                 Ensures the image content is up-to-date in GPU memory by the time the inference is run.
@@ -1587,7 +1591,7 @@ PYBIND11_MODULE(beatmup, module) {
 
         .def("connect", (void (NNets::InferenceTask::*)(AbstractBitmap&, NNets::AbstractOperation&, int))&NNets::InferenceTask::connect,
             py::arg("image"), py::arg("operation"), py::arg("input_index") = 0,
-            py::keep_alive<1, 2>(),     // task alive => image alive
+            py::keep_alive<1, 2, 1>(),     // task alive => image alive
             R"doc(
                 Connects an image to a specific operation input.
                 Ensures the image content is up-to-date in GPU memory by the time the inference is run.

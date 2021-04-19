@@ -105,6 +105,9 @@ namespace Beatmup {
         const std::string& getFilename() const { return filename; }
     };
 
+    /**
+        %Exception thrown when a required input of an AbstractTask was not assigned prior to the task execution.
+    */
     class NullTaskInput : public Exception {
     public:
         inline NullTaskInput(const char* which) : Exception("Task input is not set: %s", which) {}
@@ -116,7 +119,7 @@ namespace Beatmup {
     };
 
     /**
-        Thrown when an implementation restriction is encountered
+        %Exception thrown when an implementation restriction is encountered.
     */
     class ImplementationUnsupported : public Exception {
     public:
@@ -124,7 +127,7 @@ namespace Beatmup {
     };
 
     /**
-        Thrown when something happens that should never do
+        %Exception thrown when something happens that should never do.
     */
     class Insanity : public Exception {
     private:

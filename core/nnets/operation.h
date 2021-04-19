@@ -232,6 +232,11 @@ namespace Beatmup {
             virtual inline unsigned long countMultiplyAdds() const { return 0; }
 
             /**
+                Counts (approximate) number of texels fetches.
+            */
+            virtual inline unsigned long countTexelFetches() const { return 0; }
+
+            /**
                 \return operation name
             */
             std::string getName() const { return name; }

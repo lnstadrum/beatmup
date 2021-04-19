@@ -48,6 +48,8 @@ Beatmup is arguably the easiest way to get a fast hardware-accelerated neural ne
 
 More details on the neural network design and the inference implementation: [Inferring a super-resolution neural network on Raspberry Pi GPU](https://medium.com/analytics-vidhya/inferring-a-super-resolution-neural-network-on-raspberry-pi-gpu-89b5456d21ef)
 
+Update in 2.1 release: the fine-tuned version of the model (trained with multiple degradation kernels) achieves now 32.64 dB on DIV2K validation set compared to the initial score of 32.57 dB.
+
 ## PictureJam Collage Maker
 
 An early version of Beatmup is used in [PictureJam Collage Maker Android app](https://play.google.com/store/apps/details?id=xyz.pichancer.picturejam.full).
@@ -66,7 +68,7 @@ An early version of Beatmup is used in [PictureJam Collage Maker Android app](ht
 There is a number of test apps showcasing the use of Beatmup with additional explanations in [apps](apps) folder. The code is in C++, but can be universally helpful. Few examples:
  * [apps/shaderer](apps/shaderer/app.cpp) processes images with a custom GLSL fragment shader read from the standard input.
  * [apps/x2](apps/x2/app.cpp) is a test app for the *x2* neural net.
- * [apps/classify](apps/classify/app.cpp) is a dog image classifier, a variant of ResNeXt trained on a subset of ImageNet containing 120 classes of dogs and cats images. The inference is implemented with OpenGL shaders. Top-1 validation accuracy achieved on Raspberry Pi Zero W is 68.62%. Classifying a 385*385 image takes ~582 ms there.
+ * [apps/classify](apps/classify/app.cpp) is a dog image classifier, a variant of ResNeXt trained on a subset of ImageNet containing 120 classes of dogs and cats images. The inference is implemented with OpenGL shaders. Top-1 validation accuracy achieved on Raspberry Pi Zero W is 72.08%. Classifying a 385*385 image takes ~595 ms there.
 
 ## Python
 [python/examples](python/examples) folder contains detailed examples of scripts using Beatmup in Python.
@@ -98,9 +100,20 @@ Building **X2** app upscaling an image using a neural net inferred with OpenGL:
     cmake -DUSE_GLX=ON ..
     make X2
 
-Use *-DUSE_OPENGL=ON* instead *-DUSE_GLX=ON* if you run into trouble. On **Raspberry Pi** replace it with *-DUSE_EGL=ON*.
+ * Try to use `-DUSE_OPENGL=ON` instead `-DUSE_GLX=ON` starting from a clean build folder if you run into trouble.
+ * On **Raspberry Pi prior to series 4** use the EGL backend with following CMake command:
 
-You can then feed the app with an image of your choice and get the upscaled result as follows:
+    `cmake -DUSE_EGL=ON -DUSE_BRCM_LIBS=ON -DGLES_VERSION=20 ..`
+
+More details on Raspberry Pi setup [here](https://github.com/lnstadrum/beatmup/wiki/Compiling-Beatmup-on-Raspberry-Pi-prior-to-4).
+
+ * On **Raspberry Pi 4** rather use the following CMake command:
+
+    `cmake -DUSE_EGL_DRM=ON -DGLES_VERSION=20 ..`
+
+More details on Raspberry Pi 4 setup [here](https://github.com/lnstadrum/beatmup/wiki/Compiling-Beatmup-on-Raspberry-Pi-4).
+
+Once the app is built, you can feed it with an image of your choice and get the upscaled result as follows:
 
     ./X2 <your-image>.bmp x2-result.bmp
 
@@ -140,12 +153,7 @@ Prebuilt python packages are available in 64-bit Windows for Python **3.5**, **3
 
 ## Ubuntu-based linux
 
-Prebuilt packages for x64 desktop Ubuntu-based linux distributions are available for downloading:
- - [Python 3.5](https://github.com/lnstadrum/beatmup/suites/1801197252/artifacts/34542316)
- - [Python 3.6](https://github.com/lnstadrum/beatmup/suites/1801197252/artifacts/34542318)
- - [Python 3.7](https://github.com/lnstadrum/beatmup/suites/1801197252/artifacts/34542320)
- - [Python 3.8](https://github.com/lnstadrum/beatmup/suites/1801197252/artifacts/34542322)
- - [Python 3.9](https://github.com/lnstadrum/beatmup/suites/1801197252/artifacts/34542324)
+Prebuilt packages for x64 desktop Ubuntu-based linux distributions are available for downloading on the [releases page](https://github.com/lnstadrum/beatmup/releases/).
 
 ## Compiling Python package
 
