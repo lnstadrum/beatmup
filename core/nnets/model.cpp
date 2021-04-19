@@ -513,6 +513,14 @@ unsigned long Model::countMultiplyAdds() const {
 }
 
 
+unsigned long Model::countTexelFetches() const {
+    unsigned long result = 0;
+    for (auto op : ops)
+        result += op->countTexelFetches();
+    return result;
+}
+
+
 size_t Model::getMemorySize() const {
     size_t size = 0;
     for (auto& entry : storages)

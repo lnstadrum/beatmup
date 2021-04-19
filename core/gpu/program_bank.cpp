@@ -29,9 +29,11 @@ GL::ProgramBank::~ProgramBank() {
 }
 
 
-GL::RenderingProgram* GL::ProgramBank::operator()(GraphicPipeline& gpu, const std::string& code) {
-    auto search = programs.find(code);
-    if (search != programs.end()) {
+GL::RenderingProgram* GL::ProgramBank::operator()(GraphicPipeline& gpu, const std::string& code, bool enableExternalTextures) {
+    auto& cache = enableExternalTextures ? programsWithExtTex : programs;
+
+    auto search = cache.find(code);
+    if (search != cache.end()) {
         auto& holder = search->second;
         holder.userCount++;
         holder.program->enable(gpu);
@@ -39,24 +41,31 @@ GL::RenderingProgram* GL::ProgramBank::operator()(GraphicPipeline& gpu, const st
     }
 
     // not found; create
-    GL::FragmentShader fragmentShader(gpu, code);
+    GL::Extensions ext = enableExternalTextures ? GL::Extensions::EXTERNAL_TEXTURE : GL::Extensions::NONE;
+    GL::FragmentShader fragmentShader(gpu, code, Extensions::BEATMUP_DIALECT + ext);
     GL::RenderingProgram* program = new GL::RenderingProgram(gpu, fragmentShader);
-    programs.emplace(std::make_pair(code, ProgramHolder{ program, 1 }));
+    cache.emplace(std::make_pair(code, ProgramHolder{ program, 1 }));
     return program;
 }
 
 
-void GL::ProgramBank::release(GraphicPipeline& gpu, GL::RenderingProgram* program) {
-    for (auto it = programs.begin(); it != programs.end(); ++it) {
+bool GL::ProgramBank::releaseProgram(GL::RenderingProgram* program, std::map<std::string, ProgramHolder>& cache) {
+    for (auto it = cache.begin(); it != cache.end(); ++it) {
         auto& holder = it->second;
         if (holder.program == program) {
             holder.userCount--;
             if (holder.userCount == 0) {
                 delete program;
-                programs.erase(it);
+                cache.erase(it);
             }
-            return;
+            return true;
         }
     }
-    throw RuntimeError("No program found in a program bank");
+    return false;
+}
+
+
+void GL::ProgramBank::release(GraphicPipeline& gpu, GL::RenderingProgram* program) {
+    if (!releaseProgram(program, programs) && !releaseProgram(program, programsWithExtTex))
+        throw RuntimeError("No program found in a program bank");
 }

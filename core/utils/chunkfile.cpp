@@ -22,17 +22,18 @@ using namespace Beatmup;
 
 typedef uint32_t id_size_t;     //!< chunk id length type
 
+namespace Beatmup {
+    class ChunkIdTooLong : public Exception {
+    public:
+        ChunkIdTooLong(const std::string& id) :
+            Exception("Chunk id exceeds max allowed length (255 chars): %s", id.c_str()) {}
 
-class ChunkIdTooLong : public Exception {
-public:
-    ChunkIdTooLong(const std::string& id) :
-        Exception("Chunk id exceeds max allowed length (255 chars): %s", id.c_str()) {}
-
-    static void check(const std::string& id) {
-        if (id.size() > 255)
-            throw ChunkIdTooLong(id);
-    }
-};
+        static void check(const std::string& id) {
+            if (id.size() > 255)
+                throw ChunkIdTooLong(id);
+        }
+    };
+}
 
 
 bool ChunkStream::parse() {

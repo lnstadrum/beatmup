@@ -50,8 +50,7 @@ void Pooling2D::prepare(GraphicPipeline& gpu, ChunkCollection& data, GL::Program
     if (program)
         bank.release(gpu, program);
 
-    String code(BEATMUP_SHADER_HEADER_VERSION);
-    code(GL::RenderingPrograms::DECLARE_TEXTURE_COORDINATES_IN_FRAG);
+    String code(GL::RenderingPrograms::DECLARE_TEXTURE_COORDINATES_IN_FRAG);
 
     code.printf("uniform sampler2D %s[1];", UNIFORM_INPUT);
     SpatialFilteringMixin::writeHeader(code, true);
@@ -220,6 +219,11 @@ bool Pooling2D::initDeserializer() {
 void Pooling2D::disconnect() {
     this->input = Storage::View();
     this->output = Storage::View();
+}
+
+
+unsigned long Pooling2D::countTexelFetches() const {
+    return getOutputSize(0).volume() * size.volume() / 4;
 }
 
 

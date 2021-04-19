@@ -119,7 +119,7 @@ void Conv2D::prepare(GraphicPipeline& gpu, ChunkCollection& data, GL::ProgramBan
         coeffs.reserve(numberOfPrograms * uniformsLength);
 
     const bool useUniformShift = useUniforms && kernelSize.getDepth() <= 4;
-        //!< use uniform shift if only one input texture is sampled, i.e., depthwise or grouped with groups of 4
+        // use uniform shift if only one input texture is sampled, i.e., depthwise or grouped with groups of 4
 
     // init new programs
     for (int outputChannel = 0; outputChannel < numOutputChannels; outputChannel += 4) {
@@ -131,8 +131,7 @@ void Conv2D::prepare(GraphicPipeline& gpu, ChunkCollection& data, GL::ProgramBan
         const int lastInputChannel  = firstInputChannel + (isDepthwise ? 4 : kernelSize.getDepth());
 
         // set up GLSL code
-        String code(BEATMUP_SHADER_HEADER_VERSION);
-        code(GL::RenderingPrograms::DECLARE_TEXTURE_COORDINATES_IN_FRAG);
+        String code(GL::RenderingPrograms::DECLARE_TEXTURE_COORDINATES_IN_FRAG);
 
 #ifdef BEATMUP_DEBUG
         if (!groupViews.empty())
@@ -528,4 +527,12 @@ void Conv2D::setInput(GL::TextureHandler& image, int inputIndex) {
 
 unsigned long Conv2D::countMultiplyAdds() const {
     return getOutputSize(0).volume() * kernelSize.volume();
+}
+
+
+unsigned long Conv2D::countTexelFetches() const {
+    unsigned long count = getOutputSize(0).volume() / 4 * kernelSize.volume() / (useInputImage ? 3 : 4);
+    if (residualInput)
+        count += getOutputSize(0).volume() / 4;
+    return count;
 }

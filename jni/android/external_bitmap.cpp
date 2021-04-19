@@ -25,35 +25,41 @@
 using namespace Beatmup;
 using namespace Android;
 
-class TextureHandleFactory : public AbstractTask {
-private:
-    Context& ctx;
-    Beatmup::GL::handle_t textureHandle;
+namespace Beatmup {
+    /**
+        Task generating a valid OpenGL texture handle.
+        Used to produce handles for external textures.
+    */
+    class TextureHandleFactory : public AbstractTask {
+    private:
+        Context& ctx;
+        Beatmup::GL::handle_t textureHandle;
 
-    TextureHandleFactory(Context& ctx):
-        ctx(ctx)
-    {}
+        TextureHandleFactory(Context& ctx):
+            ctx(ctx)
+        {}
 
-    bool processOnGPU(GraphicPipeline& gpu, TaskThread&) {
-        glGenTextures(1, &textureHandle);
-        return true;
-    }
+        bool processOnGPU(GraphicPipeline& gpu, TaskThread&) {
+            glGenTextures(1, &textureHandle);
+            return true;
+        }
 
-    bool process(TaskThread& thread) {
-        return false;
-    }
+        bool process(TaskThread& thread) {
+            return false;
+        }
 
-    TaskDeviceRequirement getUsedDevices() const {
-        return TaskDeviceRequirement::GPU_ONLY;
-    }
+        TaskDeviceRequirement getUsedDevices() const {
+            return TaskDeviceRequirement::GPU_ONLY;
+        }
 
-public:
-    inline static Beatmup::GL::handle_t makeHandle(Context& ctx) {
-        TextureHandleFactory me(ctx);
-        ctx.performTask(me);
-        return me.textureHandle;
-    }
-};
+    public:
+        inline static Beatmup::GL::handle_t makeHandle(Context& ctx) {
+            TextureHandleFactory me(ctx);
+            ctx.performTask(me);
+            return me.textureHandle;
+        }
+    };
+}
 
 
 ExternalBitmap::ExternalBitmap(Context& ctx) : AbstractBitmap(ctx) {

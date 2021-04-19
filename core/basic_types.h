@@ -62,7 +62,7 @@ namespace Beatmup {
     }
 
     /**
-        Beatmup object base class
+        %Beatmup object base class
     */
     class Object {
     public:

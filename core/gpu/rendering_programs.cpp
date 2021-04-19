@@ -38,7 +38,7 @@ enum TextureUnits {
 
 
 static const char
-    *VERTEX_SHADER_BLEND = BEATMUP_SHADER_CODE_V(
+    *VERTEX_SHADER_BLEND = BEATMUP_SHADER_CODE(
         attribute vec2 inVertex;
         attribute vec2 inTexCoord;
         uniform mat3 modelview;
@@ -57,7 +57,7 @@ static const char
     ),
 
 
-    *VERTEX_SHADER_BLENDMASK = BEATMUP_SHADER_CODE_V(
+    *VERTEX_SHADER_BLENDMASK = BEATMUP_SHADER_CODE(
         attribute vec2 inVertex;
         attribute vec2 inTexCoord;
         uniform mat3 modelview;		// model plane in pixels -> output in pixels
@@ -81,15 +81,17 @@ static const char
 
 
     *FRAGMENT_SHADER_BLEND = BEATMUP_SHADER_CODE(
+        uniform beatmupSampler image;
         uniform mediump vec4 modulationColor;
         varying mediump vec2 texCoord;
         void main() {
-            gl_FragColor = texture2D(image, texCoord.xy).rgba * modulationColor;
+            gl_FragColor = beatmupTexture(image, texCoord.xy).rgba * modulationColor;
         }
     ),
 
 
     *FRAGMENT_SHADER_BLENDMASK = BEATMUP_SHADER_CODE(
+        uniform beatmupSampler image;
         uniform highp sampler2D mask;
         uniform highp sampler2D maskLookup;
         uniform highp float blockSize;
@@ -109,7 +111,7 @@ static const char
                     maskLookup,
                     vec2(texture2D(mask, vec2(maskCoord.x - o + pixOffset, maskCoord.y)).a, o / blockSize + 0.03125)
                 ).a;
-            gl_FragColor = mix(bgColor, texture2D(image, texCoord.xy).rgba, a) * modulationColor;
+            gl_FragColor = mix(bgColor, beatmupTexture(image, texCoord.xy).rgba, a) * modulationColor;
         }
     ),
 #else
@@ -122,13 +124,14 @@ static const char
                     maskLookup,
                     vec2(texture2D(mask, vec2(maskCoord.x - o + pixOffset, maskCoord.y)).r, o / blockSize + 0.03125)
                 ).a;
-            gl_FragColor = mix(bgColor, texture2D(image, texCoord.xy).rgba, a) * modulationColor;
+            gl_FragColor = mix(bgColor, beatmupTexture(image, texCoord.xy).rgba, a) * modulationColor;
         }
     ),
 #endif
 
 
     *FRAGMENT_SHADER_BLENDMASK_8BIT = BEATMUP_SHADER_CODE(
+        uniform beatmupSampler image;
         uniform highp sampler2D mask;
         uniform mediump vec4 modulationColor;
         uniform mediump vec4 bgColor;
@@ -141,7 +144,7 @@ static const char
             highp float a = 0.0;
             if (texCoord.x >= 0.0 && texCoord.y >= 0.0 && texCoord.x < 1.0 && texCoord.y < 1.0)
                 a = texture2D(mask, maskCoord).a;
-            gl_FragColor = mix(bgColor, texture2D(image, texCoord.xy).rgba, a) * modulationColor;
+            gl_FragColor = mix(bgColor, beatmupTexture(image, texCoord.xy).rgba, a) * modulationColor;
         }
     ),
 #else
@@ -150,13 +153,14 @@ static const char
             highp float a = 0.0;
             if (texCoord.x >= 0.0 && texCoord.y >= 0.0 && texCoord.x < 1.0 && texCoord.y < 1.0)
                 a = texture2D(mask, maskCoord).r;
-            gl_FragColor = mix(bgColor, texture2D(image, texCoord.xy).rgba, a) * modulationColor;
+            gl_FragColor = mix(bgColor, beatmupTexture(image, texCoord.xy).rgba, a) * modulationColor;
         }
     ),
 #endif
 
 
     *FRAGMENT_SHADER_BLENDSHAPE = BEATMUP_SHADER_CODE(
+        uniform beatmupSampler image;
         varying mediump vec2 texCoord;
         varying mediump vec2 maskCoord;
         uniform highp vec2 borderProfile;
@@ -176,24 +180,10 @@ static const char
             if (texCoord.x < 0.0 || texCoord.y < 0.0 || texCoord.x >= 1.0 || texCoord.y >= 1.0)
                 gl_FragColor = bgColor;
             else
-                gl_FragColor = texture2D(image, texCoord.xy).rgba;
+                gl_FragColor = beatmupTexture(image, texCoord.xy).rgba;
             gl_FragColor = gl_FragColor * clamp((cornerRadius - border - r) / (slope + 0.00098), 0.0, 1.0) * modulationColor;
         }
-    ),
-
-
-    *FRAGMENT_SHADER_HEADER_NORMAL = BEATMUP_SHADER_HEADER_VERSION BEATMUP_SHADER_CODE(
-        uniform sampler2D image;
-    ),
-
-
-    *FRAGMENT_SHADER_HEADER_EXT = BEATMUP_SHADER_HEADER_VERSION
-        "#ifdef GL_ES\n"
-        "#extension GL_OES_EGL_image_external : require\n"
-        "uniform samplerExternalOES image;\n"
-        "#else\n"
-        "uniform sampler2D image;\n"
-        "#endif\n";
+    );
 
 
 using namespace Beatmup;
@@ -257,7 +247,7 @@ public:
 
 
 RenderingPrograms::RenderingPrograms(GraphicPipeline* gpu):
-    backend(new Backend()), currentGlProgram(nullptr), defaultVertexShader(*gpu, VERTEX_SHADER_BLEND)
+    backend(new Backend()), currentGlProgram(nullptr), defaultVertexShader(*gpu, VERTEX_SHADER_BLEND, Extensions::BEATMUP_DIALECT)
 {}
 
 
@@ -274,37 +264,30 @@ Program& RenderingPrograms::getProgram(const GraphicPipeline* gpu, Operation ope
 
     // maps shader types to internally handled shaders
     std::string fragmentCode;
+    Extensions ext = Extensions::BEATMUP_DIALECT;
     switch (operation) {
-    case Operation::BLEND:
-        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_NORMAL) + std::string(FRAGMENT_SHADER_BLEND);
-        break;
-
     case Operation::BLEND_EXT:
-        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_EXT) + std::string(FRAGMENT_SHADER_BLEND);
-        break;
-
-    case Operation::MASKED_BLEND:
-        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_NORMAL) + std::string(FRAGMENT_SHADER_BLENDMASK);
+        ext = ext + Extensions::EXTERNAL_TEXTURE;
+    case Operation::BLEND:
+        fragmentCode = FRAGMENT_SHADER_BLEND;
         break;
 
     case Operation::MASKED_BLEND_EXT:
-        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_EXT) + std::string(FRAGMENT_SHADER_BLENDMASK);
-        break;
-
-    case Operation::MASKED_8BIT_BLEND:
-        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_NORMAL) + std::string(FRAGMENT_SHADER_BLENDMASK_8BIT);
+        ext = ext + Extensions::EXTERNAL_TEXTURE;
+    case Operation::MASKED_BLEND:
+        fragmentCode = FRAGMENT_SHADER_BLENDMASK;
         break;
 
     case Operation::MASKED_8BIT_BLEND_EXT:
-        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_EXT) + std::string(FRAGMENT_SHADER_BLENDMASK_8BIT);
-        break;
-
-    case Operation::SHAPED_BLEND:
-        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_NORMAL) + std::string(FRAGMENT_SHADER_BLENDSHAPE);
+        ext = ext + Extensions::EXTERNAL_TEXTURE;
+    case Operation::MASKED_8BIT_BLEND:
+        fragmentCode = FRAGMENT_SHADER_BLENDMASK_8BIT;
         break;
 
     case Operation::SHAPED_BLEND_EXT:
-        fragmentCode = std::string(FRAGMENT_SHADER_HEADER_EXT) + std::string(FRAGMENT_SHADER_BLENDSHAPE);
+        ext = ext + Extensions::EXTERNAL_TEXTURE;
+    case Operation::SHAPED_BLEND:
+        fragmentCode = FRAGMENT_SHADER_BLENDSHAPE;
         break;
 
     default:
@@ -313,8 +296,8 @@ Program& RenderingPrograms::getProgram(const GraphicPipeline* gpu, Operation ope
 
     // instantiate shaders
     const bool useDefaultVertexShader = operation ==  Operation::BLEND || operation ==  Operation::BLEND_EXT;
-    VertexShader* vertexShader = useDefaultVertexShader ? &defaultVertexShader : new VertexShader(*gpu, VERTEX_SHADER_BLENDMASK);
-    FragmentShader fragmentShader(*gpu, fragmentCode);
+    VertexShader* vertexShader = useDefaultVertexShader ? &defaultVertexShader : new VertexShader(*gpu, VERTEX_SHADER_BLENDMASK, ext);
+    FragmentShader fragmentShader(*gpu, fragmentCode, ext);
 
     // link program
     Program& glProgram = programs.emplace(

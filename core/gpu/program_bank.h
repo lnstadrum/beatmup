@@ -35,7 +35,11 @@ namespace Beatmup {
                 unsigned int userCount;
             } ProgramHolder;
 
-            std::map<std::string, ProgramHolder> programs;
+            std::map<std::string, ProgramHolder> programs;              //!< map of source code to programs without external texture extension
+            std::map<std::string, ProgramHolder> programsWithExtTex;    //!< map of source code to programs with external texture extension
+
+            bool releaseProgram(GL::RenderingProgram* program, std::map<std::string, ProgramHolder>& cache);
+
         protected:
             Context& context;
         public:
@@ -45,11 +49,12 @@ namespace Beatmup {
             /**
                 Provides a program given a fragment shader source code.
                 Creates a new program or returns an available one increasing its user count (do not call this too often).
-                \param[in] gpu      A graphic pipeline instance
-                \param[in] code     The fragment shader code of the program
+                \param[in] gpu                      A graphic pipeline instance
+                \param[in] code                     The fragment shader code of the program
+                \param[in] enableExternalTextures   If `true`, external texture extension is enabled in the program, for example, to access camera image in Android
                 \return             Linked program.
             */
-            GL::RenderingProgram* operator()(GraphicPipeline& gpu, const std::string& code);
+            GL::RenderingProgram* operator()(GraphicPipeline& gpu, const std::string& code, bool enableExternalTextures = false);
 
             /**
                 Marks a program as unused any more. If the program has no other users, its is destroyed.

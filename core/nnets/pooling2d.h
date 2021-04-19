@@ -94,6 +94,8 @@ namespace Beatmup {
 
             void disconnect();
 
+            unsigned long countTexelFetches() const;
+
             /**
                 Returns a pooling operator from string.
                 The conversion is case-insensitive. Raises an exception if cannot interpret the string.

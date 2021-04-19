@@ -104,6 +104,12 @@ void ImageSampler::disconnect() {
 }
 
 
+
+unsigned long ImageSampler::countTexelFetches() const {
+    return size.x * size.y;
+}
+
+
 void ImageSampler::prepare(GraphicPipeline& gpu, ChunkCollection& data, GL::ProgramBank& bank) {
     RuntimeError::check(input, "Input is not provided to a ImageSampler operation.");
 
@@ -112,32 +118,21 @@ void ImageSampler::prepare(GraphicPipeline& gpu, ChunkCollection& data, GL::Prog
         bank.release(gpu, program);
 
     // begin the shader code
-    String code(BEATMUP_SHADER_HEADER_VERSION);
-
-    // add support for OES extension
-    if (input->getTextureFormat() == GL::TextureHandler::TextureFormat::OES_Ext) {
-        code.line("#extension GL_OES_EGL_image_external : require");
-        code.line("#define _samplertype_ samplerExternalOES");
-    }
-    else {
-        code.line("#define _samplertype_ sampler2D");
-    }
-
-    // declare texture coordinates
-    code(GL::RenderingPrograms::DECLARE_TEXTURE_COORDINATES_IN_FRAG);
+    String code(GL::RenderingPrograms::DECLARE_TEXTURE_COORDINATES_IN_FRAG);
 
     // declare the sampler
-    code.printf("uniform _samplertype_ %s;", UNIFORM_INPUT);
+    code.printf("uniform %s %s;", GL::FragmentShader::DIALECT_SAMPLER_DECL_TYPE, UNIFORM_INPUT);
 
-    // add code
+    // add main code
     code.printf(R"glsl(
         void main() {
-            gl_FragColor = texture2D(%s, %s);
+            gl_FragColor = %s(%s, %s);
         }
-    )glsl", UNIFORM_INPUT, GL::RenderingPrograms::TEXTURE_COORDINATES_ID);
+    )glsl", GL::FragmentShader::DIALECT_TEXTURE_SAMPLING_FUNC, UNIFORM_INPUT, GL::RenderingPrograms::TEXTURE_COORDINATES_ID);
 
     // init program
-    program = bank(gpu, code);
+    bool enableExtTexExt = input->getTextureFormat() == GL::TextureHandler::TextureFormat::OES_Ext;
+    program = bank(gpu, code, enableExtTexExt);
 }
 
 

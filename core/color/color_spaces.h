@@ -24,7 +24,7 @@
 
 namespace Beatmup {
 /**
-    Color conversion
+    %Color representation and conversion tools
 */
 namespace Color {
 

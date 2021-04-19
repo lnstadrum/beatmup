@@ -104,7 +104,9 @@ int mainThatThrowsExceptions(int argc, char* argv[]) {
 
     // Once the model is ready, we can query its complexity
     const unsigned long madds = classifier.countMultiplyAdds();
+    const unsigned long texels = classifier.countTexelFetches();
     std::cout << "Number of multiply-adds: " << std::setprecision(1) << std::fixed << 1e-6 * madds << "M" << std::endl;
+    std::cout << "Numbe of texel fetches: " <<  std::setprecision(1) << std::fixed << 1e-6 * texels << "M" << std::endl;
     std::cout << "Used texture memory: " << classifier.getMemorySize() / 1024 << " kb" << std::endl;
 
     // The first run includes the preparation pass and the inference pass. Wait till the first inference pass is over.
