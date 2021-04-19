@@ -260,7 +260,6 @@ public:
             );
 
             std::vector<float> values(input.getWidth());
-            float error;
 
             for (int i = -64; i < 64; ++i)
                 values[i+64] = i;

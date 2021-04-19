@@ -635,19 +635,19 @@ void LinearMapping::prepare(GraphicPipeline& gpu, TextureHandler& output, Textur
     // reseting state
     programBank = bank;
 
-    const unsigned int precisionBoost = 2;      // additional precision bits on intermediate stages
+    static const unsigned int PRECISION_BOOST = 1;      // additional precision bits on intermediate stages (added to 8 fractional bits)
     const bool fixedPointStorage = useFixedPointStorage(forceFixed16Storage);
 
     // make multiplication stage program: this one multiplies small pieces of the matrix by small pieces of the input vector storing the results in a texture
     {
-        String code(BEATMUP_SHADER_CODE_V(
+        String code(BEATMUP_SHADER_CODE(
             varying highp vec2 texCoord;
         ));
 
         code.printf("uniform sampler%dD %s;", VECTOR_TEXTURE_DIMS, UNIFORM_INPUT);
         code.printf("uniform sampler2D %s;", UNIFORM_MATRIX);
         code.printf("uniform highp float %s[%d];", UNIFORM_DELTA, multStageDelta.size());
-        declareGlsl16bitFixedPointFunctions(code, "", fixedPointStorage, fixedPointStorage, false, 8 + precisionBoost);
+        declareGlsl16bitFixedPointFunctions(code, "", fixedPointStorage, fixedPointStorage, false, 8 + PRECISION_BOOST);
         declareGlsl16bitFixedPointFunctions(code, "In", false, fixed16Input, false);
         code.nl();
         code.line("void main() {");
@@ -754,7 +754,7 @@ void LinearMapping::prepare(GraphicPipeline& gpu, TextureHandler& output, Textur
         if (bank)
             multStage = (*bank)(gpu, code);
         else
-            multStage = new RenderingProgram(gpu, FragmentShader(gpu, code));
+            multStage = new RenderingProgram(gpu, FragmentShader(gpu, code, Extensions::BEATMUP_DIALECT));
     }
 
     // set up an intermediate buffer
@@ -818,13 +818,13 @@ void LinearMapping::prepare(GraphicPipeline& gpu, TextureHandler& output, Textur
 
     // make summation stage program
     {
-        String code(BEATMUP_SHADER_CODE_V(
+        String code(BEATMUP_SHADER_CODE(
             varying highp vec2 texCoord;
         ));
 
         code.printf("uniform sampler2D %s;", UNIFORM_MATRIX);
         code.printf("uniform highp float %s[%d];", UNIFORM_DELTA, sumStageDelta[0].size());
-        declareGlsl16bitFixedPointFunctions(code, "", fixedPointStorage, false, fixedPointStorage, 8 + precisionBoost, 8 + precisionBoost);
+        declareGlsl16bitFixedPointFunctions(code, "", fixedPointStorage, false, fixedPointStorage, 8 + PRECISION_BOOST, 8 + PRECISION_BOOST);
         code.nl();
         code.line("void main() {");
         if (!fixedPointStorage) {
@@ -855,12 +855,12 @@ void LinearMapping::prepare(GraphicPipeline& gpu, TextureHandler& output, Textur
         if (bank)
             sumStage = (*bank)(gpu, code);
         else
-            sumStage = new RenderingProgram(gpu, FragmentShader(gpu, code));
+            sumStage = new RenderingProgram(gpu, FragmentShader(gpu, code, Extensions::BEATMUP_DIALECT));
     }
 
     // make last iteration summation stage program if needed
     if (fixedPointStorage || bias) {
-        String code(BEATMUP_SHADER_CODE_V(
+        String code(BEATMUP_SHADER_CODE(
             varying highp vec2 texCoord;
         ));
 
@@ -870,7 +870,7 @@ void LinearMapping::prepare(GraphicPipeline& gpu, TextureHandler& output, Textur
         code.printf("uniform highp float %s[%d];", UNIFORM_DELTA, sumStageDelta[0].size());
 
         // declare packing/unpacking routines
-        declareGlsl16bitFixedPointFunctions(code, "", fixed16Output, false, true, 8, 8 + precisionBoost);
+        declareGlsl16bitFixedPointFunctions(code, "", fixed16Output, false, true, 8, 8 + PRECISION_BOOST);
         if (bias)
             declareGlsl16bitFixedPointFunctions(code, "Bias", false, false, true);
 
@@ -956,7 +956,7 @@ void LinearMapping::prepare(GraphicPipeline& gpu, TextureHandler& output, Textur
         if (bank)
             lastSumStage = (*bank)(gpu, code);
         else
-            lastSumStage = new RenderingProgram(gpu, FragmentShader(gpu, code));
+            lastSumStage = new RenderingProgram(gpu, FragmentShader(gpu, code, Extensions::BEATMUP_DIALECT));
     }
     else
         lastSumStage = nullptr;

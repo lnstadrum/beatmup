@@ -22,8 +22,8 @@
 #  - convert the trained keras model into a Beatmup model,
 #  - run the inference of the Beatmup model on CIFAR100 test set and meter the top-1 accuracy.
 #
-# The used model provides very a modest performance (~40% top-1 test accuracy for ~50K parameters and few minutes of training on a desktop GPU),
-# but most importantly shows the same accuracy up to an epsilon when inferred with Beatmup.
+# The model is a simple example having a modest performance (~46% top-1 test accuracy for ~50K parameters and few minutes of training on a desktop GPU),
+# and mainly shows the same accuracy up to an epsilon when inferred with Beatmup.
 #
 
 
@@ -54,32 +54,32 @@ model = tf.keras.models.Sequential([
     tf.keras.layers.Input((32, 32, 3)),
 
     tf.keras.layers.Conv2D(32, 3, name='conv1', use_bias=False),
-    tf.keras.layers.BatchNormalization(momentum=0.9),
-    tf.keras.layers.Activation(beatmup_keras.brelu6),
+    tf.keras.layers.BatchNormalization(momentum=0.8),
+    tf.keras.layers.Activation(beatmup_keras.sigmoid_like),
 
     tf.keras.layers.Conv2D(64, 3, name='conv2', groups=4, use_bias=False),
-    tf.keras.layers.BatchNormalization(momentum=0.9),
-    tf.keras.layers.Activation(beatmup_keras.brelu6),
+    tf.keras.layers.BatchNormalization(momentum=0.8),
+    tf.keras.layers.Activation(beatmup_keras.sigmoid_like),
     beatmup_keras.Shuffle(),
 
     tf.keras.layers.Conv2D(64, 3, name='conv3', strides=2, groups=8, use_bias=False),
-    tf.keras.layers.BatchNormalization(momentum=0.9),
-    tf.keras.layers.Activation(beatmup_keras.brelu6),
+    tf.keras.layers.BatchNormalization(momentum=0.8),
+    tf.keras.layers.Activation(beatmup_keras.sigmoid_like),
     beatmup_keras.Shuffle(),
 
     tf.keras.layers.Conv2D(96, 3, name='conv4', groups=8, use_bias=False),
-    tf.keras.layers.BatchNormalization(momentum=0.9),
-    tf.keras.layers.Activation(beatmup_keras.brelu6),
+    tf.keras.layers.BatchNormalization(momentum=0.8),
+    tf.keras.layers.Activation(beatmup_keras.sigmoid_like),
     beatmup_keras.Shuffle(),
 
     tf.keras.layers.Conv2D(96, 3, name='conv5', strides=2, groups=12, use_bias=False),
-    tf.keras.layers.BatchNormalization(momentum=0.9),
-    tf.keras.layers.Activation(beatmup_keras.brelu6),
+    tf.keras.layers.BatchNormalization(momentum=0.8),
+    tf.keras.layers.Activation(beatmup_keras.sigmoid_like),
     beatmup_keras.Shuffle(),
 
     tf.keras.layers.Conv2D(144, 3, name='conv6', groups=12, use_bias=False),
-    tf.keras.layers.BatchNormalization(momentum=0.9),
-    tf.keras.layers.Activation(beatmup_keras.brelu6),
+    tf.keras.layers.BatchNormalization(momentum=0.8),
+    tf.keras.layers.Activation(beatmup_keras.sigmoid_like),
 
     tf.keras.layers.GlobalAveragePooling2D(),
 

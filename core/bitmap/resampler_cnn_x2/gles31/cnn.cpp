@@ -31,8 +31,7 @@ using namespace Beatmup;
 
 void Beatmup::GLES31X2UpsamplingNetwork::Layer::prepare(GraphicPipeline& gpu, GL::TextureHandler* input) {
     if (!prepared || (input && inputFormat != input->getTextureFormat())) {
-        std::string code = BEATMUP_SHADER_HEADER_VERSION
-            "layout(local_size_x = " + std::to_string(wgSize[0]) + ", local_size_y = " + std::to_string(wgSize[1]) + ", local_size_z = " + std::to_string(wgSize[2]) + ") in;\n";
+        std::string code = "#version 310 es\n";
 
         if (input) {
             switch (inputFormat = input->getTextureFormat()) {
@@ -42,17 +41,20 @@ void Beatmup::GLES31X2UpsamplingNetwork::Layer::prepare(GraphicPipeline& gpu, GL
             case GL::TextureHandler::TextureFormat::Rx32f:
             case GL::TextureHandler::TextureFormat::RGBx32f:
             case GL::TextureHandler::TextureFormat::RGBAx32f:
-                code += "uniform sampler2D image;\n";
+                code += "#define beatmupSampler sampler2D\n";
                 break;
             case GL::TextureHandler::TextureFormat::OES_Ext:
                 code +=
-                    "#extension GL_OES_EGL_image_external : require\n"
-                    "uniform samplerExternalOES image\n";
+                    "#extension GL_OES_EGL_image_external_essl3 : require\n"
+                    "#define beatmupSampler samplerExternalOES\n"
+                    "#define texelFetch texture\n";
                 break;
             default:
                 throw UnsupportedTextureFormat(inputFormat);
             }
         }
+
+        code +=  "layout(local_size_x = " + std::to_string(wgSize[0]) + ", local_size_y = " + std::to_string(wgSize[1]) + ", local_size_z = " + std::to_string(wgSize[2]) + ") in;\n";
 
         program->make(gpu, code + sourceCodeTemplate);
         prepared = true;

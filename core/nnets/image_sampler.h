@@ -101,6 +101,8 @@ namespace Beatmup {
 
             void disconnect();
 
+            unsigned long countTexelFetches() const;
+
             /**
                 Sets up deserialization of the operation.
             */

@@ -317,7 +317,7 @@ InternalBitmap* Storage::getImage(Context& ctx, GraphicPipeline& gpu, int channe
 
     // prepare code
     String code;
-    code.printf(BEATMUP_SHADER_CODE_V(
+    code.printf(BEATMUP_SHADER_CODE(
         uniform sampler2D image;
         varying highp vec2 texCoord;
         void main() {
@@ -333,7 +333,7 @@ InternalBitmap* Storage::getImage(Context& ctx, GraphicPipeline& gpu, int channe
         true);
 
     // setup shaders
-    GL::FragmentShader shader(gpu, code);
+    GL::FragmentShader shader(gpu, code, GL::Extensions::BEATMUP_DIALECT);
     GL::RenderingProgram program(gpu, shader);
 
     // init binder

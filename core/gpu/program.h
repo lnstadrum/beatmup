@@ -23,20 +23,51 @@
 #include "storage_buffer.h"
 #include <map>
 
-#ifdef BEATMUP_OPENGLVERSION_GLES20
-#define BEATMUP_SHADER_HEADER_VERSION "#version 100\n"
-#elif BEATMUP_OPENGLVERSION_GLES31
-#define BEATMUP_SHADER_HEADER_VERSION ""
-#else
-#define BEATMUP_SHADER_HEADER_VERSION "#version 430\n"
-#endif
-
 #define BEATMUP_SHADER_CODE(...) #__VA_ARGS__
-#define BEATMUP_SHADER_CODE_V(...) BEATMUP_SHADER_HEADER_VERSION BEATMUP_SHADER_CODE(__VA_ARGS__)
 
 namespace Beatmup {
     namespace GL {
-        class Program;
+       class Program;
+
+        /** \page BeatmupGLSLDialect %Beatmup GLSL dialect
+         * %Beatmup tries to take advantage of OpenGL acceleration on a large spectrum of hardware, from low-end inexpensive GPUs to high-end ones.
+         * "Beatmup GLSL dialect" is a GLSL preprocessing feature and a texture binding logic that can be seen as a GLSL language variant. It enables
+         * the same shader running on a ES 2.0 and 3.2-conformant hardware as well as on a GPU compliant with a modern OpenGL.
+         * - In %Beatmup GLSL dialect the version header is inferred automatically to be one of ES 2.0, ES 3.2 or GLSL 1.30.
+         * - %Beatmup allows to feed to the the same shader to standard textures as well as to EGL external images enabling direct access to camera and
+         *   video frames.
+         *
+         * %Beatmup GLSL dialect is limited to relatively simple shaders. Complex shaders written in a specific version of GLSL for a specific hardware
+         * can still be run with %Beatmup.
+         *
+         * %Beatmup GLSL dialect is enabled by passing a `BEATMUP_DIALECT` extension flag (see Beatmup::GL::Extensions) when constructing a shader.
+         * Following few rules apply to get a working shader program written in %Beatmup GLSL dialect.
+         * - Do not put any specific version on top of the GLSL code.
+         * - The shader code is expected to be ES 2.0-compliant:
+         *   - Use `texture2D(..)` function to sample textures.
+         *   - Use `gl_FragColor` variable as the fragment shader output.
+         *   - Use `attribute` and `varying` qualifiers for shaders inputs and outputs.
+         * - Use `beatmupSampler` as sampler variable type for textures that can come from camera or video decoder.
+         *   - If all the textures bound to the shader program are regular ones, the shader is processed as usual.
+         *   - If some of textures bound to the shader program are EGL external images, all the `beatmupSampler` variables become EGL external image
+         *     samplers (`samplerExternalOES`). The necessary extension is enabled implicitly and should not be put in the shader code.
+         * - Use `beatmupTexture(..)` function to sample a `beatmupSampler`. Its signature is identical to `texture2D(..)` function signature.
+         */
+
+
+        /**
+            Supported OpenGL estensions.
+            Used to communicate to a shader/program specific extensions used in the GLSL code.
+            This defines %Beatmup GLSL dialect interpretation.
+        */
+        enum Extensions {
+            NONE = 0,                       //!< no extension
+            BEATMUP_DIALECT = 1 << 0,       //!< pseudo-extension enabling Beatmup GLSL dialect
+            EXTERNAL_TEXTURE = 1 << 1       //!< GL_OES_EGL_image_external_essl3 if available or GL_OES_EGL_image_external
+        };
+
+        Extensions operator-=(Extensions& set, Extensions entry);
+        Extensions operator+(Extensions lhs, Extensions rhs);
 
         /**
             GLSL shader base class
@@ -51,10 +82,9 @@ namespace Beatmup {
             Shader(const GraphicPipeline& gpu, const uint32_t type);
             inline handle_t getHandle() const { return handle; }
             inline uint32_t getType() const { return type; }
+            void compile(const GraphicPipeline& gpu, const char* source);
         public:
             ~Shader();
-            void compile(const GraphicPipeline& gpu, const char* source);
-            void compile(const GraphicPipeline& gpu, const std::string&);
         };
 
         /**
@@ -63,7 +93,12 @@ namespace Beatmup {
         class VertexShader : public Shader {
         public:
             VertexShader(const GraphicPipeline& gpu);
-            VertexShader(const GraphicPipeline& gpu, const std::string& source) : VertexShader(gpu) { compile(gpu, source.c_str()); }
+            VertexShader(const GraphicPipeline& gpu, const std::string& source, Extensions extensions = Extensions::NONE) : VertexShader(gpu)
+            {
+                compile(gpu, source.c_str(), extensions);
+            }
+
+            void compile(const GraphicPipeline& gpu, const std::string& source, Extensions extensions = Extensions::NONE);
         };
 
         /**
@@ -71,8 +106,16 @@ namespace Beatmup {
         */
         class FragmentShader : public Shader {
         public:
+            static const char* DIALECT_SAMPLER_DECL_TYPE;           //!< glsl type name to declare a texture in Beatmup dialect
+            static const char* DIALECT_TEXTURE_SAMPLING_FUNC;       //!< glsl function name to sample a texture in Beatmup dialect
+
             FragmentShader(const GraphicPipeline& gpu);
-            FragmentShader(const GraphicPipeline& gpu, const std::string& source) : FragmentShader(gpu) { compile(gpu, source.c_str()); }
+            FragmentShader(const GraphicPipeline& gpu, const std::string& source, Extensions extensions = Extensions::NONE) : FragmentShader(gpu)
+            {
+                compile(gpu, source.c_str(), extensions);
+            }
+
+            void compile(const GraphicPipeline& gpu, const std::string& source, Extensions extensions = Extensions::NONE);
         };
 
         class AtomicCounter {

@@ -36,9 +36,9 @@ int main(int argc, char* argv[]) {
         REPEAT_COUNT
     };
 
-    if (argc <= Args::OUTPUT_FILENAME) {
+    if (argc <= Args::INPUT_FILENAME) {
         std::cout
-            << "Usage: resample <input file> <output file> [<repeat count>]" << std::endl
+            << "Usage: resample <input file name> [<output file name>] [<repeat count>]" << std::endl
             << "BMP files are supported only." << std::endl
             << std::endl;
         return 1;
@@ -112,8 +112,12 @@ int main(int argc, char* argv[]) {
     }
 
     // Save output to a file
-    std::cout << "Saving result to " << argv[Args::OUTPUT_FILENAME] << std::endl;
-    output.saveBmp(argv[Args::OUTPUT_FILENAME]);
+    const std::string inputFilename = argv[Args::INPUT_FILENAME];
+    const std::string outputFilename = argc > Args::OUTPUT_FILENAME ?
+        argv[Args::OUTPUT_FILENAME] :
+        inputFilename.substr(0, inputFilename.length() - 4) + "_x2" + inputFilename.substr(inputFilename.length() - 4);
+    std::cout << "Saving result to " << outputFilename << std::endl;
+    output.saveBmp(outputFilename.c_str());
 
     return 0;
 }

@@ -129,6 +129,16 @@ namespace Beatmup {
         const char* getGpuRendererString() const;
 
         /**
+            Returns GLSL language version supported by the GPU context being used.
+        */
+        int getGlslVersion() const;
+
+        /**
+            Returns `true` if the GPU context is OpenGL ES-compliant.
+        */
+        bool isGlEsCompliant() const;
+
+        /**
             Specifies texture coordinates for the next rendering pass.
             \param[in] coords       Normalized texture coordinates
         */

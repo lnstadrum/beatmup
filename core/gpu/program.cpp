@@ -24,6 +24,19 @@ using namespace Beatmup;
 using namespace GL;
 
 
+const char* FragmentShader::DIALECT_SAMPLER_DECL_TYPE = "beatmupSampler";
+const char* FragmentShader::DIALECT_TEXTURE_SAMPLING_FUNC = "beatmupTexture";
+
+Extensions GL::operator-=(Extensions& set, Extensions entry) {
+    set = static_cast<Extensions>(set & ~entry);
+    return set;
+}
+
+Extensions GL::operator+(Extensions lhs, Extensions rhs) {
+    return static_cast<Extensions>(lhs | rhs);
+}
+
+
 Shader::Shader(const GraphicPipeline& gpu, const uint32_t type) : type(type) {
     handle = glCreateShader(type);
 }
@@ -59,16 +72,118 @@ void Shader::compile(const GraphicPipeline& gpu, const char* source) {
 }
 
 
-void Shader::compile(const GraphicPipeline& gpu, const std::string& src) {
-    compile(gpu, src.c_str());
+VertexShader::VertexShader(const GraphicPipeline& gpu) : Shader(gpu, GL_VERTEX_SHADER) {
 }
 
+void VertexShader::compile(const GraphicPipeline& gpu, const std::string& source, Extensions extensions) {
+    std::string src(source);
+    Extensions ext = extensions;
+    if (ext & Extensions::BEATMUP_DIALECT) {
+        ext -= Extensions::BEATMUP_DIALECT;
 
-VertexShader::VertexShader(const GraphicPipeline& gpu) : Shader(gpu, GL_VERTEX_SHADER) {
+        if (gpu.isGlEsCompliant())
+            if (gpu.getGlslVersion() == 100)
+                // ES 2.0 case
+                src = "#version 100\n"
+                      "#line 0\n" + source;
+            else
+                // ES 3.0+
+                src = "#version 300 es\n"
+                      "#define attribute in\n"
+                      "#define varying out\n"
+                      "#line 0\n" + source;
+        else
+            if (gpu.getGlslVersion() < 130)
+                // GLSL < 1.20 not supported; falling back to ES 2.0
+                src = "#version 100\n"
+                      "#line 0\n" + source;
+            else
+                // 1.30+: capping at 1.30
+                src = "#version 130\n"
+                      "#define attribute in\n"
+                      "#define varying out\n"
+                      "#line 0\n" + source;
+    }
+    if (ext & Extensions::EXTERNAL_TEXTURE)  {
+        ext -= Extensions::EXTERNAL_TEXTURE;
+            // nothing to do for this extension in the vertex shader
+    }
+    if (ext)
+        throw GL::GLException("Cannot interpret extensions set " + std::to_string(extensions));
+
+    Shader::compile(gpu, src.c_str());
 }
 
 
 FragmentShader::FragmentShader(const GraphicPipeline& gpu) : Shader(gpu, GL_FRAGMENT_SHADER) {
+}
+
+void FragmentShader::compile(const GraphicPipeline& gpu, const std::string& source, Extensions extensions) {
+    std::string src(source);
+
+    // process extensions
+    Extensions ext = extensions;
+    if (ext & Extensions::BEATMUP_DIALECT) {
+        ext -= Extensions::BEATMUP_DIALECT;
+
+        // add version and dialect mapping preprocessor directives
+        bool mapToModernGlsl = false;
+        if (gpu.isGlEsCompliant())
+            if (gpu.getGlslVersion() == 100)
+                // ES 2.0 case
+                src = "#version 100\n";
+            else {
+                // ES 3.0+
+                src = "#version 300 es\n";
+                mapToModernGlsl = true;
+            }
+        else
+            if (gpu.getGlslVersion() < 130)
+                // GLSL < 1.20 not supported; falling back to ES 2.0
+                src = "#version 100\n";
+            else {
+                // 1.30+: capping at 1.30
+                src = "#version 130\n";
+                mapToModernGlsl = true;
+            }
+
+        // declare sampler type, add external texture extension header if needed
+        if (ext & Extensions::EXTERNAL_TEXTURE) {
+            ext -= Extensions::EXTERNAL_TEXTURE;
+            src += "#ifdef GL_OES_EGL_image_external_essl3\n"
+                   "#extension GL_OES_EGL_image_external_essl3 : require\n"                                 // use GL_OES_EGL_image_external_essl3 is available
+                   "#define " + std::string(DIALECT_TEXTURE_SAMPLING_FUNC) + "(S, C) texture(S, C)\n"       // sampling function is texture()
+                   "#else\n"
+                   "#extension GL_OES_EGL_image_external : require\n"                                       // fall back to GL_OES_EGL_image_external
+                   "lowp vec4 " + std::string(DIALECT_TEXTURE_SAMPLING_FUNC) + "(samplerExternalOES sampler, mediump vec2 coord) { return texture2D(sampler, coord); }\n"
+                   "#endif\n"
+                   "#define " + std::string(DIALECT_SAMPLER_DECL_TYPE) + " samplerExternalOES\n";
+        }
+        else
+            src += "#define " + std::string(DIALECT_SAMPLER_DECL_TYPE) + " sampler2D\n"
+                   "#define " + std::string(DIALECT_TEXTURE_SAMPLING_FUNC) + "(S, C) texture2D(S, C)\n";
+
+        // add the rest after declaring extensions
+        if (mapToModernGlsl)
+            src += "#define varying in\n"
+                   "#define texture2D(S, C) texture(S, C)\n"
+                   "#define gl_FragColor beatmupFrgClrVar\n"
+                   "out mediump vec4 beatmupFrgClrVar;\n";
+
+        // append the source code
+        src += "#line 0\n" + source;
+    }
+
+    // check for external texture extension (not supported without dialect)
+    if (ext & Extensions::EXTERNAL_TEXTURE)
+        throw GL::GLException("External texture extension is only supported with Beatmup dialect extension");
+
+    // check if all extensions are processed
+    if (ext)
+        throw GL::GLException("Cannot interpret extensions set " + std::to_string(extensions));
+
+    // compile
+    Shader::compile(gpu, src.c_str());
 }
 
 

@@ -288,7 +288,7 @@ void ActivationFunctionMixin::apply(StringBuilder& code, const char* inputVariab
             code.printf("gl_FragColor = 0.167 * %s;", inputVariable);
             return;
         case ActivationFunction::SIGMOID_LIKE:
-            code.printf("gl_FragColor = clamp(0.2*(%s), -0.2, 0.2) + 0.1*(%s) + 0.5;", inputVariable, inputVariable);
+            code.printf("gl_FragColor = clamp(0.1*(%s), -0.05, 0.05) + clamp(0.05*(%s), -0.125, 0.125) + 0.05*(%s) + 0.5;", inputVariable, inputVariable, inputVariable);
             return;
         default: Insanity::insanity("Invalid activation function");
     }
