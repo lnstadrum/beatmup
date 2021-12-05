@@ -35,14 +35,14 @@ Python::Bitmap::Bitmap(Beatmup::Context& context, pybind11::buffer& buffer):
     if (info.ndim < 3)
         throw std::invalid_argument("A bitmap is expected to have at least 3 dimensions");
     else
-        for (ssize_t i = 0; i + 3 < info.ndim; ++i)
+        for (int i = 0; i + 3 < info.ndim; ++i)
             if (info.shape[i] != 1)
                 throw std::invalid_argument("A bitmap is expected to have at most 3 inner non-singleton dimensions.");
     
     // check pixel format
     static const char* FORMAT_UINT8 = "B";
     static const char* FORMAT_FLOAT = "f";
-    const ssize_t numChannels = info.shape[info.ndim - 1];
+    const auto numChannels = info.shape[info.ndim - 1];
     
     if (info.format == FORMAT_UINT8)
         switch (numChannels) {
