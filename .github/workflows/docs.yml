@@ -15,7 +15,9 @@ jobs:
           submodules: recursive
 
       - name: Install doxygen
-        run: sudo apt install -y doxygen
+        run: |
+            sudo apt update
+            sudo apt install -y doxygen
 
       - name: Install Python modules
         run: |
