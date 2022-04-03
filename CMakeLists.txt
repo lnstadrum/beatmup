@@ -85,6 +85,10 @@ add_app(X2                apps/x2/app.cpp)
 #                   PYTHON BINDING                   #
 ######################################################
 
+# Find necessary packages
+find_package( PythonLibs REQUIRED )
+include_directories( ${PYTHON_INCLUDE_DIRS} )
+
 add_subdirectory(pybind11)
 pybind11_add_module(beatmup SHARED
     python/src/bitmap.cpp
