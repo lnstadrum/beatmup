@@ -70,7 +70,7 @@ with open(os.path.join(rootdir, 'README.md'), 'r') as file:
 # build package
 setup(
     name='beatmup',
-    version='2.1',
+    version='2.1.1',
     author='lnstadrum',
     author_email='',
     description='Image and signal asynchronous processing library. A lot of fun',
