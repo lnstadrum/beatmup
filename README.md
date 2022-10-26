@@ -50,10 +50,6 @@ More details on the neural network design and the inference implementation: [Inf
 
 Update in 2.1 release: the fine-tuned version of the model (trained with multiple degradation kernels) achieves now 32.64 dB on DIV2K validation set compared to the initial score of 32.57 dB.
 
-## PictureJam Collage Maker
-
-An early version of Beatmup is used in [PictureJam Collage Maker Android app](https://play.google.com/store/apps/details?id=xyz.pichancer.picturejam.full).
-
 
 # Available resources
 
@@ -146,7 +142,7 @@ You can build an apk in a docker container as well. Having docker installed, you
 
 ## Windows
 
-Prebuilt python packages are available in 64-bit Windows for Python **3.5**, **3.6**, **3.7**, **3.8** and **3.9**:
+Prebuilt python packages are available in 64-bit Windows for Python versions from **3.6** to **3.11**:
 
     python -m pip install --upgrade pip
     python -m pip install beatmup

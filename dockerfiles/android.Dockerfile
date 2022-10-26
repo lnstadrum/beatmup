@@ -18,19 +18,15 @@ RUN mkdir -p ${ANDROID_HOME} && \
 
 # add things to PATH
 ENV PATH ${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools
-ENV ANDROID_VERSION 21
-ENV ANDROID_BUILD_TOOLS_VERSION 27.0.3
 
 # accept licenses
 RUN yes | sdkmanager --licenses
 
-# install tools and NDK
+# install NDK, platform matching "minSdkVersion" and CMake
 ENV NDK_VERSION 18.1.5063045
+ENV MIN_SDK_VERSION 21
 RUN ${ANDROID_HOME}/tools/bin/sdkmanager --update
-RUN ${ANDROID_HOME}/tools/bin/sdkmanager \
-    "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" \
-    "platforms;android-${ANDROID_VERSION}" \
-    "platform-tools" "ndk;${NDK_VERSION}"
+RUN ${ANDROID_HOME}/tools/bin/sdkmanager "ndk;${NDK_VERSION}" "platforms;android-${MIN_SDK_VERSION}" "cmake;3.10.2.4988404"
 ENV ANDROID_NDK_HOME /opt/android-sdk-linux/ndk/${NDK_VERSION}
 
 # add source code

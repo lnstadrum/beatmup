@@ -566,7 +566,7 @@ PYBIND11_MODULE(beatmup, module) {
 
         .def("set_seeds", [](FloodFill& ff, const py::list& seeds) {
                 IntPoint* pts = new IntPoint[seeds.size()];
-                for (ssize_t i = 0; i < seeds.size(); ++i)
+                for (py::ssize_t i = 0; i < seeds.size(); ++i)
                     pts[i] = Python::toPoint<int>(seeds[i]);
                 ff.setSeeds(pts, seeds.size());
                 delete[] pts;
