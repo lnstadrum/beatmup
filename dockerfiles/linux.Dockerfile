@@ -2,9 +2,10 @@
 # A minimum linux environment to build linux Beatmup binaries and Python package and run few tests using OpenGL software emulation
 #
 
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 # install stuff
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update && apt install -y \
         g++ cmake freeglut3-dev python3 python3-pip \
         libegl1-mesa-dev libgles2-mesa-dev xvfb
