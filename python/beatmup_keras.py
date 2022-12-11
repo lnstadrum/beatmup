@@ -402,7 +402,7 @@ def export_model(model, context, model_data=None, prefix=""):
         # find layer connected to this input
         for layer in model.layers:
             inputs = layer.inbound_nodes[0].input_tensors
-            if isinstance(inputs, tf.Tensor): inputs = [inputs]
+            if isinstance(inputs, tf.Tensor) or tf.keras.backend.is_keras_tensor(inputs): inputs = [inputs]
             if input in inputs:
                 process_layer(layer)
                 break
