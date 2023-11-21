@@ -1,16 +1,14 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 29
-	defaultPublishConfig "fullRelease"
+    compileSdk 33
+    ndkVersion = "23.0.7599858"
 
     defaultConfig {
-        minSdkVersion 21
-        targetSdkVersion 29
-        versionCode 1
-        versionName "1.0"
+        minSdkVersion 26
+        targetSdkVersion 33
 
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
 		externalNativeBuild {
             cmake {
@@ -25,8 +23,6 @@ android {
     buildTypes {
         debug {
             minifyEnabled false
-            useProguard false
-            debuggable true
             externalNativeBuild {
                 cmake {
                     cFlags.add("-DBEATMUP_DEBUG -g")
@@ -37,7 +33,6 @@ android {
 		
         release {
             minifyEnabled false
-            useProguard true
 			proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
 			externalNativeBuild {
                 cmake {
@@ -47,8 +42,7 @@ android {
         }
     }
 
-
-    flavorDimensions "version"
+    flavorDimensions += "version"
 
     productFlavors {
         full {
@@ -84,17 +78,18 @@ android {
             path 'src/main/cpp/CMakeLists.txt'
         }
     }
-
     packagingOptions {
-        pickFirst '**/*.so'
+        jniLibs {
+            pickFirsts += ['**/*.so']
+        }
     }
+
+    namespace 'xyz.beatmup'
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation 'com.android.support:appcompat-v7:26.1.0'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
 }

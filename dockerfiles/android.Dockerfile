@@ -3,31 +3,31 @@
 # If /opt/android-build folder is mounted, the app installation package is copied to that folder.
 #
 
-FROM gradle:4.10.0-jdk8
+FROM gradle:8.1.1-jdk17
 USER root
 
 RUN apt update && apt -y install ninja-build
 
 # get Android SDK
-ENV ANDROID_HOME /opt/android-sdk-linux
+ENV ANDROID_HOME /opt/android
 RUN mkdir -p ${ANDROID_HOME} && \
     cd ${ANDROID_HOME} && \
-    wget -q https://dl.google.com/android/repository/sdk-tools-linux-3859397.zip -O android_tools.zip && \
+    wget -q https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip -O android_tools.zip && \
     unzip android_tools.zip && \
     rm android_tools.zip
 
 # add things to PATH
-ENV PATH ${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools
+ENV PATH ${PATH}:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:${ANDROID_HOME}/cmdline-tools/bin
 
 # accept licenses
-RUN yes | sdkmanager --licenses
+RUN yes | sdkmanager --sdk_root=${ANDROID_HOME} --licenses
 
 # install NDK, platform matching "minSdkVersion" and CMake
-ENV NDK_VERSION 18.1.5063045
-ENV MIN_SDK_VERSION 21
-RUN ${ANDROID_HOME}/tools/bin/sdkmanager --update
-RUN ${ANDROID_HOME}/tools/bin/sdkmanager "ndk;${NDK_VERSION}" "platforms;android-${MIN_SDK_VERSION}" "cmake;3.10.2.4988404"
-ENV ANDROID_NDK_HOME /opt/android-sdk-linux/ndk/${NDK_VERSION}
+ENV NDK_VERSION 23.0.7599858
+ENV MIN_SDK_VERSION 26
+RUN sdkmanager --sdk_root=${ANDROID_HOME} --update
+RUN sdkmanager --sdk_root=${ANDROID_HOME} "ndk;${NDK_VERSION}" "platforms;android-${MIN_SDK_VERSION}" "cmake;3.18.1"
+ENV ANDROID_NDK_HOME ${ANDROID_HOME}/ndk/${NDK_VERSION}
 
 # add source code
 ADD . /opt/beatmup
