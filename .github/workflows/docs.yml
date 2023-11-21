@@ -22,7 +22,7 @@ jobs:
       - name: Install Python modules
         run: |
             python3 -m pip install --upgrade pip sphinx
-            python3 -m pip install --upgrade setuptools>=42.0.0 tensorflow==2.7
+            python3 -m pip install --upgrade setuptools>=42.0.0 tensorflow
 
       - name: Build Python module
         shell: bash
