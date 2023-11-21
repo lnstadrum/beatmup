@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>beatmup.Context &#8212; Beatmup Python docs</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css?v=514cf933" />
+    
+    <script src="../../_static/documentation_options.js?v=56dcb7b8"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="beatmup.CustomPipeline" href="beatmup.CustomPipeline.html" />
+    <link rel="prev" title="beatmup.ChunkFile" href="beatmup.ChunkFile.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="beatmup.CustomPipeline.html" title="beatmup.CustomPipeline"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="beatmup.ChunkFile.html" title="beatmup.ChunkFile"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../python.html">Beatmup Python docs</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">beatmup.Context</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="beatmup-context">
+<h1>beatmup.Context<a class="headerlink" href="#beatmup-context" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="beatmup.Context">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">beatmup.</span></span><span class="sig-name descname"><span class="pre">Context</span></span><a class="headerlink" href="#beatmup.Context" title="Link to this definition">¶</a></dt>
+<dd><p>Beatmup engine context</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="beatmup.Context.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#beatmup.Context.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Overloaded function.</p>
+<ol class="arabic simple">
+<li><p>__init__(self: beatmup.Context) -&gt; None</p></li>
+<li><p>__init__(self: beatmup.Context, arg0: int) -&gt; None</p></li>
+</ol>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#beatmup.Context.__init__" title="beatmup.Context.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Overloaded function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../python.html#beatmup.Context.abort_job" title="beatmup.Context.abort_job"><code class="xref py py-obj docutils literal notranslate"><span class="pre">abort_job</span></code></a>(self, job[, pool])</p></td>
+<td><p>Aborts a given submitted job.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../python.html#beatmup.Context.busy" title="beatmup.Context.busy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">busy</span></code></a>(self[, pool])</p></td>
+<td><p>Returns <cite>True</cite> if a specific thread pool in the context is executing a Task</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../python.html#beatmup.Context.check" title="beatmup.Context.check"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check</span></code></a>(self[, pool])</p></td>
+<td><p>Checks if a specific thread pool is doing great: rethrows exceptions occurred during tasks execution, if any.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../python.html#beatmup.Context.empty_gpu_recycle_bin" title="beatmup.Context.empty_gpu_recycle_bin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">empty_gpu_recycle_bin</span></code></a>(self)</p></td>
+<td><p>Empties GPU recycle bin.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../python.html#beatmup.Context.is_gpu_queried" title="beatmup.Context.is_gpu_queried"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_gpu_queried</span></code></a>(self)</p></td>
+<td><p>Returns <cite>True</cite> if GPU was queried and ready to use</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../python.html#beatmup.Context.is_gpu_ready" title="beatmup.Context.is_gpu_ready"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_gpu_ready</span></code></a>(self)</p></td>
+<td><p>Returns <cite>True</cite> if GPU was queried and ready to use</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../python.html#beatmup.Context.limit_worker_count" title="beatmup.Context.limit_worker_count"><code class="xref py py-obj docutils literal notranslate"><span class="pre">limit_worker_count</span></code></a>(self, max_value[, pool])</p></td>
+<td><p>Limits maximum number of threads (workers) when performing tasks in a given pool</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../python.html#beatmup.Context.max_allowed_worker_count" title="beatmup.Context.max_allowed_worker_count"><code class="xref py py-obj docutils literal notranslate"><span class="pre">max_allowed_worker_count</span></code></a>(self[, pool])</p></td>
+<td><p>Returns maximum number of working threads per task in a given thread pool</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../python.html#beatmup.Context.perform_task" title="beatmup.Context.perform_task"><code class="xref py py-obj docutils literal notranslate"><span class="pre">perform_task</span></code></a>(self, task[, pool])</p></td>
+<td><p>Performs a given task.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../python.html#beatmup.Context.query_gpu_info" title="beatmup.Context.query_gpu_info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">query_gpu_info</span></code></a>(self)</p></td>
+<td><p>Queries information about GPU and returns a tuple of vendor and renderer strings, or None if no GPU available.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../python.html#beatmup.Context.repeat_task" title="beatmup.Context.repeat_task"><code class="xref py py-obj docutils literal notranslate"><span class="pre">repeat_task</span></code></a>(self, task, abort_current[, pool])</p></td>
+<td><p>Ensures a given task executed at least once</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../python.html#beatmup.Context.submit_persistent_task" title="beatmup.Context.submit_persistent_task"><code class="xref py py-obj docutils literal notranslate"><span class="pre">submit_persistent_task</span></code></a>(self, task[, pool])</p></td>
+<td><p>Adds a new persistent task to the jobs queue</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../python.html#beatmup.Context.submit_task" title="beatmup.Context.submit_task"><code class="xref py py-obj docutils literal notranslate"><span class="pre">submit_task</span></code></a>(self, task[, pool])</p></td>
+<td><p>Adds a new task to the jobs queue</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../python.html#beatmup.Context.wait" title="beatmup.Context.wait"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait</span></code></a>(self[, pool])</p></td>
+<td><p>Blocks until all the submitted jobs are executed</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../python.html#beatmup.Context.wait_for_job" title="beatmup.Context.wait_for_job"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_for_job</span></code></a>(self, job[, pool])</p></td>
+<td><p>Blocks until a given job finishes</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../python.html#beatmup.Context.warm_up_gpu" title="beatmup.Context.warm_up_gpu"><code class="xref py py-obj docutils literal notranslate"><span class="pre">warm_up_gpu</span></code></a>(self)</p></td>
+<td><p>Initializes GPU within a given Context if not yet (takes no effect if it already is).</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../../python.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">beatmup.Context</a><ul>
+<li><a class="reference internal" href="#beatmup.Context"><code class="docutils literal notranslate"><span class="pre">Context</span></code></a><ul>
+<li><a class="reference internal" href="#beatmup.Context.__init__"><code class="docutils literal notranslate"><span class="pre">Context.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="beatmup.ChunkFile.html"
+                          title="previous chapter">beatmup.ChunkFile</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="beatmup.CustomPipeline.html"
+                          title="next chapter">beatmup.CustomPipeline</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="beatmup.CustomPipeline.html" title="beatmup.CustomPipeline"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="beatmup.ChunkFile.html" title="beatmup.ChunkFile"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../python.html">Beatmup Python docs</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">beatmup.Context</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020, lnstadrum.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

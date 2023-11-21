@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>beatmup.CustomPipeline &#8212; Beatmup Python docs</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css?v=514cf933" />
+    
+    <script src="../../_static/documentation_options.js?v=56dcb7b8"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="beatmup.FloodFill" href="beatmup.FloodFill.html" />
+    <link rel="prev" title="beatmup.Context" href="beatmup.Context.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="beatmup.FloodFill.html" title="beatmup.FloodFill"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="beatmup.Context.html" title="beatmup.Context"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../python.html">Beatmup Python docs</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">beatmup.CustomPipeline</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="beatmup-custompipeline">
+<h1>beatmup.CustomPipeline<a class="headerlink" href="#beatmup-custompipeline" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="beatmup.CustomPipeline">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">beatmup.</span></span><span class="sig-name descname"><span class="pre">CustomPipeline</span></span><a class="headerlink" href="#beatmup.CustomPipeline" title="Link to this definition">¶</a></dt>
+<dd><p>Custom pipeline: a sequence of tasks to be executed as a whole.
+Acts as an AbstractTask. Built by adding tasks one by one and calling measure() at the end.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="beatmup.CustomPipeline.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#beatmup.CustomPipeline.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#beatmup.CustomPipeline.__init__" title="beatmup.CustomPipeline.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(*args, **kwargs)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../python.html#beatmup.CustomPipeline.add_task" title="beatmup.CustomPipeline.add_task"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_task</span></code></a>(self, task)</p></td>
+<td><p>Adds a new task to the end of the pipeline</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../python.html#beatmup.CustomPipeline.get_task" title="beatmup.CustomPipeline.get_task"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_task</span></code></a>(self, index)</p></td>
+<td><p>Retrieves a task by its index</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../python.html#beatmup.CustomPipeline.get_task_count" title="beatmup.CustomPipeline.get_task_count"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_task_count</span></code></a>(self)</p></td>
+<td><p>Returns number of tasks in the pipeline</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../python.html#beatmup.CustomPipeline.get_task_index" title="beatmup.CustomPipeline.get_task_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_task_index</span></code></a>(self, holder)</p></td>
+<td><p>Retrieves task index if it is in the pipeline; returns -1 otherwise</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../python.html#beatmup.CustomPipeline.insert_task" title="beatmup.CustomPipeline.insert_task"><code class="xref py py-obj docutils literal notranslate"><span class="pre">insert_task</span></code></a>(self, task, before)</p></td>
+<td><p>Inserts a task in a specified position of the pipeline before another task</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../python.html#beatmup.CustomPipeline.measure" title="beatmup.CustomPipeline.measure"><code class="xref py py-obj docutils literal notranslate"><span class="pre">measure</span></code></a>(self)</p></td>
+<td><p>Determines pipeline execution mode and required thread count</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../python.html#beatmup.CustomPipeline.remove_task" title="beatmup.CustomPipeline.remove_task"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_task</span></code></a>(self, task)</p></td>
+<td><p>Removes a task from the pipeline, if any.</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../../python.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">beatmup.CustomPipeline</a><ul>
+<li><a class="reference internal" href="#beatmup.CustomPipeline"><code class="docutils literal notranslate"><span class="pre">CustomPipeline</span></code></a><ul>
+<li><a class="reference internal" href="#beatmup.CustomPipeline.__init__"><code class="docutils literal notranslate"><span class="pre">CustomPipeline.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="beatmup.Context.html"
+                          title="previous chapter">beatmup.Context</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="beatmup.FloodFill.html"
+                          title="next chapter">beatmup.FloodFill</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="beatmup.FloodFill.html" title="beatmup.FloodFill"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="beatmup.Context.html" title="beatmup.Context"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../python.html">Beatmup Python docs</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">beatmup.CustomPipeline</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020, lnstadrum.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

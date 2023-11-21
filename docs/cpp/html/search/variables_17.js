@@ -1,0 +1,13 @@
+var searchData=
+[
+  ['w_4405',['w',['../wrapper__imag_8cpp.html#ac61db3e1017b3d63cd8a3e426ecde68d',1,'w():&#160;wrapper_imag.cpp'],['../wrapper__core_8cpp.html#aa73bea5852488434301d3d1693ee3d13',1,'w():&#160;wrapper_core.cpp']]],
+  ['watching_4406',['watching',['../classBeatmup_1_1Fragments_1_1Sequence_1_1Pointer.html#adcfdbd2df18d20c0ac15596a9f875fe4',1,'Beatmup::Fragments::Sequence::Pointer']]],
+  ['wgsize_4407',['wgSize',['../classBeatmup_1_1GLES31X2UpsamplingNetwork_1_1Layer.html#afe0b73eea0b2f525839079c531b4385a',1,'Beatmup::GLES31X2UpsamplingNetwork::Layer']]],
+  ['white_4408',['WHITE',['../namespaceBeatmup_1_1Color.html#ab8fe6c2d9bfa13f5a543bef01680d34b',1,'Beatmup::Color']]],
+  ['width_4409',['width',['../wrapper__imag_8cpp.html#ad9fff7634f7988d941d6fd53c1a19a26',1,'width():&#160;wrapper_imag.cpp'],['../wrapper__core_8cpp.html#ad9fff7634f7988d941d6fd53c1a19a26',1,'width():&#160;wrapper_core.cpp'],['../classBeatmup_1_1Android_1_1ExternalBitmap.html#a06b4c6e0751d72e58785e42c33f2c1fd',1,'Beatmup::Android::ExternalBitmap::width()'],['../classBeatmup_1_1ImageResolution.html#a81249589a008c85cb8e1354c9faa026e',1,'Beatmup::ImageResolution::width()'],['../classBeatmup_1_1NNets_1_1Storage_1_1TextureHandler.html#a69d49f4a09b3e798a536e414773041b7',1,'Beatmup::NNets::Storage::TextureHandler::width()'],['../classBeatmup_1_1GL_1_1VariablesBundle_1_1MatrixParameter.html#a152122324bff1eaba542037ecdc292f4',1,'Beatmup::GL::VariablesBundle::MatrixParameter::width()'],['../classLinearMapping_1_1Matrix.html#aa5d240dbb70f2a2996d291b7c94e2eb9',1,'Beatmup::GL::LinearMapping::Matrix::width()'],['../classBeatmup_1_1MaskScanner.html#a6920f2d73aa9b3603fbc0da743d29d52',1,'Beatmup::MaskScanner::width()'],['../classBeatmup_1_1InternalBitmap.html#ac850dab580b08d84365c37643ea7a778',1,'Beatmup::InternalBitmap::width()'],['../classBeatmup_1_1CustomBitmapScanner.html#a02319af2f6dd94970ecade63f36c1d0c',1,'Beatmup::CustomBitmapScanner::width()']]],
+  ['workers_4410',['workers',['../classBeatmup_1_1ThreadPool.html#a449fbdf1d57145ca8aa9b0ed8eca820e',1,'Beatmup::ThreadPool']]],
+  ['workersaccess_4411',['workersAccess',['../classBeatmup_1_1ThreadPool.html#a2a9d748240b0155c0929f5dcf1636c3e',1,'Beatmup::ThreadPool']]],
+  ['workerscvar_4412',['workersCvar',['../classBeatmup_1_1ThreadPool.html#adcac3fe797948e728eec13fe3a219879',1,'Beatmup::ThreadPool']]],
+  ['write_4413',['write',['../structBeatmup_1_1BitmapContentLock_1_1LockDescriptor.html#a4faffe9811b009f37a93104c5970695b',1,'Beatmup::BitmapContentLock::LockDescriptor']]],
+  ['writing_4414',['writing',['../classBeatmup_1_1Fragments_1_1Sequence_1_1Pointer.html#ad7d5b4b87d6e8068fac5a8d0ffffd7aa',1,'Beatmup::Fragments::Sequence::Pointer']]]
+];

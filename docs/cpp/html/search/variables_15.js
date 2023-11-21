@@ -1,0 +1,21 @@
+var searchData=
+[
+  ['uniform_5fbias_4371',['UNIFORM_BIAS',['../linear__mapping_8cpp.html#a768239ac5b16dd212ab533057b42fbeb',1,'linear_mapping.cpp']]],
+  ['uniform_5fcoefficient_4372',['UNIFORM_COEFFICIENT',['../conv2d_8cpp.html#a5518d71dee963870201750c46fe0a9c5',1,'conv2d.cpp']]],
+  ['uniform_5fdelta_4373',['UNIFORM_DELTA',['../operation_8cpp.html#a6ecc40e8beb7515ec3c232095a00c529',1,'UNIFORM_DELTA():&#160;operation.cpp'],['../linear__mapping_8cpp.html#a6ecc40e8beb7515ec3c232095a00c529',1,'UNIFORM_DELTA():&#160;linear_mapping.cpp']]],
+  ['uniform_5finput_4374',['UNIFORM_INPUT',['../pooling2d_8cpp.html#adc6f49bc097d0ac952652f94619ba458',1,'UNIFORM_INPUT():&#160;pooling2d.cpp'],['../image__sampler_8cpp.html#adc6f49bc097d0ac952652f94619ba458',1,'UNIFORM_INPUT():&#160;image_sampler.cpp'],['../conv2d_8cpp.html#adc6f49bc097d0ac952652f94619ba458',1,'UNIFORM_INPUT():&#160;conv2d.cpp'],['../linear__mapping_8cpp.html#adc6f49bc097d0ac952652f94619ba458',1,'UNIFORM_INPUT():&#160;linear_mapping.cpp']]],
+  ['uniform_5fmatrix_4375',['UNIFORM_MATRIX',['../linear__mapping_8cpp.html#a500ec559a673f00a5bcf00110dffada4',1,'linear_mapping.cpp']]],
+  ['uniform_5fresidual_5finput_4376',['UNIFORM_RESIDUAL_INPUT',['../conv2d_8cpp.html#abfbac65075e5d2e4badb9ff51c998895',1,'conv2d.cpp']]],
+  ['uniform_5fshift_4377',['UNIFORM_SHIFT',['../operation_8cpp.html#a63feeb5e35a8fbe0517292ede8a2ad93',1,'operation.cpp']]],
+  ['uniformscache_4378',['uniformsCache',['../classBeatmup_1_1GL_1_1AbstractProgram.html#a0b3b8baa6b2edde0a7b51d1c4f635671',1,'Beatmup::GL::AbstractProgram']]],
+  ['unit_4379',['unit',['../classBeatmup_1_1NNets_1_1Storage_1_1Binder.html#add0e26972178d3731bd21004871da2c2',1,'Beatmup::NNets::Storage::Binder']]],
+  ['unit_5fsquare_4380',['UNIT_SQUARE',['../classBeatmup_1_1CustomRectangle.html#ae1e8ab04486c8030aa8fd1f3a33aacec',1,'Beatmup::CustomRectangle']]],
+  ['updateteximagemethodid_4381',['updateTexImageMethodId',['../classBeatmup_1_1Android_1_1ExternalBitmap.html#a0dafb79045f2b79a84b00f8b69e824ae',1,'Beatmup::Android::ExternalBitmap']]],
+  ['uptodate_4382',['upToDate',['../classBeatmup_1_1ImageShader.html#a0cb60c6a61b03064b7bb3ae5571399ac',1,'Beatmup::ImageShader::upToDate()'],['../classBeatmup_1_1NNets_1_1Storage.html#afa46b72bc140472706178ac6d50278ad',1,'Beatmup::NNets::Storage::upToDate()'],['../classBeatmup_1_1AbstractBitmap.html#af92de5a97aecdb2b9afa8dd83b49dc7d',1,'Beatmup::AbstractBitmap::upToDate()']]],
+  ['usebias_4383',['useBias',['../classBeatmup_1_1NNets_1_1Dense.html#acab4a70a060b886e6efecc990a5f269d',1,'Beatmup::NNets::Dense::useBias()'],['../classBeatmup_1_1NNets_1_1Conv2D.html#a3323bff963961004fbacfbb20f15fb68',1,'Beatmup::NNets::Conv2D::useBias()']]],
+  ['usedenv_4384',['usedEnv',['../classJavaFactory.html#a4a86ac990cdb5400d2b721079e93046f',1,'JavaFactory']]],
+  ['useinputimage_4385',['useInputImage',['../classBeatmup_1_1NNets_1_1Conv2D.html#a6afb59852ca72367f2538626a9605be0',1,'Beatmup::NNets::Conv2D']]],
+  ['usercount_4386',['userCount',['../structBeatmup_1_1GL_1_1ProgramBank_1_1ProgramHolder.html#af0e0c6d4248475c39bc61147033dfeca',1,'Beatmup::GL::ProgramBank::ProgramHolder']]],
+  ['useroutputs_4387',['userOutputs',['../classBeatmup_1_1NNets_1_1Model.html#a37b6681555121b1b581203bdc2354247',1,'Beatmup::NNets::Model']]],
+  ['useuniformshift_4388',['useUniformShift',['../classBeatmup_1_1NNets_1_1SpatialFilteringMixin.html#ac86b0e7ba47d61111edbb33f83a2c006',1,'Beatmup::NNets::SpatialFilteringMixin']]]
+];

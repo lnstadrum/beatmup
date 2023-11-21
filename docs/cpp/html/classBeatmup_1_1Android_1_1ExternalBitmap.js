@@ -1,0 +1,25 @@
+var classBeatmup_1_1Android_1_1ExternalBitmap =
+[
+    [ "ExternalBitmap", "classBeatmup_1_1Android_1_1ExternalBitmap.html#a9ddbdce528c0033d42c71674318993c8", null ],
+    [ "~ExternalBitmap", "classBeatmup_1_1Android_1_1ExternalBitmap.html#a2a8529aeaec61a8cb0c831b1966c0d42", null ],
+    [ "prepare", "classBeatmup_1_1Android_1_1ExternalBitmap.html#a0f2a37d5df9819e7931cc9ee930598d1", null ],
+    [ "lockPixelData", "classBeatmup_1_1Android_1_1ExternalBitmap.html#a06ac1a38772a7c3ce81246f4125bcd6b", null ],
+    [ "unlockPixelData", "classBeatmup_1_1Android_1_1ExternalBitmap.html#a5fc5257b0a125d542077d2a20f3ffd47", null ],
+    [ "bind", "classBeatmup_1_1Android_1_1ExternalBitmap.html#a2c22ba94e85f7283eb806c48ed21d538", null ],
+    [ "getTextureFormat", "classBeatmup_1_1Android_1_1ExternalBitmap.html#a79f9143ee8de42a0f875f359286bf7d7", null ],
+    [ "getPixelFormat", "classBeatmup_1_1Android_1_1ExternalBitmap.html#a7bf962c9ba68a1ee8d7f674f8f660ea4", null ],
+    [ "getWidth", "classBeatmup_1_1Android_1_1ExternalBitmap.html#a4fbe1c7c00dbd2c3950c7a8ae266130e", null ],
+    [ "getHeight", "classBeatmup_1_1Android_1_1ExternalBitmap.html#a91025cf26b4210ffc24c5dcc302060ae", null ],
+    [ "getDepth", "classBeatmup_1_1Android_1_1ExternalBitmap.html#a49592cdba332c47fb2fe52e316f353b4", null ],
+    [ "getMemorySize", "classBeatmup_1_1Android_1_1ExternalBitmap.html#a7cc3254c94a60bd5a499b365745df809", null ],
+    [ "getData", "classBeatmup_1_1Android_1_1ExternalBitmap.html#a0607f86bd9c0543be247ecf41f3a5fe7", null ],
+    [ "getData", "classBeatmup_1_1Android_1_1ExternalBitmap.html#a21dad612927e8623f0926c16435c27e3", null ],
+    [ "notifyUpdate", "classBeatmup_1_1Android_1_1ExternalBitmap.html#ac2e4666e85788392297d48af038c108f", null ],
+    [ "width", "classBeatmup_1_1Android_1_1ExternalBitmap.html#a06b4c6e0751d72e58785e42c33f2c1fd", null ],
+    [ "height", "classBeatmup_1_1Android_1_1ExternalBitmap.html#af3a04d9555e90f113012161581f0f454", null ],
+    [ "jvm", "classBeatmup_1_1Android_1_1ExternalBitmap.html#ad75bb41d03cce02a837ea7bfea2e8cae", null ],
+    [ "persistentJEnv", "classBeatmup_1_1Android_1_1ExternalBitmap.html#a0441d2418ca4b86432a0b6c9903a5346", null ],
+    [ "updateTexImageMethodId", "classBeatmup_1_1Android_1_1ExternalBitmap.html#a0dafb79045f2b79a84b00f8b69e824ae", null ],
+    [ "surfaceTexture", "classBeatmup_1_1Android_1_1ExternalBitmap.html#a67574cd38dfda94e2d91211824fae4fd", null ],
+    [ "textureUpdated", "classBeatmup_1_1Android_1_1ExternalBitmap.html#af434bf7b153ce9f46b698818076ccbaf", null ]
+];

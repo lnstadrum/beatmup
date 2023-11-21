@@ -1,0 +1,22 @@
+var searchData=
+[
+  ['identity_156',['IDENTITY',['../enumBeatmup_1_1Imaging_1_1Filters_1_1ColorMatrixTransform_1_1Preset.html#a81b4a46dcc3020861e224981bc714b03',1,'Beatmup::Imaging::Filters::ColorMatrixTransform::Preset']]],
+  ['ignore_5falways_157',['IGNORE_ALWAYS',['../enumBeatmup_1_1Pipelining_1_1Multitask_1_1RepetitionPolicy.html#af9d809afbdcf7daa55c080338cb94c5d',1,'Beatmup::Pipelining::Multitask::RepetitionPolicy']]],
+  ['ignore_5fif_5fuptodate_158',['IGNORE_IF_UPTODATE',['../enumBeatmup_1_1Pipelining_1_1Multitask_1_1RepetitionPolicy.html#af878057cd338effa70351ef51cdf841b',1,'Beatmup::Pipelining::Multitask::RepetitionPolicy']]],
+  ['imagesampler_159',['ImageSampler',['../classBeatmup_1_1NNets_1_1ImageSampler.html',1,'Beatmup::NNets']]],
+  ['imageshader_160',['ImageShader',['../classBeatmup_1_1Shading_1_1ImageShader.html',1,'Beatmup.Shading.ImageShader'],['../classBeatmup_1_1Shading_1_1ImageShader.html#af962d18613dedc1ecf3a88e812fa47f0',1,'Beatmup.Shading.ImageShader.ImageShader()']]],
+  ['inferencetask_161',['InferenceTask',['../classBeatmup_1_1NNets_1_1InferenceTask.html',1,'Beatmup.NNets.InferenceTask'],['../classBeatmup_1_1NNets_1_1InferenceTask.html#a9db4146b8269155265c2dd4b1f71bed8',1,'Beatmup.NNets.InferenceTask.InferenceTask()']]],
+  ['initialize_162',['initialize',['../classBeatmup_1_1Audio_1_1Playback.html#a2f014354caa4ec0146e9732f53e4a8e8',1,'Beatmup::Audio::Playback']]],
+  ['input_5fimage_5fid_163',['INPUT_IMAGE_ID',['../classBeatmup_1_1Shading_1_1ImageShader.html#ade10992558d8f7cd881279bfca020b82',1,'Beatmup::Shading::ImageShader']]],
+  ['insert_164',['insert',['../classBeatmup_1_1Sequence.html#a7a6447c6790bbc997d9d6713c06b55e9',1,'Beatmup::Sequence']]],
+  ['inserttask_165',['insertTask',['../classBeatmup_1_1Pipelining_1_1CustomPipeline.html#a7f18714c9a836d14b22fe9406559eea6',1,'Beatmup::Pipelining::CustomPipeline']]],
+  ['instance_166',['instance',['../classBeatmup_1_1Visual_1_1Animator.html#ac4d6732bf2415a878c6ffa2baf101557',1,'Beatmup::Visual::Animator']]],
+  ['int16_167',['Int16',['../enumBeatmup_1_1Audio_1_1SampleFormat.html#a1dd3901ca94475b6f4145b4c9e27a79e',1,'Beatmup::Audio::SampleFormat']]],
+  ['int32_168',['Int32',['../enumBeatmup_1_1Audio_1_1SampleFormat.html#a99fbcf8a59b0d8658d78d156c71d90e2',1,'Beatmup::Audio::SampleFormat']]],
+  ['int8_169',['Int8',['../enumBeatmup_1_1Audio_1_1SampleFormat.html#a82d1f88219f22be2fecdb561845d4ec9',1,'Beatmup::Audio::SampleFormat']]],
+  ['intpoint_170',['IntPoint',['../classBeatmup_1_1Geometry_1_1IntPoint.html',1,'Beatmup::Geometry']]],
+  ['intrectangle_171',['IntRectangle',['../classBeatmup_1_1Geometry_1_1IntRectangle.html',1,'Beatmup::Geometry']]],
+  ['invert_172',['invert',['../classBeatmup_1_1Bitmap.html#a1fe418da2193cdac05b1952b5cff5f81',1,'Beatmup::Bitmap']]],
+  ['isgpuqueried_173',['isGPUQueried',['../classBeatmup_1_1Context.html#aa3fdbe588baea64866480d1829a4df4e',1,'Beatmup::Context']]],
+  ['isgpuready_174',['isGPUReady',['../classBeatmup_1_1Context.html#a005b5244e7376441077fb9ddc0f512b3',1,'Beatmup::Context']]]
+];

@@ -1,0 +1,25 @@
+var searchData=
+[
+  ['r_231',['r',['../classBeatmup_1_1Imaging_1_1Color.html#a72d44978d1364ed56a5a16e82199f540',1,'Beatmup.Imaging.Color.r()'],['../classBeatmup_1_1Imaging_1_1FloatColor.html#a65358c385e8764252093f62ccd6a75ac',1,'Beatmup.Imaging.FloatColor.r()']]],
+  ['read_232',['read',['../classBeatmup_1_1Utils_1_1ChunkCollection.html#a119a3c3f1ff01d7d25debb508711adaf',1,'Beatmup::Utils::ChunkCollection']]],
+  ['rectangle_233',['Rectangle',['../classBeatmup_1_1Geometry_1_1Rectangle.html',1,'Beatmup::Geometry']]],
+  ['recyclebitmap_234',['recycleBitmap',['../classBeatmup_1_1Rendering_1_1Scene_1_1BitmapLayer.html#a14c9bdce07a3edeaacf7d6ab5f070cc9',1,'Beatmup::Rendering::Scene::BitmapLayer']]],
+  ['recyclegpugarbage_235',['recycleGPUGarbage',['../classBeatmup_1_1Context.html#ae5827b780ae9df422936bd5c096e9b63',1,'Beatmup::Context']]],
+  ['remove_236',['remove',['../classBeatmup_1_1Sequence.html#a341f454b9943860f330e1e112f01fad9',1,'Beatmup::Sequence']]],
+  ['removetask_237',['removeTask',['../classBeatmup_1_1Pipelining_1_1CustomPipeline.html#a34a17481b9d2c4db846d6cf874472c3a',1,'Beatmup::Pipelining::CustomPipeline']]],
+  ['render_238',['render',['../classBeatmup_1_1Rendering_1_1SceneRenderer.html#ab303ae6a7df9436b14aa633ad515d990',1,'Beatmup::Rendering::SceneRenderer']]],
+  ['renderchessboard_239',['renderChessboard',['../classBeatmup_1_1Context.html#a3bd04d44f708f0960e36cf9cfb43ea62',1,'Beatmup::Context']]],
+  ['repeat_5falways_240',['REPEAT_ALWAYS',['../enumBeatmup_1_1Pipelining_1_1Multitask_1_1RepetitionPolicy.html#a5a4060d0f56757f835be767f65da4589',1,'Beatmup::Pipelining::Multitask::RepetitionPolicy']]],
+  ['repeat_5fupdate_241',['REPEAT_UPDATE',['../enumBeatmup_1_1Pipelining_1_1Multitask_1_1RepetitionPolicy.html#ac2dbab395bb8896ef81f38fffb4b82eb',1,'Beatmup::Pipelining::Multitask::RepetitionPolicy']]],
+  ['repeattask_242',['repeatTask',['../classBeatmup_1_1Context.html#a758ce37d6ef16854359166c144d83d53',1,'Beatmup.Context.repeatTask(Task task, boolean abortCurrent, int poolIndex)'],['../classBeatmup_1_1Context.html#a0ff13c469474b778d5000eeb8d251369',1,'Beatmup.Context.repeatTask(Task task, boolean abortCurrent)']]],
+  ['repetitionpolicy_243',['RepetitionPolicy',['../enumBeatmup_1_1Pipelining_1_1Multitask_1_1RepetitionPolicy.html',1,'Beatmup::Pipelining::Multitask']]],
+  ['resampler_244',['Resampler',['../classBeatmup_1_1Imaging_1_1Resampler.html',1,'Beatmup.Imaging.Resampler'],['../classBeatmup_1_1Imaging_1_1Resampler.html#a3c05e93173cea544cd250727f529396b',1,'Beatmup.Imaging.Resampler.Resampler()']]],
+  ['reset_245',['reset',['../classBeatmup_1_1Utils_1_1SpeedLimiter.html#a399b32be5519c774a4f6cebf9a31f2f4',1,'Beatmup.Utils.SpeedLimiter.reset()'],['../classBeatmup_1_1Visual_1_1GestureListener.html#a7f54c92c70ee433d47c85c5b02fafdb5',1,'Beatmup.Visual.GestureListener.reset()']]],
+  ['resetcrop_246',['resetCrop',['../classBeatmup_1_1Imaging_1_1BinaryOperation.html#aa56bc4073d44207c8549e36e360496ab',1,'Beatmup::Imaging::BinaryOperation']]],
+  ['resetoutput_247',['resetOutput',['../classBeatmup_1_1Rendering_1_1SceneRenderer.html#a4b44131a8183c779b622b22b26a75949',1,'Beatmup::Rendering::SceneRenderer']]],
+  ['resolutionselectionpolicy_248',['ResolutionSelectionPolicy',['../enumBeatmup_1_1Android_1_1Camera_1_1ResolutionSelectionPolicy.html',1,'Beatmup::Android::Camera']]],
+  ['resolve_249',['resolve',['../classBeatmup_1_1Geometry_1_1AffineMapping.html#aacff5acc96193ddcaaf2f6ec89368dd4',1,'Beatmup::Geometry::AffineMapping']]],
+  ['resolvegesture_250',['resolveGesture',['../classBeatmup_1_1Visual_1_1GestureListener.html#a8116dbca4e2feea72d338328f72c22f0',1,'Beatmup::Visual::GestureListener']]],
+  ['rotate_251',['rotate',['../classBeatmup_1_1Geometry_1_1AffineMapping.html#a8724e0f643a96929fd84645b8d20092a',1,'Beatmup.Geometry.AffineMapping.rotate()'],['../classBeatmup_1_1Rendering_1_1Scene_1_1Layer.html#a24f0c4a20e60e515951a62634944d060',1,'Beatmup.Rendering.Scene.Layer.rotate()']]],
+  ['run_252',['run',['../classBeatmup_1_1Utils_1_1Callback.html#a938dca685e3156ee7f3ef3ddd58cdd4b',1,'Beatmup.Utils.Callback.run()'],['../classBeatmup_1_1Visual_1_1Animator_1_1Event.html#a18787e0b02349e97b848a33b6633531e',1,'Beatmup.Visual.Animator.Event.run()']]]
+];

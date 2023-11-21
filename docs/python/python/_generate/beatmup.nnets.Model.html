@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>beatmup.nnets.Model &#8212; Beatmup Python docs</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css?v=514cf933" />
+    
+    <script src="../../_static/documentation_options.js?v=56dcb7b8"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="beatmup.nnets.Padding" href="beatmup.nnets.Padding.html" />
+    <link rel="prev" title="beatmup.nnets.InferenceTask" href="beatmup.nnets.InferenceTask.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="beatmup.nnets.Padding.html" title="beatmup.nnets.Padding"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="beatmup.nnets.InferenceTask.html" title="beatmup.nnets.InferenceTask"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../python.html">Beatmup Python docs</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">beatmup.nnets.Model</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="beatmup-nnets-model">
+<h1>beatmup.nnets.Model<a class="headerlink" href="#beatmup-nnets-model" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="beatmup.nnets.Model">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">beatmup.nnets.</span></span><span class="sig-name descname"><span class="pre">Model</span></span><a class="headerlink" href="#beatmup.nnets.Model" title="Link to this definition">¶</a></dt>
+<dd><p>Neural net model.
+Contains a list of operations and programmatically defined interconnections between them using addConnection().
+Enables access to the model memory at any point in the model through addOutput() and getModelData().
+The memory needed to store internal data during the inference is allocated automatically; storages are reused when possible.
+The inference of a Model is performed by InferenceTask.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="beatmup.nnets.Model.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#beatmup.nnets.Model" title="beatmup.nnets.Model"><span class="pre">beatmup.nnets.Model</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="beatmup.Context.html#beatmup.Context" title="beatmup.Context"><span class="pre">beatmup.Context</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#beatmup.nnets.Model.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#beatmup.nnets.Model.__init__" title="beatmup.nnets.Model.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(self, context)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../python.html#beatmup.nnets.Model.add_connection" title="beatmup.nnets.Model.add_connection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_connection</span></code></a>(self, source_op, dest_op[, ...])</p></td>
+<td><p>Adds a connection between two given ops.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../python.html#beatmup.nnets.Model.add_operation" title="beatmup.nnets.Model.add_operation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_operation</span></code></a>(self, op_name, new_op)</p></td>
+<td><p>Adds a new operation to the model before another operation in the execution order.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../python.html#beatmup.nnets.Model.add_output" title="beatmup.nnets.Model.add_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_output</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Overloaded function.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../python.html#beatmup.nnets.Model.append" title="beatmup.nnets.Model.append"><code class="xref py py-obj docutils literal notranslate"><span class="pre">append</span></code></a>(self, new_op[, connect])</p></td>
+<td><p>Adds a new operation to the model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../python.html#beatmup.nnets.Model.count_multiply_adds" title="beatmup.nnets.Model.count_multiply_adds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">count_multiply_adds</span></code></a>(self)</p></td>
+<td><p>Provides an estimation of the number of multiply-adds characterizing the model complexity.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../python.html#beatmup.nnets.Model.count_texel_fetches" title="beatmup.nnets.Model.count_texel_fetches"><code class="xref py py-obj docutils literal notranslate"><span class="pre">count_texel_fetches</span></code></a>(self)</p></td>
+<td><p>Provides an estimation of the total number of texels fetched by all the operations in the model per image.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../python.html#beatmup.nnets.Model.get_first_operation" title="beatmup.nnets.Model.get_first_operation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_first_operation</span></code></a>(self)</p></td>
+<td><p>Returns the first operation in the model</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../python.html#beatmup.nnets.Model.get_last_operation" title="beatmup.nnets.Model.get_last_operation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_last_operation</span></code></a>(self)</p></td>
+<td><p>Returns the last operation in the model</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../python.html#beatmup.nnets.Model.get_output_data" title="beatmup.nnets.Model.get_output_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_output_data</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Overloaded function.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../python.html#beatmup.nnets.Model.serialize" title="beatmup.nnets.Model.serialize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">serialize</span></code></a>(self)</p></td>
+<td><p>Returns serialized representation of the model as a string.</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../../python.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">beatmup.nnets.Model</a><ul>
+<li><a class="reference internal" href="#beatmup.nnets.Model"><code class="docutils literal notranslate"><span class="pre">Model</span></code></a><ul>
+<li><a class="reference internal" href="#beatmup.nnets.Model.__init__"><code class="docutils literal notranslate"><span class="pre">Model.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="beatmup.nnets.InferenceTask.html"
+                          title="previous chapter">beatmup.nnets.InferenceTask</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="beatmup.nnets.Padding.html"
+                          title="next chapter">beatmup.nnets.Padding</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="beatmup.nnets.Padding.html" title="beatmup.nnets.Padding"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="beatmup.nnets.InferenceTask.html" title="beatmup.nnets.InferenceTask"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../python.html">Beatmup Python docs</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">beatmup.nnets.Model</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020, lnstadrum.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

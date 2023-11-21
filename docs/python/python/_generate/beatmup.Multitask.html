@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>beatmup.Multitask &#8212; Beatmup Python docs</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css?v=514cf933" />
+    
+    <script src="../../_static/documentation_options.js?v=56dcb7b8"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="beatmup.PixelFormat" href="beatmup.PixelFormat.html" />
+    <link rel="prev" title="beatmup.Metric" href="beatmup.Metric.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="beatmup.PixelFormat.html" title="beatmup.PixelFormat"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="beatmup.Metric.html" title="beatmup.Metric"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../python.html">Beatmup Python docs</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">beatmup.Multitask</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="beatmup-multitask">
+<h1>beatmup.Multitask<a class="headerlink" href="#beatmup-multitask" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="beatmup.Multitask">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">beatmup.</span></span><span class="sig-name descname"><span class="pre">Multitask</span></span><a class="headerlink" href="#beatmup.Multitask" title="Link to this definition">¶</a></dt>
+<dd><p>Conditional multiple tasks execution.</p>
+<p>Beatmup offers a number of tools allowing to pipeline several tasks into a single one. This technique is particularly useful for designing
+complex multi-stage image processing pipelines.</p>
+<p>Multitask is the simplest such tool. It allows to concatenate different tasks into a linear conveyor and run them all or selectively.
+To handle this selection, each task is associated with a repetition policy specifying the conditions whether this given task is executed
+or ignored when the pipeline is running.</p>
+<p>Specifically, there are two extreme modes that force the task execution every time (REPEAT_ALWAYS) or its unconditional skipping
+(IGNORE_ALWAYS) and two more sophisticated modes with the following behavior:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>IGNORE_IF_UPTODATE skips the task if no tasks were executed among the ones coming before the current task in the pipeline;</p></li>
+<li><p>REPEAT_UPDATE forces task repetition one time on next run and just after switches the repetition policy to IGNORE_IF_UPTODATE.</p></li>
+</ul>
+</div></blockquote>
+<dl class="py method">
+<dt class="sig sig-object py" id="beatmup.Multitask.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#beatmup.Multitask" title="beatmup.Multitask"><span class="pre">beatmup.Multitask</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#beatmup.Multitask.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#beatmup.Multitask.__init__" title="beatmup.Multitask.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(self)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_task</span></code>(self, task)</p></td>
+<td><p>Adds a new task to the end of the pipeline</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../python.html#beatmup.Multitask.get_repetition_policy" title="beatmup.Multitask.get_repetition_policy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_repetition_policy</span></code></a>(self, task)</p></td>
+<td><p>Returns repetition policy of a specific task in the pipeline.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_task</span></code>(self, index)</p></td>
+<td><p>Retrieves a task by its index</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_task_count</span></code>(self)</p></td>
+<td><p>Returns number of tasks in the pipeline</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_task_index</span></code>(self, holder)</p></td>
+<td><p>Retrieves task index if it is in the pipeline; returns -1 otherwise</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">insert_task</span></code>(self, task, before)</p></td>
+<td><p>Inserts a task in a specified position of the pipeline before another task</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">measure</span></code>(self)</p></td>
+<td><p>Determines pipeline execution mode and required thread count</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_task</span></code>(self, task)</p></td>
+<td><p>Removes a task from the pipeline, if any.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../python.html#beatmup.Multitask.set_repetition_policy" title="beatmup.Multitask.set_repetition_policy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_repetition_policy</span></code></a>(self, task, policy)</p></td>
+<td><p>Sets repetition policy of a task.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">IGNORE_ALWAYS</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">IGNORE_IF_UPTODATE</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">REPEAT_ALWAYS</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">REPEAT_UPDATE</span></code></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../../python.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">beatmup.Multitask</a><ul>
+<li><a class="reference internal" href="#beatmup.Multitask"><code class="docutils literal notranslate"><span class="pre">Multitask</span></code></a><ul>
+<li><a class="reference internal" href="#beatmup.Multitask.__init__"><code class="docutils literal notranslate"><span class="pre">Multitask.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="beatmup.Metric.html"
+                          title="previous chapter">beatmup.Metric</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="beatmup.PixelFormat.html"
+                          title="next chapter">beatmup.PixelFormat</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="beatmup.PixelFormat.html" title="beatmup.PixelFormat"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="beatmup.Metric.html" title="beatmup.Metric"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../python.html">Beatmup Python docs</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">beatmup.Multitask</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020, lnstadrum.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

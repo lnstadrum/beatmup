@@ -1,0 +1,35 @@
+var classBeatmup_1_1GL_1_1RenderingPrograms =
+[
+    [ "Backend", "classRenderingPrograms_1_1Backend.html", "classRenderingPrograms_1_1Backend" ],
+    [ "Operation", "classBeatmup_1_1GL_1_1RenderingPrograms.html#a67b0fc590f6addfbbf354d0bb4399536", [
+      [ "BLEND", "classBeatmup_1_1GL_1_1RenderingPrograms.html#a67b0fc590f6addfbbf354d0bb4399536af58072a9536aaeef0196115e445fa4d8", null ],
+      [ "MASKED_BLEND", "classBeatmup_1_1GL_1_1RenderingPrograms.html#a67b0fc590f6addfbbf354d0bb4399536a66d4415742629a12af72f78229a69ef9", null ],
+      [ "MASKED_8BIT_BLEND", "classBeatmup_1_1GL_1_1RenderingPrograms.html#a67b0fc590f6addfbbf354d0bb4399536a5038b987c6f4c2e734d9e69111265254", null ],
+      [ "SHAPED_BLEND", "classBeatmup_1_1GL_1_1RenderingPrograms.html#a67b0fc590f6addfbbf354d0bb4399536a309c91364aebb8c7239fc0b01b30f084", null ],
+      [ "BLEND_EXT", "classBeatmup_1_1GL_1_1RenderingPrograms.html#a67b0fc590f6addfbbf354d0bb4399536a3cc70785b227c5ef4d5b600b412aaea8", null ],
+      [ "MASKED_BLEND_EXT", "classBeatmup_1_1GL_1_1RenderingPrograms.html#a67b0fc590f6addfbbf354d0bb4399536a2ad94efaa80282de6ce5e66c7e5c681f", null ],
+      [ "MASKED_8BIT_BLEND_EXT", "classBeatmup_1_1GL_1_1RenderingPrograms.html#a67b0fc590f6addfbbf354d0bb4399536a2c1281f8bb5164110fa334621ef450a2", null ],
+      [ "SHAPED_BLEND_EXT", "classBeatmup_1_1GL_1_1RenderingPrograms.html#a67b0fc590f6addfbbf354d0bb4399536a70092df3c89935b2e9188fc1e10d7f38", null ]
+    ] ],
+    [ "RenderingPrograms", "classBeatmup_1_1GL_1_1RenderingPrograms.html#ae045d40c864620b2c54fcbf037c3fea6", null ],
+    [ "~RenderingPrograms", "classBeatmup_1_1GL_1_1RenderingPrograms.html#a775b5cfee598014fdaf1b3e2cd98dd57", null ],
+    [ "enableProgram", "classBeatmup_1_1GL_1_1RenderingPrograms.html#a4b3b63631a8ed524beaa2f303a80b96a", null ],
+    [ "getCurrentProgram", "classBeatmup_1_1GL_1_1RenderingPrograms.html#a2594a29d671919b943c781e9a5276788", null ],
+    [ "bindMask", "classBeatmup_1_1GL_1_1RenderingPrograms.html#afcb47e7b71f832bb8bbdc2a00d28e5ba", null ],
+    [ "blend", "classBeatmup_1_1GL_1_1RenderingPrograms.html#ad352a43c22a20bb69dd19e875c1031e1", null ],
+    [ "paveBackground", "classBeatmup_1_1GL_1_1RenderingPrograms.html#a33f9d090a3cce624345052813def6f05", null ],
+    [ "getDefaultVertexShader", "classBeatmup_1_1GL_1_1RenderingPrograms.html#aa3ad90f936751d705943e3ed44a852ba", null ],
+    [ "getProgram", "classBeatmup_1_1GL_1_1RenderingPrograms.html#a3cb32303317adc4ffd70537843fbce30", null ],
+    [ "VERTEX_COORD_ATTRIB_NAME", "classBeatmup_1_1GL_1_1RenderingPrograms.html#a6b728cef58e003a4dac5ce54a2851f1c", null ],
+    [ "TEXTURE_COORD_ATTRIB_NAME", "classBeatmup_1_1GL_1_1RenderingPrograms.html#a03698ecfa1177e9834826b0354b91931", null ],
+    [ "VERTICAL_FLIP_ID", "classBeatmup_1_1GL_1_1RenderingPrograms.html#a9cc3a80f034759922a63c3f84dfa16b8", null ],
+    [ "MODELVIEW_MATRIX_ID", "classBeatmup_1_1GL_1_1RenderingPrograms.html#ad05a2f67a666610e0a308958d94f8c3a", null ],
+    [ "TEXTURE_COORDINATES_ID", "classBeatmup_1_1GL_1_1RenderingPrograms.html#a61a215682d5ed8739e5373bcf6c0154c", null ],
+    [ "DECLARE_TEXTURE_COORDINATES_IN_FRAG", "classBeatmup_1_1GL_1_1RenderingPrograms.html#ace87ec77c10bd2be8b754da1c7e35c80", null ],
+    [ "backend", "classBeatmup_1_1GL_1_1RenderingPrograms.html#a902f2a2d082698e2fc0a8b8cd2f55ef5", null ],
+    [ "currentGlProgram", "classBeatmup_1_1GL_1_1RenderingPrograms.html#a399f608c8f3122f34f08f8cd7a58a1e1", null ],
+    [ "currentProgram", "classBeatmup_1_1GL_1_1RenderingPrograms.html#a6fce44e1ca348e45ccc49b3afd1f100d", null ],
+    [ "maskSetUp", "classBeatmup_1_1GL_1_1RenderingPrograms.html#ae5f57dfcaaf36a8b76a90ef5499fac45", null ],
+    [ "defaultVertexShader", "classBeatmup_1_1GL_1_1RenderingPrograms.html#accd79955d2e4174a4762d5dd0029c9ca", null ],
+    [ "programs", "classBeatmup_1_1GL_1_1RenderingPrograms.html#a3e2d93ea0b1e78ee3189e291c8aa6b15", null ]
+];

@@ -1,0 +1,25 @@
+var classBeatmup_1_1Audio_1_1Signal =
+[
+    [ "IncompatibleFormat", "classBeatmup_1_1Audio_1_1Signal_1_1IncompatibleFormat.html", "classBeatmup_1_1Audio_1_1Signal_1_1IncompatibleFormat" ],
+    [ "Meter", "classBeatmup_1_1Audio_1_1Signal_1_1Meter.html", "classBeatmup_1_1Audio_1_1Signal_1_1Meter" ],
+    [ "Pointer", "classBeatmup_1_1Audio_1_1Signal_1_1Pointer.html", "classBeatmup_1_1Audio_1_1Signal_1_1Pointer" ],
+    [ "Reader", "classBeatmup_1_1Audio_1_1Signal_1_1Reader.html", "classBeatmup_1_1Audio_1_1Signal_1_1Reader" ],
+    [ "Source", "classBeatmup_1_1Audio_1_1Signal_1_1Source.html", "classBeatmup_1_1Audio_1_1Signal_1_1Source" ],
+    [ "Writer", "classBeatmup_1_1Audio_1_1Signal_1_1Writer.html", "classBeatmup_1_1Audio_1_1Signal_1_1Writer" ],
+    [ "Signal", "classBeatmup_1_1Audio_1_1Signal.html#a9aca91b1ed1c07df885db4f40a3fc826", null ],
+    [ "createEmpty", "classBeatmup_1_1Audio_1_1Signal.html#aec52fd9ca85f68f78db94f95e59ad6b5", null ],
+    [ "insert", "classBeatmup_1_1Audio_1_1Signal.html#a04b3fbe314a066c28a345ccd3d3eb038", null ],
+    [ "reserve", "classBeatmup_1_1Audio_1_1Signal.html#aaae05738df8c84b17d87b4588abac2e6", null ],
+    [ "saveWAV", "classBeatmup_1_1Audio_1_1Signal.html#aea91107154b701c26808c191be4dec9b", null ],
+    [ "loadWAV", "classBeatmup_1_1Audio_1_1Signal.html#abf05cc1fab9ccd095cfd8cf1262a60cf", null ],
+    [ "loadWAV", "classBeatmup_1_1Audio_1_1Signal.html#a4e2494cccb7e87d9a7193b5a6942ad18", null ],
+    [ "getChannelCount", "classBeatmup_1_1Audio_1_1Signal.html#a6c4c599c943da2ab6a4d62adc41172e0", null ],
+    [ "getSampleFormat", "classBeatmup_1_1Audio_1_1Signal.html#a8b876d3b86211a61cf2852aea4589ed3", null ],
+    [ "getContext", "classBeatmup_1_1Audio_1_1Signal.html#a53cf99768857da9b96f8ef3509d3665a", null ],
+    [ "ctx", "classBeatmup_1_1Audio_1_1Signal.html#a7af4e9a64b7e642554efb2e11430abf5", null ],
+    [ "format", "classBeatmup_1_1Audio_1_1Signal.html#a82ff9029c02b9307873c8e35a6320676", null ],
+    [ "defaultFragmentSize", "classBeatmup_1_1Audio_1_1Signal.html#af590b811e7118805c665d0cfa90ab992", null ],
+    [ "sampleRate", "classBeatmup_1_1Audio_1_1Signal.html#ac3cdcfae77ce1c19d6c0e4f482698b96", null ],
+    [ "channelCount", "classBeatmup_1_1Audio_1_1Signal.html#a9aeb9a4df44ed7cb281f356c07e42171", null ],
+    [ "DEFAULT_FRAGMENT_LENGTH_SEC", "classBeatmup_1_1Audio_1_1Signal.html#a6d5d4ca4921b8ca099028a0001caec9d", null ]
+];

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>beatmup.filters.ColorMatrix &#8212; Beatmup Python docs</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css?v=514cf933" />
+    
+    <script src="../../_static/documentation_options.js?v=56dcb7b8"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="beatmup.filters.PixelwiseFilter" href="beatmup.filters.PixelwiseFilter.html" />
+    <link rel="prev" title="beatmup.WritableChunkCollection" href="beatmup.WritableChunkCollection.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="beatmup.filters.PixelwiseFilter.html" title="beatmup.filters.PixelwiseFilter"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="beatmup.WritableChunkCollection.html" title="beatmup.WritableChunkCollection"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../python.html">Beatmup Python docs</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">beatmup.filters.ColorMatrix</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="beatmup-filters-colormatrix">
+<h1>beatmup.filters.ColorMatrix<a class="headerlink" href="#beatmup-filters-colormatrix" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="beatmup.filters.ColorMatrix">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">beatmup.filters.</span></span><span class="sig-name descname"><span class="pre">ColorMatrix</span></span><a class="headerlink" href="#beatmup.filters.ColorMatrix" title="Link to this definition">¶</a></dt>
+<dd><p>Color matrix filter: applies an affine mapping Ax + B at each pixel of a given image in RGBA space</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="beatmup.filters.ColorMatrix.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#beatmup.filters.ColorMatrix" title="beatmup.filters.ColorMatrix"><span class="pre">beatmup.filters.ColorMatrix</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#beatmup.filters.ColorMatrix.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#beatmup.filters.ColorMatrix.__init__" title="beatmup.filters.ColorMatrix.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(self)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../python.html#beatmup.filters.ColorMatrix.apply_contrast" title="beatmup.filters.ColorMatrix.apply_contrast"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_contrast</span></code></a>(self, factor)</p></td>
+<td><p>Applies a contrast adjustment by a given factor on top of the current transformation</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../python.html#beatmup.filters.ColorMatrix.set_brightness" title="beatmup.filters.ColorMatrix.set_brightness"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_brightness</span></code></a>(self, brightness)</p></td>
+<td><p>Sets a brightness adjustment by a given factor (non-cumulative with respect to the current transformation)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../python.html#beatmup.filters.ColorMatrix.set_coefficients" title="beatmup.filters.ColorMatrix.set_coefficients"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_coefficients</span></code></a>(self, out_channel, add, rgba)</p></td>
+<td><p>Sets color matrix coefficients for a specific output color channel</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../python.html#beatmup.filters.ColorMatrix.set_color_inversion" title="beatmup.filters.ColorMatrix.set_color_inversion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_color_inversion</span></code></a>(self, preserved_hue, ...)</p></td>
+<td><p>Resets the current transformation to a fancy color inversion mode with a fixed hue point</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../python.html#beatmup.filters.ColorMatrix.set_hsv_correction" title="beatmup.filters.ColorMatrix.set_hsv_correction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_hsv_correction</span></code></a>(self, hue_shift_degrees, ...)</p></td>
+<td><p>Resets the current transformation to a matrix performing standard HSV correction</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">input</span></code></p></td>
+<td><p>Input bitmap</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">output</span></code></p></td>
+<td><p>Output bitmap</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../../python.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">beatmup.filters.ColorMatrix</a><ul>
+<li><a class="reference internal" href="#beatmup.filters.ColorMatrix"><code class="docutils literal notranslate"><span class="pre">ColorMatrix</span></code></a><ul>
+<li><a class="reference internal" href="#beatmup.filters.ColorMatrix.__init__"><code class="docutils literal notranslate"><span class="pre">ColorMatrix.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="beatmup.WritableChunkCollection.html"
+                          title="previous chapter">beatmup.WritableChunkCollection</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="beatmup.filters.PixelwiseFilter.html"
+                          title="next chapter">beatmup.filters.PixelwiseFilter</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="beatmup.filters.PixelwiseFilter.html" title="beatmup.filters.PixelwiseFilter"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="beatmup.WritableChunkCollection.html" title="beatmup.WritableChunkCollection"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../python.html">Beatmup Python docs</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">beatmup.filters.ColorMatrix</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020, lnstadrum.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

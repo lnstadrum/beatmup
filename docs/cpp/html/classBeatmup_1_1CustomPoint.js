@@ -1,0 +1,25 @@
+var classBeatmup_1_1CustomPoint =
+[
+    [ "CustomPoint", "classBeatmup_1_1CustomPoint.html#aff12b43bbcb9d5cd64c6b57241716088", null ],
+    [ "CustomPoint", "classBeatmup_1_1CustomPoint.html#aaed9791f2a2b03cb5404435372bf09a6", null ],
+    [ "getX", "classBeatmup_1_1CustomPoint.html#a4de270b210fc1479f7091ce7a2d70e24", null ],
+    [ "getY", "classBeatmup_1_1CustomPoint.html#a5efa9fe957550a54b6f4ab5e9d463046", null ],
+    [ "operator==", "classBeatmup_1_1CustomPoint.html#a7296612b49cafff9a1728624f048e7fd", null ],
+    [ "operator!=", "classBeatmup_1_1CustomPoint.html#aae4b3622796608868dcae3dad1dba0f5", null ],
+    [ "operator+", "classBeatmup_1_1CustomPoint.html#a885f3e1b6387f96f3b33505dcd62f170", null ],
+    [ "operator-", "classBeatmup_1_1CustomPoint.html#a650a4ce00801e571e24347c273aabfa0", null ],
+    [ "operator*", "classBeatmup_1_1CustomPoint.html#a4aafd5f50b61eaecf083cc400b255f53", null ],
+    [ "operator/", "classBeatmup_1_1CustomPoint.html#aae0f1dcd414bdba9da074f95c650f460", null ],
+    [ "operator+", "classBeatmup_1_1CustomPoint.html#ac0f22f4e512bb103c71196ff2ce746c3", null ],
+    [ "operator-", "classBeatmup_1_1CustomPoint.html#a18d652e576e7511f011e43dafe934ec3", null ],
+    [ "operator*", "classBeatmup_1_1CustomPoint.html#a779379c471e63bcbc0e6bbd6a5a80808", null ],
+    [ "operator/", "classBeatmup_1_1CustomPoint.html#ad94e83ed3d94970f7e454688775ecbc5", null ],
+    [ "translate", "classBeatmup_1_1CustomPoint.html#a2fcd3084c36d47728046630ed3160f18", null ],
+    [ "hypot2", "classBeatmup_1_1CustomPoint.html#a02533bf1fb9b65b9b8049c86be553689", null ],
+    [ "isInsideAxesSpan", "classBeatmup_1_1CustomPoint.html#ab8deec42611da09741d677e5a4080eb6", null ],
+    [ "operator CustomPoint< float >", "classBeatmup_1_1CustomPoint.html#aba4f664fa2197f3ea72acc0d4326e9d0", null ],
+    [ "operator CustomPoint< int >", "classBeatmup_1_1CustomPoint.html#a08184072eddc3fb7ae7f395b4390bb52", null ],
+    [ "x", "classBeatmup_1_1CustomPoint.html#a6f4b9999507ca1ae1de76819b174f506", null ],
+    [ "y", "classBeatmup_1_1CustomPoint.html#af45911e2d2851aa6858fdaa854ab0a39", null ],
+    [ "ZERO", "classBeatmup_1_1CustomPoint.html#a3e5b80ffbc5279a69072f318cf1d8cf8", null ]
+];

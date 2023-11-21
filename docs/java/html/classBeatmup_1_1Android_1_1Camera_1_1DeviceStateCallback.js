@@ -1,0 +1,4 @@
+var classBeatmup_1_1Android_1_1Camera_1_1DeviceStateCallback =
+[
+    [ "CaptureSessionStateCallback", "classBeatmup_1_1Android_1_1Camera_1_1DeviceStateCallback_1_1CaptureSessionStateCallback.html", "classBeatmup_1_1Android_1_1Camera_1_1DeviceStateCallback_1_1CaptureSessionStateCallback" ]
+];
